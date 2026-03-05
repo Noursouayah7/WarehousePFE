@@ -1,5 +1,14 @@
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 import { UserRole } from '@prisma/client';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class CreateUserDto {
   @IsEmail()
@@ -7,14 +16,31 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsString()
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(8)
   password: string;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  address: string;
 
+  @IsString()
   @IsNotEmpty()
-  roles: UserRole;
+  phone: string;
+
+  // Numeric string, exactly 8 characters
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8, { message: 'CIN must be at least 8 characters' })
+  @MaxLength(8, { message: 'CIN must be exactly 8 characters' })
+  @Matches(/^\d{8}$/, { message: 'CIN must contain exactly 8 numeric digits' })
+  cin: string;
+
+  @IsEnum(UserRole)
+  @IsOptional()
+  roles?: UserRole;
 }

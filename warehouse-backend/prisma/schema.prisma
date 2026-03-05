@@ -17,11 +17,40 @@ model Product {
   updatedAt   DateTime
 }
 
+model Warehouse {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  surface     Float    
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  blocks      Bloc[]
+
+  @@map("warehouses")
+}
+model Bloc {
+  id           Int       @id @default(autoincrement())
+  name         String
+  capacity     Float     
+  currentUsage Float     @default(0) // tracked usage, always <= capacity
+  warehouseId  Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  warehouse    Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@map("blocs")
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   name      String?
   password  String
+  address   String?
+  phone     String?
+  cin       String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   roles     UserRole @default(TECHNICIEN)
