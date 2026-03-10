@@ -11,15 +11,18 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { BlocService } from './bloc.service';
-import { JwtAuthGuard } from '../auth/Jwt.auth.guard';
+import { JwtAuthGuard } from '../auth/guards/Jwt.auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/guards/roles.decorator';
 
-@UseGuards(JwtAuthGuard)
-@Controller('warehouse/:warehouseId/bloc')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN, UserRole.MANAGER) // TECHNICIEN cannot manage blocs
+@Controller('warehouses/:warehouseId/blocs')
 export class BlocController {
   constructor(private readonly blocService: BlocService) {}
 
-  // POST /warehouses/:warehouseId/blocs
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(
@@ -29,13 +32,11 @@ export class BlocController {
     return this.blocService.create(warehouseId, body.name, body.capacity);
   }
 
-  // GET /warehouses/:warehouseId/blocs
   @Get()
   findAll(@Param('warehouseId', ParseIntPipe) warehouseId: number) {
     return this.blocService.findAll(warehouseId);
   }
 
-  // GET /warehouses/:warehouseId/blocs/:id
   @Get(':id')
   findOne(
     @Param('warehouseId', ParseIntPipe) warehouseId: number,
@@ -44,7 +45,6 @@ export class BlocController {
     return this.blocService.findOne(warehouseId, id);
   }
 
-  // PATCH /warehouses/:warehouseId/blocs/:id
   @Patch(':id')
   update(
     @Param('warehouseId', ParseIntPipe) warehouseId: number,
@@ -54,7 +54,6 @@ export class BlocController {
     return this.blocService.update(warehouseId, id, body.name, body.capacity);
   }
 
-  // DELETE /warehouses/:warehouseId/blocs/:id
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   remove(

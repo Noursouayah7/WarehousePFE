@@ -11,19 +11,21 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { WarehouseService } from './warehouse.service';
-import { JwtAuthGuard } from '../auth/Jwt.auth.guard';
+import { JwtAuthGuard } from '../auth/guards/Jwt.auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/guards/roles.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN, UserRole.MANAGER) // TECHNICIEN cannot manage warehouses
 @Controller('warehouse')
 export class WarehouseController {
   constructor(private readonly warehouseService: WarehouseService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  createWarehouse(
-    @Body() body: { name: string; surface: number; description?: string },
-  ) {
+  createWarehouse(@Body() body: { name: string; surface: number; description?: string }) {
     return this.warehouseService.createWarehouse(body.name, body.surface, body.description);
   }
 
