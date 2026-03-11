@@ -25,7 +25,7 @@ export class AuthService {
     return result;
   }
 
-  async login(email: string, password: string): Promise<{ access_token: string }> {
+  async login(email: string, password: string): Promise<{ access_token: string; role: string }> {
     const user = await this.validateUser(email, password);
 
     const payload = {
@@ -37,6 +37,7 @@ export class AuthService {
 
     return {
       access_token: this.jwtService.sign(payload),
+      role: user.roles, 
     };
   }
 }

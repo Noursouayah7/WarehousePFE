@@ -56,11 +56,12 @@ model User {
   cin       String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  roles     UserRole @default(TECHNICIEN)
+  roles     UserRole @default(PENDING)
 }
 
 enum UserRole {
   ADMIN
   MANAGER
   TECHNICIEN
+  PENDING
 }
