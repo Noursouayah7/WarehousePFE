@@ -14,7 +14,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 function parseStoredRole(value: string | null): UserRole | null {
-  if (value === 'ADMIN' || value === 'MANAGER' || value === 'TECHNICIEN') {
+  if (value === 'ADMIN' || value === 'MANAGER' || value === 'TECHNICIEN' || value === 'PENDING') {
     return value;
   }
   return null;

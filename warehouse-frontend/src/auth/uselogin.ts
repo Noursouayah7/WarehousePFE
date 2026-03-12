@@ -3,13 +3,21 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginRequest } from './auth.api';
-import { LoginCredentials, UserRole } from './auth.types';
+import { ActiveRole, LoginCredentials, UserRole } from './auth.types';
 
-const ROLE_ROUTES: Record<UserRole, string> = {
+const ROLE_ROUTES: Record<ActiveRole, string> = {
   ADMIN: '/admin',
   MANAGER: '/manager',
   TECHNICIEN: '/technicien',
 };
+
+function resolveDestination(role: UserRole | null): string {
+  if (!role || role === 'PENDING') {
+    return '/pending';
+  }
+
+  return ROLE_ROUTES[role] ?? '/pending';
+}
 
 export function useLogin() {
   const router = useRouter();
@@ -22,14 +30,15 @@ export function useLogin() {
 
     try {
       const { access_token, role } = await loginRequest(credentials);
-      const destination = ROLE_ROUTES[role];
-      if (!destination) {
-        throw new Error('Unknown user role');
-      }
+      const destination = resolveDestination(role);
 
       // Persist token and role in localStorage
       localStorage.setItem('access_token', access_token);
-      localStorage.setItem('user_role', role);
+      if (role) {
+        localStorage.setItem('user_role', role);
+      } else {
+        localStorage.removeItem('user_role');
+      }
 
       // Redirect based on role
       router.push(destination);

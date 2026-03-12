@@ -1,10 +1,10 @@
-import LoginPage from '@/src/auth/LoginPage';
+import RegisterPage from '@/src/auth/RegisterPage';
 import { AuthRedirect } from '@/src/auth/AuthRedirect';
 
-export default function LoginRoutePage() {
+export default function RegisterRoutePage() {
   return (
     <AuthRedirect mode="public-only">
-      <LoginPage />
+      <RegisterPage />
     </AuthRedirect>
   );
 }
