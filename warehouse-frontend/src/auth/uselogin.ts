@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginRequest } from './auth.api';
+import { useAuth } from './AuthProvider';
 import { ActiveRole, LoginCredentials, UserRole } from './auth.types';
 
 const ROLE_ROUTES: Record<ActiveRole, string> = {
@@ -21,6 +22,7 @@ function resolveDestination(role: UserRole | null): string {
 
 export function useLogin() {
   const router = useRouter();
+  const { login: setAuthSession } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -31,14 +33,7 @@ export function useLogin() {
     try {
       const { access_token, role } = await loginRequest(credentials);
       const destination = resolveDestination(role);
-
-      // Persist token and role in localStorage
-      localStorage.setItem('access_token', access_token);
-      if (role) {
-        localStorage.setItem('user_role', role);
-      } else {
-        localStorage.removeItem('user_role');
-      }
+      setAuthSession({ access_token, role });
 
       // Redirect based on role
       router.push(destination);

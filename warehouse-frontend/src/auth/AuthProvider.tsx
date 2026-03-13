@@ -2,50 +2,39 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { LoginResponse } from './auth.types';
 import { UserRole } from './auth.types';
 
 interface AuthContextValue {
   token: string | null;
   role: UserRole | null;
+  login: (payload: LoginResponse) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function parseStoredRole(value: string | null): UserRole | null {
-  if (value === 'ADMIN' || value === 'MANAGER' || value === 'TECHNICIEN' || value === 'PENDING') {
-    return value;
-  }
-  return null;
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(() => {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-    return localStorage.getItem('access_token');
-  });
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
 
-  const [role, setRole] = useState<UserRole | null>(() => {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-    return parseStoredRole(localStorage.getItem('user_role'));
-  });
+  function login(payload: LoginResponse) {
+    setAccessToken(payload.access_token);
+    setRole(payload.role);
+  }
 
   function logout() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user_role');
-    setToken(null);
+    setAccessToken(null);
     setRole(null);
-    router.push('/login');
+    router.replace('/login');
   }
 
   return (
-    <AuthContext.Provider value={{ token, role, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider
+      value={{ token: accessToken, role, login, logout, isAuthenticated: !!accessToken }}
+    >
       {children}
     </AuthContext.Provider>
   );
