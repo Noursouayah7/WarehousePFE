@@ -1,10 +1,5 @@
-import AdminPage from "@/src/admin/AdminDashboardPage";
-import { AuthRedirect } from '@/src/auth/AuthRedirect';
+import { redirect } from 'next/navigation';
 
 export default function AdminRoutePage() {
-  return (
-    <AuthRedirect mode="protected" allowedRoles={['ADMIN']}>
-      <AdminPage />
-    </AuthRedirect>
-  );
+  redirect('/admin/users');
 }

@@ -1,19 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { useLogin } from './uselogin';
 
 export function LoginForm() {
   const { login, error, loading } = useLogin();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [registered, setRegistered] = useState(false);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setRegistered(params.get('registered') === '1');
-  }, []);
+  const registered = searchParams.get('registered') === '1';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './AuthProvider';
 import { UserRole } from './auth.types';
@@ -29,16 +29,38 @@ export function AuthRedirect({
 }: AuthRedirectProps) {
 	const router = useRouter();
 	const { isAuthenticated, role } = useAuth();
-	const [allowed, setAllowed] = useState(false);
+
+	const isAllowed = useMemo(() => {
+		if (mode === 'public-only') {
+			return !isAuthenticated;
+		}
+
+		if (!isAuthenticated) {
+			return false;
+		}
+
+		if (!allowedRoles || allowedRoles.length === 0) {
+			return true;
+		}
+
+		if (!role && allowMissingRole) {
+			return true;
+		}
+
+		if (role && allowedRoles.includes(role)) {
+			return true;
+		}
+
+		return false;
+	}, [allowMissingRole, allowedRoles, isAuthenticated, mode, role]);
 
 	useEffect(() => {
-		if (mode === 'public-only') {
-			if (isAuthenticated) {
-				router.replace(resolveRoleRoute(role));
-				return;
-			}
+		if (isAllowed) {
+			return;
+		}
 
-			setAllowed(true);
+		if (mode === 'public-only' && isAuthenticated) {
+			router.replace(resolveRoleRoute(role));
 			return;
 		}
 
@@ -47,25 +69,10 @@ export function AuthRedirect({
 			return;
 		}
 
-		if (!allowedRoles || allowedRoles.length === 0) {
-			setAllowed(true);
-			return;
-		}
-
-		if (!role && allowMissingRole) {
-			setAllowed(true);
-			return;
-		}
-
-		if (role && allowedRoles.includes(role)) {
-			setAllowed(true);
-			return;
-		}
-
 		router.replace(resolveRoleRoute(role));
-	}, [allowMissingRole, allowedRoles, isAuthenticated, mode, role, router]);
+	}, [isAllowed, isAuthenticated, mode, role, router]);
 
-	if (!allowed) {
+	if (!isAllowed) {
 		return null;
 	}
 

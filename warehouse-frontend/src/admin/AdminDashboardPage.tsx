@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/src/auth/AuthProvider';
+import AdminUsersDashbord from './UsersDashbord/AdminUsersDashbord';
 
 export default function AdminPage() {
   const { logout } = useAuth();
@@ -58,6 +59,8 @@ export default function AdminPage() {
             </div>
           ))}
         </div>
+
+        <AdminUsersDashbord />
       </div>
     </div>
   );
