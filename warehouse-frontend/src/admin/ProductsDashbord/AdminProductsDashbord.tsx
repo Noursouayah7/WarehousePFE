@@ -10,6 +10,10 @@ import {
 	ProductPayload,
 	updateAdminProduct,
 } from './ProductDashbord.admin.api';
+import {
+	AdminDashboardWarehouse,
+	getAdminWarehouses,
+} from '../WarehousesDashbord/WarehouseDashbord.admin.api';
 
 type ProductFormState = {
 	name: string;
@@ -58,6 +62,9 @@ export default function AdminProductsDashbord() {
 	const [savingProduct, setSavingProduct] = useState(false);
 	const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
 	const [form, setForm] = useState<ProductFormState>(emptyForm);
+	const [formError, setFormError] = useState<string | null>(null);
+	const [warehouses, setWarehouses] = useState<AdminDashboardWarehouse[]>([]);
+	const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
 
 	useEffect(() => {
 		const accessToken = token;
@@ -98,6 +105,22 @@ export default function AdminProductsDashbord() {
 		};
 	}, [token]);
 
+	useEffect(() => {
+		if (!token) return;
+		const activeToken = token;
+		let isMounted = true;
+		async function loadWarehouses() {
+			try {
+				const data = await getAdminWarehouses(activeToken);
+				if (isMounted) setWarehouses(data);
+			} catch {
+				// non-critical
+			}
+		}
+		void loadWarehouses();
+		return () => { isMounted = false; };
+	}, [token]);
+
 	const productCount = useMemo(() => products.length, [products]);
 	const confirmDeleteProduct = products.find((product) => product.id === confirmDeleteProductId) ?? null;
 	const editingProduct = products.find((product) => product.id === editingProductId) ?? null;
@@ -105,12 +128,17 @@ export default function AdminProductsDashbord() {
 	function openCreateModal() {
 		setEditingProductId(null);
 		setForm(emptyForm);
+		setFormError(null);
+		setSelectedWarehouseId('');
 		setIsFormOpen(true);
 	}
 
 	function openUpdateModal(product: AdminDashboardProduct) {
 		setEditingProductId(product.id);
 		setForm(toFormState(product));
+		setFormError(null);
+		const owningWarehouse = warehouses.find((w) => w.blocks.some((b) => b.id === product.blocId));
+		setSelectedWarehouseId(owningWarehouse ? String(owningWarehouse.id) : '');
 		setIsFormOpen(true);
 	}
 
@@ -121,6 +149,8 @@ export default function AdminProductsDashbord() {
 		setIsFormOpen(false);
 		setEditingProductId(null);
 		setForm(emptyForm);
+		setFormError(null);
+		setSelectedWarehouseId('');
 	}
 
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -134,6 +164,7 @@ export default function AdminProductsDashbord() {
 
 		setSavingProduct(true);
 		setError(null);
+		setFormError(null);
 
 		try {
 			const payload = toPayload(form);
@@ -151,7 +182,14 @@ export default function AdminProductsDashbord() {
 			setEditingProductId(null);
 			setForm(emptyForm);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to save product');
+			const message = err instanceof Error ? err.message : 'Failed to save product';
+			if (message.toLowerCase().includes('already exists')) {
+				setFormError('This product already exists.');
+			} else if (message.toLowerCase().includes('capacity') || message.toLowerCase().includes('not enough')) {
+				setFormError(message);
+			} else {
+				setError(message);
+			}
 		} finally {
 			setSavingProduct(false);
 		}
@@ -278,26 +316,62 @@ export default function AdminProductsDashbord() {
 						<form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
 							<div className="flex flex-col gap-2">
 								<label className="text-[11px] tracking-[0.16em] text-[#777]">NAME</label>
-								<input
-									value={form.name}
-									onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-									required
-									className="border border-[#2a2a2a] bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-[#f0c040]"
-								/>
-							</div>
+							<input
+								value={form.name}
+								onChange={(event) => {
+									setFormError(null);
+									setForm((current) => ({ ...current, name: event.target.value }));
+								}}
+								required
+							className={`border bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-[#f0c040] ${formError && formError.includes('already exists') ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'}`}
+						/>
+						{formError && formError.includes('already exists') && (
+								<p className="text-[11px] tracking-[0.06em] text-[#ff8a8a]">{formError}</p>
+							)}
+						</div>
 
-							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#777]">BLOC ID</label>
-								<input
-									type="number"
-									min="1"
+						<div className="flex flex-col gap-2">
+							<label className="text-[11px] tracking-[0.16em] text-[#777]">WAREHOUSE</label>
+							<select
+								value={selectedWarehouseId}
+								onChange={(event) => {
+									setSelectedWarehouseId(event.target.value);
+									setForm((current) => ({ ...current, blocId: '' }));
+								}}
+								required
+								className="border border-[#2a2a2a] bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-[#f0c040]"
+							>
+								<option value="" disabled>Select a warehouse</option>
+								{warehouses.map((w) => (
+									<option key={w.id} value={String(w.id)}>{w.name}</option>
+								))}
+							</select>
+						</div>
+
+						{selectedWarehouseId && (
+							<div className="flex flex-col gap-2 md:col-span-2">
+								<label className="text-[11px] tracking-[0.16em] text-[#777]">BLOC</label>
+								<select
 									value={form.blocId}
-									onChange={(event) => setForm((current) => ({ ...current, blocId: event.target.value }))}
-									required
-									className="border border-[#2a2a2a] bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-[#f0c040]"
-								/>
+								onChange={(event) => {
+									setFormError(null);
+									setForm((current) => ({ ...current, blocId: event.target.value }));
+								}}
+								required
+								className={`border bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-[#f0c040] ${formError && !formError.includes('already exists') ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'}`}
+							>
+								<option value="" disabled>Select a bloc</option>
+								{warehouses
+									.find((w) => String(w.id) === selectedWarehouseId)
+									?.blocks.map((b) => (
+										<option key={b.id} value={String(b.id)}>{b.name}</option>
+									))}
+							</select>
+							{formError && !formError.includes('already exists') && (
+								<p className="text-[11px] tracking-[0.06em] text-[#ff8a8a]">{formError}</p>
+							)}
 							</div>
-
+						)}
 							<div className="flex flex-col gap-2 md:col-span-2">
 								<label className="text-[11px] tracking-[0.16em] text-[#777]">DESCRIPTION</label>
 								<textarea

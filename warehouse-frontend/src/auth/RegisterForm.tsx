@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRegister } from './useRegister';
 
 export function RegisterForm() {
-  const { register, error, loading } = useRegister();
+  const { register, error, loading, fieldErrors, clearFieldError } = useRegister();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -62,11 +62,17 @@ export function RegisterForm() {
               <input
                 type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={e => {
+                  clearFieldError('email');
+                  setEmail(e.target.value);
+                }}
                 required
                 placeholder="user@warehouse.com"
-                className="border border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#4aa0f0]"
+                className={`border bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#4aa0f0] ${fieldErrors.email ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'}`}
               />
+              {fieldErrors.email && (
+                <p className="text-[11px] tracking-[0.05em] text-[#ff6b6b]">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -108,14 +114,20 @@ export function RegisterForm() {
               <label className="text-[11px] tracking-[0.2em] text-[#555]">CIN (8 DIGITS)</label>
               <input
                 value={cin}
-                onChange={e => setCin(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                onChange={e => {
+                  clearFieldError('cin');
+                  setCin(e.target.value.replace(/\D/g, '').slice(0, 8));
+                }}
                 required
                 minLength={8}
                 maxLength={8}
                 pattern="[0-9]{8}"
                 placeholder="12345678"
-                className="border border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#4aa0f0]"
+                className={`border bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#4aa0f0] ${fieldErrors.cin ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'}`}
               />
+              {fieldErrors.cin && (
+                <p className="text-[11px] tracking-[0.05em] text-[#ff6b6b]">{fieldErrors.cin}</p>
+              )}
             </div>
 
             {error && (

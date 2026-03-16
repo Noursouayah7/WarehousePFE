@@ -8,6 +8,16 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
+export class RegisterRequestError extends Error {
+  constructor(
+    message: string,
+    public readonly field: 'email' | 'cin' | null = null,
+  ) {
+    super(message);
+    this.name = 'RegisterRequestError';
+  }
+}
+
 function isUserRole(value: string): value is UserRole {
   return value === 'ADMIN' || value === 'MANAGER' || value === 'TECHNICIEN' || value === 'PENDING';
 }
@@ -85,8 +95,22 @@ export async function registerRequest(payload: RegisterPayload): Promise<Registe
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message ?? 'Registration failed');
+    const error = await response.json().catch(() => null);
+    const message =
+      error && typeof error === 'object' && typeof (error as { message?: unknown }).message === 'string'
+        ? (error as { message: string }).message
+        : 'Registration failed';
+    const normalizedMessage = message.toLowerCase();
+
+    if (normalizedMessage.includes('email already exists') || normalizedMessage.includes('email already used')) {
+      throw new RegisterRequestError('Email already exists', 'email');
+    }
+
+    if (normalizedMessage.includes('cin already exists') || normalizedMessage.includes('cin already used')) {
+      throw new RegisterRequestError('CIN already exists', 'cin');
+    }
+
+    throw new RegisterRequestError(message);
   }
 
   const data: unknown = await response.json();
