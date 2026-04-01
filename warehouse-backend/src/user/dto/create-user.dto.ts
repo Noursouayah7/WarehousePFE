@@ -40,6 +40,10 @@ export class CreateUserDto {
   @Matches(/^\d{8}$/, { message: 'CIN must contain exactly 8 numeric digits' })
   cin: string;
 
+  @IsString()
+  @IsOptional()
+  profilePicture?: string;
+
   @IsEnum(UserRole)
   @IsOptional()
   roles?: UserRole;

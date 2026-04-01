@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/src/auth/AuthProvider';
 
 export default function ManagerPage() {
@@ -19,6 +20,12 @@ export default function ManagerPage() {
           <span className="bg-[#4af0a0] px-3 py-1 text-[10px] font-bold tracking-[0.2em] text-[#0a0a0a]">
             MANAGER
           </span>
+          <Link
+            href="/manager/profile"
+            className="cursor-pointer border border-[#2a2a2a] bg-transparent px-4 py-1.5 text-[11px] tracking-[0.15em] text-[#555] transition-colors hover:border-[#3a3a3a] hover:text-[#888]"
+          >
+            PROFILE
+          </Link>
           <button
             onClick={logout}
             className="cursor-pointer border border-[#2a2a2a] bg-transparent px-4 py-1.5 text-[11px] tracking-[0.15em] text-[#555] transition-colors hover:border-[#3a3a3a] hover:text-[#888]"

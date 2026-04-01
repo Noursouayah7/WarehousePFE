@@ -24,6 +24,12 @@ export default function PendingPage() {
 					>
 						BACK TO LOGIN
 					</Link>
+					<Link
+						href="/pending/profile"
+						className="w-full border border-[#2a2a2a] px-4 py-3 text-xs tracking-[0.2em] text-[#aaa] transition-colors hover:border-[#3a3a3a] hover:text-white sm:w-auto"
+					>
+						VIEW PROFILE
+					</Link>
 					<button
 						onClick={logout}
 						className="w-full border-0 bg-[#4aa0f0] px-4 py-3 text-xs font-bold tracking-[0.2em] text-[#0a0a0a] transition-colors hover:bg-[#3f92de] sm:w-auto"

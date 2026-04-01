@@ -35,6 +35,12 @@ export default function AdminSectionLayout({ title, description, children }: Adm
           <span className="bg-[#f0c040] px-3 py-1 text-[10px] font-bold tracking-[0.2em] text-[#0a0a0a]">
             ADMIN
           </span>
+          <Link
+            href="/admin/profile"
+            className="cursor-pointer border border-[#2a2a2a] bg-transparent px-4 py-1.5 text-[11px] tracking-[0.15em] text-[#555] transition-colors hover:border-[#3a3a3a] hover:text-[#888]"
+          >
+            PROFILE
+          </Link>
           <button
             onClick={logout}
             className="cursor-pointer border border-[#2a2a2a] bg-transparent px-4 py-1.5 text-[11px] tracking-[0.15em] text-[#555] transition-colors hover:border-[#3a3a3a] hover:text-[#888]"
