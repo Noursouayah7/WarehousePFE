@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/src/auth/AuthProvider';
-import { DM_Mono } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 
-const dmMono = DM_Mono({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500'],
+  weight: ['400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${dmMono.className} m-0 p-0`}>
+      <body className={`${inter.className} m-0 p-0`}>
         <AuthProvider>
           {children}
         </AuthProvider>

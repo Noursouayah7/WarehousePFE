@@ -179,35 +179,36 @@ export default function AdminWarehousesDashbord() {
 	}
 
 	return (
-		<section className="mt-14 rounded border border-[#1a1a1a] bg-[#101010] p-6">
+		<section className="mt-8 rounded-2xl bg-transparent">
 			<div className="mb-5 flex flex-wrap items-center justify-between gap-3">
 				<div>
-					<h2 className="text-xl font-bold tracking-[0.08em]">WAREHOUSES DASHBOARD</h2>
-					<p className="mt-1 text-[12px] tracking-[0.1em] text-[#666]">{warehouseCount} warehouses</p>
+					<h2 className="text-lg font-semibold tracking-tight">Warehouses</h2>
+					<p className="mt-1 text-sm text-[var(--muted-foreground)]">{warehouseCount} warehouses</p>
 				</div>
 
 				<button
 					type="button"
 					onClick={openCreateModal}
-					className="border border-[#2f4f2f] bg-[#102010] px-4 py-2 text-[11px] tracking-[0.14em] text-[#8fe38f] transition-colors hover:border-[#3b6a3b] hover:text-[#caffca]"
+					className="rounded-md bg-[var(--tint-success)] px-4 py-2 text-xs font-medium text-[var(--color-success)]"
 				>
-					ADD NEW WAREHOUSE
+					Add new warehouse
 				</button>
 			</div>
 
 			{error && (
-				<div className="mb-4 border border-[#5a1a1a] bg-[#1a0a0a] px-4 py-3 text-[12px] tracking-[0.06em] text-[#ff8a8a]">
+				<div className="mb-4 flex items-start gap-2 rounded-md bg-[var(--tint-error)] px-3 py-2 text-sm text-[var(--color-error)]">
+					<span aria-hidden="true">!</span>
 					{error}
 				</div>
 			)}
 
 			{isLoading ? (
-				<div className="py-10 text-center text-[12px] tracking-[0.12em] text-[#777]">LOADING WAREHOUSES...</div>
+				<div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading warehouses...</div>
 			) : (
 				<div className="overflow-x-auto">
-					<table className="min-w-full border-collapse">
+					<table className="min-w-full border-separate border-spacing-y-2">
 						<thead>
-							<tr className="border-b border-[#222] text-left text-[11px] tracking-[0.18em] text-[#7a7a7a]">
+							<tr className="text-left text-xs font-medium text-[var(--muted-foreground)]">
 								<th className="px-3 py-3">ID</th>
 								<th className="px-3 py-3">NAME</th>
 								<th className="px-3 py-3">DESCRIPTION</th>
@@ -222,36 +223,36 @@ export default function AdminWarehousesDashbord() {
 								const isDeleting = deletingWarehouseId === warehouse.id;
 
 								return (
-									<tr key={warehouse.id} className="border-b border-[#1c1c1c]">
-										<td className="px-3 py-3 text-[12px] text-[#ddd]">{warehouse.id}</td>
-										<td className="px-3 py-3 text-[12px] text-[#d7d7d7]">
+									<tr key={warehouse.id}>
+										<td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{warehouse.id}</td>
+										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">
 											<Link
 												href={`/admin/warehouses/${warehouse.id}`}
-												className="border-b border-transparent text-[#9ed2ff] transition-colors hover:border-[#9ed2ff] hover:text-[#d2ecff]"
+												className="border-b border-transparent text-[var(--color-info)] transition-colors hover:border-[var(--color-info)] hover:text-[var(--color-info)]"
 											>
 												{warehouse.name}
 											</Link>
 										</td>
-										<td className="max-w-[260px] px-3 py-3 text-[12px] text-[#d7d7d7]">{warehouse.description ?? '-'}</td>
-										<td className="px-3 py-3 text-[12px] text-[#d7d7d7]">{warehouse.surface}</td>
-										<td className="px-3 py-3 text-[12px] text-[#d7d7d7]">{warehouse.blocks.length}</td>
-										<td className="px-3 py-3">
+										<td className="max-w-[260px] bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{warehouse.description ?? '-'}</td>
+										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{warehouse.surface}</td>
+										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{warehouse.blocks.length}</td>
+										<td className="bg-[var(--card)] px-3 py-3">
 											<button
 												type="button"
 												onClick={() => openUpdateModal(warehouse)}
-												className="border border-[#24405a] bg-[#0f1720] px-3 py-1.5 text-[11px] tracking-[0.12em] text-[#8ecfff] transition-colors hover:border-[#345d82] hover:text-[#d2ecff]"
+												className="rounded-md bg-[var(--tint-info)] px-3 py-1.5 text-xs font-medium text-[var(--color-info)]"
 											>
-												UPDATE
+												Update
 											</button>
 										</td>
-										<td className="px-3 py-3">
+										<td className="rounded-r-lg bg-[var(--card)] px-3 py-3">
 											<button
 												type="button"
 												onClick={() => setConfirmDeleteWarehouseId(warehouse.id)}
 												disabled={isDeleting}
-												className="border border-[#5a1f1f] bg-[#2a0f0f] px-3 py-1.5 text-[11px] tracking-[0.12em] text-[#ff9f9f] transition-colors hover:border-[#7a2f2f] hover:text-[#ffd0d0] disabled:cursor-not-allowed disabled:opacity-40"
+												className="rounded-md bg-[var(--tint-error)] px-3 py-1.5 text-xs font-medium text-[var(--color-error)] disabled:cursor-not-allowed disabled:opacity-40"
 											>
-												{isDeleting ? 'DELETING...' : 'DELETE'}
+												{isDeleting ? 'Deleting...' : 'Delete'}
 											</button>
 										</td>
 									</tr>
@@ -260,8 +261,8 @@ export default function AdminWarehousesDashbord() {
 
 							{warehouses.length === 0 && (
 								<tr>
-									<td colSpan={7} className="px-3 py-8 text-center text-[12px] tracking-[0.12em] text-[#666]">
-										NO WAREHOUSES FOUND
+									<td colSpan={7} className="px-3 py-8 text-center text-sm text-[#6b705c]">
+										No warehouses found
 									</td>
 								</tr>
 							)}
@@ -271,28 +272,28 @@ export default function AdminWarehousesDashbord() {
 			)}
 
 			{isFormOpen && (
-				<div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
-					<div className="w-full max-w-2xl border border-[#2b2b2b] bg-[#0f0f0f] p-6 shadow-2xl">
-						<p className="mb-2 text-[11px] tracking-[0.22em] text-[#7a7a7a]">
+				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 px-4 backdrop-blur-sm">
+					<div className="w-full max-w-2xl rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
+						<p className="mb-2 text-[11px] tracking-[0.22em] text-[#6b705c]">
 							{editingWarehouse ? 'UPDATE WAREHOUSE' : 'ADD WAREHOUSE'}
 						</p>
-						<h3 className="mb-6 text-xl font-bold tracking-[0.04em] text-white">
+						<h3 className="mb-6 text-xl font-bold tracking-[0.04em] text-[#344e41]">
 							{editingWarehouse ? `Edit ${editingWarehouse.name}` : 'Create a new warehouse'}
 						</h3>
 
 						<form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#777]">NAME</label>
+								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">NAME</label>
 								<input
 									value={form.name}
 									onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
 									required
-									className="border border-[#2a2a2a] bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-[#f0c040]"
+									className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
 								/>
 							</div>
 
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#777]">SURFACE</label>
+								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">SURFACE</label>
 								<input
 									type="number"
 									min="0.01"
@@ -300,17 +301,17 @@ export default function AdminWarehousesDashbord() {
 									value={form.surface}
 									onChange={(event) => setForm((current) => ({ ...current, surface: event.target.value }))}
 									required
-									className="border border-[#2a2a2a] bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-[#f0c040]"
+									className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
 								/>
 							</div>
 
 							<div className="flex flex-col gap-2 md:col-span-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#777]">DESCRIPTION</label>
+								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">DESCRIPTION</label>
 								<textarea
 									value={form.description}
 									onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
 									rows={3}
-									className="border border-[#2a2a2a] bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-[#f0c040]"
+									className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
 								/>
 							</div>
 
@@ -318,14 +319,14 @@ export default function AdminWarehousesDashbord() {
 								<button
 									type="button"
 									onClick={closeFormModal}
-									className="border border-[#2b2b2b] px-4 py-2 text-[11px] tracking-[0.14em] text-[#b5b5b5] transition-colors hover:border-[#3a3a3a] hover:text-white"
+									className="border border-[#b7c2a0] px-4 py-2 text-[11px] tracking-[0.14em] text-[#5f6f59] transition-colors hover:border-[#8fa07a] hover:text-[#344e41]"
 								>
 									CANCEL
 								</button>
 								<button
 									type="submit"
 									disabled={savingWarehouse}
-									className="border border-[#2f4f2f] bg-[#102010] px-4 py-2 text-[11px] tracking-[0.14em] text-[#8fe38f] transition-colors hover:border-[#3b6a3b] hover:text-[#caffca] disabled:cursor-not-allowed disabled:opacity-40"
+									className="border border-[var(--color-success)] bg-[var(--tint-success)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--color-success)] transition-colors hover:border-[var(--color-success)] hover:text-[var(--color-success)] disabled:cursor-not-allowed disabled:opacity-40"
 								>
 									{savingWarehouse ? 'SAVING...' : editingWarehouse ? 'SAVE CHANGES' : 'CREATE WAREHOUSE'}
 								</button>
@@ -336,20 +337,20 @@ export default function AdminWarehousesDashbord() {
 			)}
 
 			{confirmDeleteWarehouse && (
-				<div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
-					<div className="w-full max-w-md border border-[#2b2b2b] bg-[#0f0f0f] p-6 shadow-2xl">
-						<p className="mb-2 text-[11px] tracking-[0.22em] text-[#7a7a7a]">DELETE WAREHOUSE</p>
-						<h3 className="mb-3 text-xl font-bold tracking-[0.04em] text-white">
+				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 px-4 backdrop-blur-sm">
+					<div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
+						<p className="mb-2 text-[11px] tracking-[0.22em] text-[#6b705c]">DELETE WAREHOUSE</p>
+						<h3 className="mb-3 text-xl font-bold tracking-[0.04em] text-[#344e41]">
 							Are you sure you want to delete this warehouse?
 						</h3>
-						<p className="mb-6 text-[13px] tracking-[0.04em] text-[#9a9a9a]">
+						<p className="mb-6 text-[13px] tracking-[0.04em] text-[#6b705c]">
 							{confirmDeleteWarehouse.name}
 						</p>
 						<div className="flex justify-end gap-3">
 							<button
 								type="button"
 								onClick={() => setConfirmDeleteWarehouseId(null)}
-								className="border border-[#2b2b2b] px-4 py-2 text-[11px] tracking-[0.14em] text-[#b5b5b5] transition-colors hover:border-[#3a3a3a] hover:text-white"
+								className="border border-[#b7c2a0] px-4 py-2 text-[11px] tracking-[0.14em] text-[#5f6f59] transition-colors hover:border-[#8fa07a] hover:text-[#344e41]"
 							>
 								CANCEL
 							</button>
@@ -357,7 +358,7 @@ export default function AdminWarehousesDashbord() {
 								type="button"
 								onClick={() => void handleDeleteWarehouse(confirmDeleteWarehouse.id)}
 								disabled={deletingWarehouseId === confirmDeleteWarehouse.id}
-								className="border border-[#5a1f1f] bg-[#2a0f0f] px-4 py-2 text-[11px] tracking-[0.14em] text-[#ff9f9f] transition-colors hover:border-[#7a2f2f] hover:text-[#ffd0d0] disabled:cursor-not-allowed disabled:opacity-40"
+								className="border border-[var(--color-error)] bg-[var(--tint-error)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--color-error)] transition-colors hover:border-[var(--color-error)] hover:text-[var(--color-error)] disabled:cursor-not-allowed disabled:opacity-40"
 							>
 								{deletingWarehouseId === confirmDeleteWarehouse.id ? 'DELETING...' : 'DELETE WAREHOUSE'}
 							</button>

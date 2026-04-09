@@ -16,6 +16,7 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   bloc        Bloc     @relation(fields: [blocId], references: [id], onDelete: Cascade)
+
   @@map("products")
 }
 
@@ -42,6 +43,7 @@ model Bloc {
 
   warehouse    Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
   products     Product[]
+  shipments    Shipment[]
 
   @@map("blocs")
 }
@@ -58,11 +60,85 @@ model User {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   roles            UserRole @default(PENDING)
+
+  orders           Order[]
+}
+
+model Order {
+  id               Int            @id @default(autoincrement())
+  customerId       Int?
+  productName      String
+  quantity         Int
+  deliveryDeadline DateTime
+  deliveryAddress  String
+  customerName     String
+  customerPhone    String
+  status           OrderStatus    @default(PENDING)
+  deliveryStatus   DeliveryStatus @default(PENDING)
+  managerNote      String?
+  rejectionReason  String?
+  approvedAt       DateTime?
+  deliveredAt      DateTime?
+  restockAt        DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  customer         User?          @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  shipments        Shipment[]
+
+  @@map("orders")
+}
+
+model Shipment {
+  id             Int            @id @default(autoincrement())
+  orderId        Int?
+  type           ShipmentType   @default(RESTOCK)
+  productName    String
+  quantity       Int
+  blocId         Int
+  supplierName   String?
+  trackingNumber String?
+  expectedAt     DateTime?
+  receivedAt     DateTime?
+  status         ShipmentStatus @default(REQUESTED)
+  note           String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  order          Order?         @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  bloc           Bloc           @relation(fields: [blocId], references: [id], onDelete: Restrict)
+
+  @@map("shipments")
 }
 
 enum UserRole {
   ADMIN
   MANAGER
   TECHNICIEN
+  CUSTOMER
   PENDING
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RESTOCK_REQUESTED
+  COMPLETED
+}
+
+enum DeliveryStatus {
+  PENDING
+  IN_DELIVERY
+  DELIVERED
+}
+
+enum ShipmentType {
+  RESTOCK
+}
+
+enum ShipmentStatus {
+  REQUESTED
+  IN_TRANSIT
+  RECEIVED
 }

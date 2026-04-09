@@ -13,9 +13,9 @@ import {
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { WarehouseService } from './warehouse.service';
-import { JwtAuthGuard } from '../auth/guards/Jwt.auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/guards/roles.decorator';
+import { JwtAuthGuard } from '../auth_old/guards/Jwt.auth.guard';
+import { RolesGuard } from '../auth_old/guards/roles.guard';
+import { Roles } from '../auth_old/guards/roles.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN, UserRole.MANAGER) // TECHNICIEN cannot manage warehouses

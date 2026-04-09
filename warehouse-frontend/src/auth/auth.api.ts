@@ -19,7 +19,7 @@ export class RegisterRequestError extends Error {
 }
 
 function isUserRole(value: string): value is UserRole {
-  return value === 'ADMIN' || value === 'MANAGER' || value === 'TECHNICIEN' || value === 'PENDING';
+  return value === 'ADMIN' || value === 'MANAGER' || value === 'TECHNICIEN' || value === 'CUSTOMER' || value === 'PENDING';
 }
 
 function normalizeLoginResponse(data: unknown): LoginResponse {

@@ -30,6 +30,7 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/^\d{8}$/, { message: 'Phone must contain exactly 8 digits' })
   phone: string;
 
   // Numeric string, exactly 8 characters

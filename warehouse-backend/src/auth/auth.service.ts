@@ -1,43 +1,53 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
+import { CustomerRegisterDto } from './dto/customer-register.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly userService: UserService,
-    private readonly jwtService: JwtService,
-  ) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly jwtService: JwtService,
+	) {}
 
-  async validateUser(email: string, password: string) {
-    const user = await this.userService.findByEmail(email);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+	async registerCustomer(dto: CustomerRegisterDto) {
+		return this.userService.create({
+			...dto,
+			roles: UserRole.CUSTOMER,
+		});
+	}
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+	async validateUser(email: string, password: string) {
+		const user = await this.userService.findByEmail(email);
+		if (!user) {
+			throw new UnauthorizedException('Invalid credentials');
+		}
 
-    const { password: _pwd, ...result } = user;
-    return result;
-  }
+		const match = await bcrypt.compare(password, user.password);
+		if (!match) {
+			throw new UnauthorizedException('Invalid credentials');
+		}
 
-  async login(email: string, password: string): Promise<{ access_token: string; role: string }> {
-    const user = await this.validateUser(email, password);
+		const { password: _pwd, ...result } = user;
+		return result;
+	}
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      name: user.name,   // included so /me doesn't need a DB call
-      roles: user.roles,
-    };
+	async login(email: string, password: string): Promise<{ access_token: string; role: string }> {
+		const user = await this.validateUser(email, password);
 
-    return {
-      access_token: this.jwtService.sign(payload),
-      role: user.roles, 
-    };
-  }
+		const payload = {
+			sub: user.id,
+			email: user.email,
+			name: user.name,
+			phone: user.phone,
+			roles: user.roles,
+		};
+
+		return {
+			access_token: this.jwtService.sign(payload),
+			role: user.roles,
+		};
+	}
 }

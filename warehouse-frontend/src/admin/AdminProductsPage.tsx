@@ -6,8 +6,8 @@ import AdminProductsDashbord from './ProductsDashbord/AdminProductsDashbord';
 export default function AdminProductsPage() {
   return (
     <AdminSectionLayout
-      title="PRODUCTS"
-      description="Products administration section"
+      title="Products"
+      description="Create, update, and monitor catalog inventory."
     >
       <AdminProductsDashbord />
     </AdminSectionLayout>

@@ -6,8 +6,8 @@ import AdminWarehousesDashbord from './WarehousesDashbord/AdminWarehousesDashbor
 export default function AdminWarehousesPage() {
   return (
     <AdminSectionLayout
-      title="WAREHOUSES"
-      description="Warehouse administration section"
+      title="Warehouses"
+      description="Manage warehouse records, blocs, and capacities."
     >
       <AdminWarehousesDashbord />
     </AdminSectionLayout>

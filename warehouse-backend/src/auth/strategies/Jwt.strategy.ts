@@ -6,6 +6,7 @@ export interface JwtPayload {
   sub: number;
   email: string;
   name: string | null;
+  phone: string | null;
   roles: string;
 }
 
@@ -13,6 +14,7 @@ export interface RequestUser {
   id: number;
   email: string;
   name: string | null;
+  phone: string | null;
   roles: string;
 }
 
@@ -39,6 +41,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       id: payload.sub,
       email: payload.email,
       name: payload.name,
+      phone: payload.phone,
       roles: payload.roles,
     };
   }

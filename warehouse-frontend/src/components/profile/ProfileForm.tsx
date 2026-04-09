@@ -76,41 +76,41 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       {/* Success Message */}
       {success && (
-        <div className="border border-[#2f5f2f] bg-[#0f1f0f] px-4 py-3 text-xs tracking-[0.05em] text-[#7be37b]">
+        <div className="border border-[var(--color-success)] bg-[#edf3ea] px-4 py-3 text-xs tracking-[0.05em] text-[var(--color-success)]">
           ✓ PROFILE UPDATED SUCCESSFULLY
         </div>
       )}
 
       {/* Error Message */}
       {error && (
-        <div className="border border-[#5a1a1a] bg-[#1a0a0a] px-4 py-3 text-xs tracking-[0.05em] text-[#ff6b6b]">
+        <div className="border border-[var(--color-error)] bg-[#f8efe9] px-4 py-3 text-xs tracking-[0.05em] text-[var(--color-error)]">
           ⚠ {error.toUpperCase()}
         </div>
       )}
 
       {/* Profile Picture */}
       <div className="flex flex-col gap-3">
-        <label className="text-[11px] tracking-[0.2em] text-[#555]">PROFILE PICTURE</label>
+        <label className="text-[11px] tracking-[0.2em] text-[#6b705c]">PROFILE PICTURE</label>
         <div className="flex items-center gap-4">
           {previewImage && (
             <img
               src={previewImage}
               alt="Profile preview"
-              className="h-20 w-20 border border-[#2a2a2a] object-cover"
+              className="h-20 w-20 border border-[#b7c2a0] object-cover"
             />
           )}
           <input
             type="file"
             accept="image/*"
             onChange={handleImageChange}
-            className="text-xs text-[#555] file:border file:border-[#2a2a2a] file:bg-[#111] file:px-3 file:py-1.5 file:text-[11px] file:tracking-[0.1em] file:text-white"
+            className="text-xs text-[#6b705c] file:border file:border-[#b7c2a0] file:bg-[#f5f1e8] file:px-3 file:py-1.5 file:text-[11px] file:tracking-[0.1em] file:text-[#344e41]"
           />
         </div>
       </div>
 
       {/* Name */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="name" className="text-[11px] tracking-[0.2em] text-[#555]">
+        <label htmlFor="name" className="text-[11px] tracking-[0.2em] text-[#6b705c]">
           FULL NAME
         </label>
         <input
@@ -120,13 +120,13 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           value={formData.name || ''}
           onChange={handleChange}
           placeholder="John Doe"
-          className="border border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#f0c040]"
+          className="border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-admin)]"
         />
       </div>
 
       {/* Email */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="email" className="text-[11px] tracking-[0.2em] text-[#555]">
+        <label htmlFor="email" className="text-[11px] tracking-[0.2em] text-[#6b705c]">
           EMAIL ADDRESS
         </label>
         <input
@@ -136,13 +136,13 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           value={formData.email || ''}
           onChange={handleChange}
           placeholder="user@warehouse.com"
-          className="border border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#f0c040]"
+          className="border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-admin)]"
         />
       </div>
 
       {/* Phone */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="phone" className="text-[11px] tracking-[0.2em] text-[#555]">
+        <label htmlFor="phone" className="text-[11px] tracking-[0.2em] text-[#6b705c]">
           PHONE NUMBER
         </label>
         <input
@@ -152,13 +152,13 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           value={formData.phone || ''}
           onChange={handleChange}
           placeholder="+1 (555) 000-0000"
-          className="border border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#f0c040]"
+          className="border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-admin)]"
         />
       </div>
 
       {/* Address */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="address" className="text-[11px] tracking-[0.2em] text-[#555]">
+        <label htmlFor="address" className="text-[11px] tracking-[0.2em] text-[#6b705c]">
           ADDRESS
         </label>
         <textarea
@@ -168,7 +168,7 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           onChange={handleChange}
           placeholder="123 Warehouse St, City, Country"
           rows={3}
-          className="border border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#f0c040]"
+          className="border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-admin)]"
         />
       </div>
 
@@ -176,7 +176,7 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
       <button
         type="submit"
         disabled={loading}
-        className="mt-4 border-0 px-3.5 py-3 text-xs font-bold tracking-[0.25em] transition-colors disabled:cursor-not-allowed disabled:bg-[#2a2a2a] disabled:text-[#555] bg-[#f0c040] text-[#0a0a0a] hover:bg-[#e6b93a]"
+        className="mt-4 border-0 px-3.5 py-3 text-xs font-bold tracking-[0.25em] transition-colors disabled:cursor-not-allowed disabled:bg-[#cfd7bf] disabled:text-[#6b705c] bg-[var(--role-admin)] text-black hover:opacity-90"
       >
         {loading ? 'UPDATING...' : 'UPDATE PROFILE →'}
       </button>

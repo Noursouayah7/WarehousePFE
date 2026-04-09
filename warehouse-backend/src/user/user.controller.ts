@@ -2,8 +2,8 @@ import { Controller, Post, Get, Patch, Body, HttpCode, HttpStatus, UseGuards, Re
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from '../auth/guards/Jwt.auth.guard';
-import { RequestUser } from '../auth/strategies/Jwt.strategy';
+import { JwtAuthGuard } from '../auth_old/guards/Jwt.auth.guard';
+import { RequestUser } from '../auth_old/strategies/Jwt.strategy';
 
 @Controller('user')
 export class UserController {

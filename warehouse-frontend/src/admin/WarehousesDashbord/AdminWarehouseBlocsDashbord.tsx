@@ -217,46 +217,47 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
   }
 
   return (
-    <section className="mt-14 rounded border border-[#1a1a1a] bg-[#101010] p-6">
+    <section className="mt-8 rounded-2xl bg-transparent">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="mb-2 text-[11px] tracking-[0.2em] text-[#666]">WAREHOUSE DETAILS</p>
-          <h2 className="text-xl font-bold tracking-[0.08em]">
+          <p className="mb-2 text-xs font-medium text-[#6b705c]">Warehouse details</p>
+          <h2 className="text-lg font-semibold tracking-tight">
             {warehouse ? warehouse.name : `WAREHOUSE #${warehouseId}`}
           </h2>
-          <p className="mt-1 text-[12px] tracking-[0.1em] text-[#666]">{blocCount} blocs</p>
+          <p className="mt-1 text-sm text-[var(--muted-foreground)]">{blocCount} blocs</p>
         </div>
 
         <div className="flex gap-3">
           <Link
             href="/admin/warehouses"
-            className="border border-[#2b2b2b] px-4 py-2 text-[11px] tracking-[0.14em] text-[#b5b5b5] transition-colors hover:border-[#3a3a3a] hover:text-white"
+            className="rounded-md border border-[var(--input)] bg-white px-4 py-2 text-xs font-medium text-[#5f6f59] transition-colors hover:border-[var(--border)] hover:text-[#344e41]"
           >
-            BACK
+            Back
           </Link>
           <button
             type="button"
             onClick={openCreateModal}
-            className="border border-[#2f4f2f] bg-[#102010] px-4 py-2 text-[11px] tracking-[0.14em] text-[#8fe38f] transition-colors hover:border-[#3b6a3b] hover:text-[#caffca]"
+            className="rounded-md bg-[var(--tint-success)] px-4 py-2 text-xs font-medium text-[var(--color-success)]"
           >
-            ADD NEW BLOC
+            Add new bloc
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="mb-4 border border-[#5a1a1a] bg-[#1a0a0a] px-4 py-3 text-[12px] tracking-[0.06em] text-[#ff8a8a]">
+        <div className="mb-4 flex items-start gap-2 rounded-md bg-[var(--tint-error)] px-3 py-2 text-sm text-[var(--color-error)]">
+          <span aria-hidden="true">!</span>
           {error}
         </div>
       )}
 
       {isLoading ? (
-        <div className="py-10 text-center text-[12px] tracking-[0.12em] text-[#777]">LOADING BLOCS...</div>
+        <div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading blocs...</div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse">
+          <table className="min-w-full border-separate border-spacing-y-2">
             <thead>
-              <tr className="border-b border-[#222] text-left text-[11px] tracking-[0.18em] text-[#7a7a7a]">
+              <tr className="text-left text-xs font-medium text-[var(--muted-foreground)]">
                 <th className="px-3 py-3">ID</th>
                 <th className="px-3 py-3">NAME</th>
                 <th className="px-3 py-3">CAPACITY</th>
@@ -273,39 +274,39 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
                 const isDeleting = deletingBlocId === bloc.id;
 
                 return (
-                  <tr key={bloc.id} className="border-b border-[#1c1c1c]">
-                    <td className="px-3 py-3 text-[12px] text-[#ddd]">{bloc.id}</td>
-                    <td className="px-3 py-3 text-[12px] text-[#d7d7d7]">{bloc.name}</td>
-                    <td className="px-3 py-3 text-[12px] text-[#d7d7d7]">{bloc.capacity}</td>
-                    <td className="px-3 py-3 text-[12px] text-[#d7d7d7]">{bloc.currentUsage}</td>
-                    <td className="px-3 py-3 text-[12px] text-[#d7d7d7]">{bloc.warehouseId}</td>
-                    <td className="px-3 py-3 text-[12px] text-[#d7d7d7]">{formatDate(bloc.updatedAt)}</td>
-                    <td className="px-3 py-3">
+                  <tr key={bloc.id}>
+                    <td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{bloc.id}</td>
+                    <td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{bloc.name}</td>
+                    <td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{bloc.capacity}</td>
+                    <td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{bloc.currentUsage}</td>
+                    <td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{bloc.warehouseId}</td>
+                    <td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{formatDate(bloc.updatedAt)}</td>
+                    <td className="bg-[var(--card)] px-3 py-3">
                       <button
                         type="button"
                         onClick={() => void handleViewProducts(bloc)}
-                        className="border border-[#4b3f21] bg-[#21190f] px-3 py-1.5 text-[11px] tracking-[0.12em] text-[#f0c978] transition-colors hover:border-[#6a5933] hover:text-[#ffe2a9]"
+                        className="rounded-md bg-[var(--tint-warning)] px-3 py-1.5 text-xs font-medium text-[var(--color-warning)]"
                       >
-                        VIEW PRODUCTS
+                        View products
                       </button>
                     </td>
-                    <td className="px-3 py-3">
+                    <td className="bg-[var(--card)] px-3 py-3">
                       <button
                         type="button"
                         onClick={() => openUpdateModal(bloc)}
-                        className="border border-[#24405a] bg-[#0f1720] px-3 py-1.5 text-[11px] tracking-[0.12em] text-[#8ecfff] transition-colors hover:border-[#345d82] hover:text-[#d2ecff]"
+                        className="rounded-md bg-[var(--tint-info)] px-3 py-1.5 text-xs font-medium text-[var(--color-info)]"
                       >
-                        UPDATE
+                        Update
                       </button>
                     </td>
-                    <td className="px-3 py-3">
+                    <td className="rounded-r-lg bg-[var(--card)] px-3 py-3">
                       <button
                         type="button"
                         onClick={() => setConfirmDeleteBlocId(bloc.id)}
                         disabled={isDeleting}
-                        className="border border-[#5a1f1f] bg-[#2a0f0f] px-3 py-1.5 text-[11px] tracking-[0.12em] text-[#ff9f9f] transition-colors hover:border-[#7a2f2f] hover:text-[#ffd0d0] disabled:cursor-not-allowed disabled:opacity-40"
+                        className="rounded-md bg-[var(--tint-error)] px-3 py-1.5 text-xs font-medium text-[var(--color-error)] disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        {isDeleting ? 'DELETING...' : 'DELETE'}
+                        {isDeleting ? 'Deleting...' : 'Delete'}
                       </button>
                     </td>
                   </tr>
@@ -314,8 +315,8 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
 
               {blocs.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-3 py-8 text-center text-[12px] tracking-[0.12em] text-[#666]">
-                    NO BLOCS FOUND IN THIS WAREHOUSE
+                  <td colSpan={9} className="px-3 py-8 text-center text-sm text-[#6b705c]">
+                    No blocs found in this warehouse
                   </td>
                 </tr>
               )}
@@ -325,26 +326,26 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
       )}
 
       {isFormOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-xl border border-[#2b2b2b] bg-[#0f0f0f] p-6 shadow-2xl">
-            <p className="mb-2 text-[11px] tracking-[0.22em] text-[#7a7a7a]">{editingBloc ? 'UPDATE BLOC' : 'ADD BLOC'}</p>
-            <h3 className="mb-6 text-xl font-bold tracking-[0.04em] text-white">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
+            <p className="mb-2 text-[11px] tracking-[0.22em] text-[#6b705c]">{editingBloc ? 'UPDATE BLOC' : 'ADD BLOC'}</p>
+            <h3 className="mb-6 text-xl font-bold tracking-[0.04em] text-[#344e41]">
               {editingBloc ? `Edit ${editingBloc.name}` : 'Create a new bloc'}
             </h3>
 
             <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <label className="text-[11px] tracking-[0.16em] text-[#777]">NAME</label>
+                <label className="text-[11px] tracking-[0.16em] text-[#6b705c]">NAME</label>
                 <input
                   value={form.name}
                   onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
                   required
-                  className="border border-[#2a2a2a] bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-[#f0c040]"
+                  className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-[11px] tracking-[0.16em] text-[#777]">CAPACITY</label>
+                <label className="text-[11px] tracking-[0.16em] text-[#6b705c]">CAPACITY</label>
                 <input
                   type="number"
                   min="0.01"
@@ -352,7 +353,7 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
                   value={form.capacity}
                   onChange={(event) => setForm((current) => ({ ...current, capacity: event.target.value }))}
                   required
-                  className="border border-[#2a2a2a] bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-[#f0c040]"
+                  className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
                 />
               </div>
 
@@ -360,14 +361,14 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
                 <button
                   type="button"
                   onClick={closeFormModal}
-                  className="border border-[#2b2b2b] px-4 py-2 text-[11px] tracking-[0.14em] text-[#b5b5b5] transition-colors hover:border-[#3a3a3a] hover:text-white"
+                  className="border border-[#b7c2a0] px-4 py-2 text-[11px] tracking-[0.14em] text-[#5f6f59] transition-colors hover:border-[#8fa07a] hover:text-[#344e41]"
                 >
                   CANCEL
                 </button>
                 <button
                   type="submit"
                   disabled={savingBloc}
-                  className="border border-[#2f4f2f] bg-[#102010] px-4 py-2 text-[11px] tracking-[0.14em] text-[#8fe38f] transition-colors hover:border-[#3b6a3b] hover:text-[#caffca] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="border border-[var(--color-success)] bg-[var(--tint-success)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--color-success)] transition-colors hover:border-[var(--color-success)] hover:text-[var(--color-success)] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {savingBloc ? 'SAVING...' : editingBloc ? 'SAVE CHANGES' : 'CREATE BLOC'}
                 </button>
@@ -378,16 +379,16 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
       )}
 
       {confirmDeleteBloc && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md border border-[#2b2b2b] bg-[#0f0f0f] p-6 shadow-2xl">
-            <p className="mb-2 text-[11px] tracking-[0.22em] text-[#7a7a7a]">DELETE BLOC</p>
-            <h3 className="mb-3 text-xl font-bold tracking-[0.04em] text-white">Are you sure you want to delete this bloc?</h3>
-            <p className="mb-6 text-[13px] tracking-[0.04em] text-[#9a9a9a]">{confirmDeleteBloc.name}</p>
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
+            <p className="mb-2 text-[11px] tracking-[0.22em] text-[#6b705c]">DELETE BLOC</p>
+            <h3 className="mb-3 text-xl font-bold tracking-[0.04em] text-[#344e41]">Are you sure you want to delete this bloc?</h3>
+            <p className="mb-6 text-[13px] tracking-[0.04em] text-[#6b705c]">{confirmDeleteBloc.name}</p>
             <div className="flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setConfirmDeleteBlocId(null)}
-                className="border border-[#2b2b2b] px-4 py-2 text-[11px] tracking-[0.14em] text-[#b5b5b5] transition-colors hover:border-[#3a3a3a] hover:text-white"
+                className="border border-[#b7c2a0] px-4 py-2 text-[11px] tracking-[0.14em] text-[#5f6f59] transition-colors hover:border-[#8fa07a] hover:text-[#344e41]"
               >
                 CANCEL
               </button>
@@ -395,7 +396,7 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
                 type="button"
                 onClick={() => void handleDeleteBloc(confirmDeleteBloc.id)}
                 disabled={deletingBlocId === confirmDeleteBloc.id}
-                className="border border-[#5a1f1f] bg-[#2a0f0f] px-4 py-2 text-[11px] tracking-[0.14em] text-[#ff9f9f] transition-colors hover:border-[#7a2f2f] hover:text-[#ffd0d0] disabled:cursor-not-allowed disabled:opacity-40"
+                className="border border-[var(--color-error)] bg-[var(--tint-error)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--color-error)] transition-colors hover:border-[var(--color-error)] hover:text-[var(--color-error)] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {deletingBlocId === confirmDeleteBloc.id ? 'DELETING...' : 'DELETE BLOC'}
               </button>
@@ -405,35 +406,35 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
       )}
 
       {productsModalBloc && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-5xl border border-[#2b2b2b] bg-[#0f0f0f] p-6 shadow-2xl">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-5xl rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <p className="mb-1 text-[11px] tracking-[0.22em] text-[#7a7a7a]">BLOC PRODUCTS</p>
-                <h3 className="text-xl font-bold tracking-[0.04em] text-white">{productsModalBloc.name}</h3>
+                <p className="mb-1 text-xs font-medium text-[#6b705c]">Bloc products</p>
+                <h3 className="text-xl font-semibold tracking-tight text-[#344e41]">{productsModalBloc.name}</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setProductsModalBloc(null)}
-                className="border border-[#2b2b2b] px-4 py-2 text-[11px] tracking-[0.14em] text-[#b5b5b5] transition-colors hover:border-[#3a3a3a] hover:text-white"
+                className="rounded-md border border-[var(--input)] bg-white px-4 py-2 text-xs font-medium text-[#5f6f59] transition-colors hover:border-[var(--border)] hover:text-[#344e41]"
               >
-                CLOSE
+                Close
               </button>
             </div>
 
             {blocProductsError && (
-              <div className="mb-4 border border-[#5a1a1a] bg-[#1a0a0a] px-4 py-3 text-[12px] tracking-[0.06em] text-[#ff8a8a]">
+              <div className="mb-4 rounded-md bg-[var(--tint-error)] px-4 py-3 text-sm text-[var(--color-error)]">
                 {blocProductsError}
               </div>
             )}
 
             {blocProductsLoading ? (
-              <div className="py-8 text-center text-[12px] tracking-[0.12em] text-[#777]">LOADING PRODUCTS...</div>
+              <div className="py-8 text-center text-sm text-[#6b705c]">Loading products...</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse">
+                <table className="min-w-full border-separate border-spacing-y-2">
                   <thead>
-                    <tr className="border-b border-[#222] text-left text-[11px] tracking-[0.18em] text-[#7a7a7a]">
+                    <tr className="text-left text-xs font-medium text-[#6b705c]">
                       <th className="px-3 py-3">ID</th>
                       <th className="px-3 py-3">NAME</th>
                       <th className="px-3 py-3">DESCRIPTION</th>
@@ -443,19 +444,19 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
                   </thead>
                   <tbody>
                     {blocProducts.map((product) => (
-                      <tr key={product.id} className="border-b border-[#1c1c1c]">
-                        <td className="px-3 py-3 text-[12px] text-[#ddd]">{product.id}</td>
-                        <td className="px-3 py-3 text-[12px] text-[#d7d7d7]">{product.name}</td>
-                        <td className="max-w-[260px] px-3 py-3 text-[12px] text-[#d7d7d7]">{product.description ?? '-'}</td>
-                        <td className="px-3 py-3 text-[12px] text-[#d7d7d7]">{product.price}</td>
-                        <td className="px-3 py-3 text-[12px] text-[#d7d7d7]">{product.quantity}</td>
+                      <tr key={product.id}>
+                        <td className="rounded-l-lg bg-[#f7f7f5] px-3 py-3 text-[12px] text-[#496553]">{product.id}</td>
+                        <td className="bg-[#f7f7f5] px-3 py-3 text-[12px] text-[#496553]">{product.name}</td>
+                        <td className="max-w-[260px] bg-[#f7f7f5] px-3 py-3 text-[12px] text-[#496553]">{product.description ?? '-'}</td>
+                        <td className="bg-[#f7f7f5] px-3 py-3 text-[12px] text-[#496553]">{product.price}</td>
+                        <td className="rounded-r-lg bg-[#f7f7f5] px-3 py-3 text-[12px] text-[#496553]">{product.quantity}</td>
                       </tr>
                     ))}
 
                     {blocProducts.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-3 py-8 text-center text-[12px] tracking-[0.12em] text-[#666]">
-                          NO PRODUCTS FOUND IN THIS BLOC
+                        <td colSpan={5} className="px-3 py-8 text-center text-sm text-[#6b705c]">
+                          No products found in this bloc
                         </td>
                       </tr>
                     )}

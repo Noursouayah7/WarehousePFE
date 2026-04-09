@@ -6,8 +6,8 @@ import AdminUsersDashbord from './UsersDashbord/AdminUsersDashbord';
 export default function AdminUsersPage() {
   return (
     <AdminSectionLayout
-      title="ADMIN PANEL"
-      description="Manage users, assign roles, and review details"
+      title="Users"
+      description="Manage users, assign roles, and review account details."
     >
       <AdminUsersDashbord />
     </AdminSectionLayout>

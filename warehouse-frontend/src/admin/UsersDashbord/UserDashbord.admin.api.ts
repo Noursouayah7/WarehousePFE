@@ -32,7 +32,13 @@ function parseErrorMessage(data: unknown, fallback: string): string {
 }
 
 function isUserRole(value: unknown): value is UserRole {
-	return value === 'ADMIN' || value === 'MANAGER' || value === 'TECHNICIEN' || value === 'PENDING';
+	return (
+		value === 'ADMIN' ||
+		value === 'MANAGER' ||
+		value === 'TECHNICIEN' ||
+		value === 'CUSTOMER' ||
+		value === 'PENDING'
+	);
 }
 
 function normalizeUser(data: unknown): AdminDashboardUser {

@@ -12,53 +12,61 @@ export function RegisterForm() {
   const [password, setPassword] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [cin, setCin] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (!/^\d{8}$/.test(phone)) {
+      setPhoneError('Phone must contain exactly 8 digits.');
+      return;
+    }
+
+    setPhoneError(null);
 
     await register({
       name: name || undefined,
       email,
       password,
       address,
-      phone,
+      phone: phone.trim(),
       cin,
     });
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-[#0a0a0a]">
-      <div className="fixed inset-0 z-0 bg-[length:40px_40px] bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]" />
+    <div className="relative flex min-h-screen items-center justify-center bg-[#f5f1e8]">
+      <div className="fixed inset-0 z-0 bg-[length:40px_40px] bg-[linear-gradient(rgba(58,90,64,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(58,90,64,0.08)_1px,transparent_1px)]" />
 
       <div className="relative z-10 w-full max-w-[560px] px-6 py-10">
         <div className="mb-10 text-center">
           <div className="mb-2 inline-flex items-center gap-3">
             <div
-              className="h-9 w-9 bg-[#4aa0f0]"
+              className="h-9 w-9 bg-[var(--role-customer)]"
               style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
             />
-            <span className="text-xl font-bold tracking-[0.15em] text-white">CEREBRO WMS</span>
+            <span className="text-xl font-semibold tracking-[0.04em] text-[#344e41]">Cerebro WMS</span>
           </div>
-          <p className="mt-1 text-xs tracking-[0.2em] text-[#555]">CREATE YOUR ACCOUNT</p>
+          <p className="mt-1 text-sm text-[#6b705c]">Create your account</p>
         </div>
 
-        <div className="border border-[#222] bg-[#111] p-8">
-          <h1 className="mb-8 text-sm uppercase tracking-[0.25em] text-white">REGISTER</h1>
+        <div className="rounded-2xl border border-[#b7c2a0] bg-[#f5f1e8] p-8 shadow-xl">
+          <h1 className="mb-8 text-lg font-semibold tracking-tight text-[#344e41]">Register</h1>
 
           <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
             <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-[11px] tracking-[0.2em] text-[#555]">FULL NAME (OPTIONAL)</label>
+              <label className="text-xs font-medium text-[#6b705c]">Full name (optional)</label>
               <input
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="John Doe"
-                className="border border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#4aa0f0]"
+                className="rounded-lg border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-customer)]"
               />
             </div>
 
             <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-[11px] tracking-[0.2em] text-[#555]">EMAIL</label>
+              <label className="text-xs font-medium text-[#6b705c]">Email</label>
               <input
                 type="email"
                 value={email}
@@ -68,15 +76,15 @@ export function RegisterForm() {
                 }}
                 required
                 placeholder="user@warehouse.com"
-                className={`border bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#4aa0f0] ${fieldErrors.email ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'}`}
+                className={`rounded-lg border bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-customer)] ${fieldErrors.email ? 'border-[var(--color-error)]' : 'border-[#b7c2a0]'}`}
               />
               {fieldErrors.email && (
-                <p className="text-[11px] tracking-[0.05em] text-[#ff6b6b]">{fieldErrors.email}</p>
+                <p className="text-[11px] text-[var(--color-error)]">{fieldErrors.email}</p>
               )}
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[11px] tracking-[0.2em] text-[#555]">PASSWORD</label>
+              <label className="text-xs font-medium text-[#6b705c]">Password</label>
               <input
                 type="password"
                 value={password}
@@ -84,34 +92,42 @@ export function RegisterForm() {
                 required
                 minLength={8}
                 placeholder="Minimum 8 characters"
-                className="border border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#4aa0f0]"
+                className="rounded-lg border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-customer)]"
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[11px] tracking-[0.2em] text-[#555]">PHONE</label>
+              <label className="text-xs font-medium text-[#6b705c]">Phone</label>
               <input
                 value={phone}
-                onChange={e => setPhone(e.target.value)}
+                onChange={e => {
+                  setPhoneError(null);
+                  setPhone(e.target.value.replace(/\D/g, '').slice(0, 8));
+                }}
                 required
-                placeholder="06xxxxxxxx"
-                className="border border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#4aa0f0]"
+                type="tel"
+                inputMode="numeric"
+                maxLength={8}
+                pattern="[0-9]{8}"
+                placeholder="12345678"
+                className="rounded-lg border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-customer)]"
               />
+              {phoneError && <p className="text-[11px] text-[var(--color-error)]">{phoneError}</p>}
             </div>
 
             <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-[11px] tracking-[0.2em] text-[#555]">ADDRESS</label>
+              <label className="text-xs font-medium text-[#6b705c]">Address</label>
               <input
                 value={address}
                 onChange={e => setAddress(e.target.value)}
                 required
                 placeholder="City, street, number"
-                className="border border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#4aa0f0]"
+                className="rounded-lg border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-customer)]"
               />
             </div>
 
             <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-[11px] tracking-[0.2em] text-[#555]">CIN (8 DIGITS)</label>
+              <label className="text-xs font-medium text-[#6b705c]">CIN (8 digits)</label>
               <input
                 value={cin}
                 onChange={e => {
@@ -123,31 +139,31 @@ export function RegisterForm() {
                 maxLength={8}
                 pattern="[0-9]{8}"
                 placeholder="12345678"
-                className={`border bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#666] focus:border-[#4aa0f0] ${fieldErrors.cin ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'}`}
+                className={`rounded-lg border bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-customer)] ${fieldErrors.cin ? 'border-[var(--color-error)]' : 'border-[#b7c2a0]'}`}
               />
               {fieldErrors.cin && (
-                <p className="text-[11px] tracking-[0.05em] text-[#ff6b6b]">{fieldErrors.cin}</p>
+                <p className="text-[11px] text-[var(--color-error)]">{fieldErrors.cin}</p>
               )}
             </div>
 
             {error && (
-              <div className="md:col-span-2 border border-[#5a1a1a] bg-[#1a0a0a] px-4 py-3 text-xs tracking-[0.05em] text-[#ff6b6b]">
-                {error.toUpperCase()}
+              <div className="md:col-span-2 rounded-lg border border-[var(--color-error)] bg-[#f8efe9] px-4 py-3 text-sm text-[var(--color-error)]">
+                {error}
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="md:col-span-2 mt-2 border-0 bg-[#4aa0f0] px-4 py-3 text-xs font-bold tracking-[0.25em] text-[#0a0a0a] transition-colors hover:bg-[#3f92de] disabled:cursor-not-allowed disabled:bg-[#2a2a2a] disabled:text-[#555]"
+              className="md:col-span-2 mt-2 rounded-xl border-0 bg-[var(--role-customer)] px-4 py-3 text-sm font-semibold text-black transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#cfd7bf] disabled:text-[#6b705c]"
             >
-              {loading ? 'CREATING ACCOUNT...' : 'REGISTER'}
+              {loading ? 'Creating account...' : 'Register'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-xs tracking-[0.1em] text-[#777]">
+          <p className="mt-6 text-center text-xs text-[#6b705c]">
             Already have an account?{' '}
-            <Link href="/login" className="text-[#4aa0f0] underline underline-offset-4">
+            <Link href="/login" className="text-[var(--role-customer)] underline underline-offset-4">
               Login
             </Link>
           </p>

@@ -18,6 +18,7 @@ function resolveRoleRoute(role: UserRole | null): string {
 	if (role === 'ADMIN') return '/admin';
 	if (role === 'MANAGER') return '/manager';
 	if (role === 'TECHNICIEN') return '/technicien';
+	if (role === 'CUSTOMER') return '/customer';
 	return '/pending';
 }
 

@@ -1,1 +1,153 @@
 @import "tailwindcss";
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #f7f6f3;
+  --foreground: #37352f;
+  --card: #ffffff;
+  --card-foreground: #37352f;
+  --popover: #ffffff;
+  --popover-foreground: #37352f;
+  --primary: #2f76f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f1ef;
+  --secondary-foreground: #4f4c45;
+  --muted: #f7f6f3;
+  --muted-foreground: #787774;
+  --accent: #2f76f6;
+  --accent-foreground: #ffffff;
+  --destructive: #d64545;
+  --destructive-foreground: #ffffff;
+  --border: #e9e9e7;
+  --input: #ddddda;
+  --ring: #2f76f6;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #37352f;
+  --sidebar-primary: #2f76f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f1ef;
+  --sidebar-accent-foreground: #4f4c45;
+  --sidebar-border: #e9e9e7;
+  --sidebar-ring: #2f76f6;
+  --role-admin: #bc6c25;
+  --role-manager: #3a5a40;
+  --role-customer: #588157;
+  --role-technicien: #588157;
+  --color-success: #2f8f5b;
+  --color-error: #d64545;
+  --color-warning: #b26b00;
+  --color-info: #2f76f6;
+  --tint-success: #edf7f1;
+  --tint-error: #fdeeee;
+  --tint-warning: #fef5e8;
+  --tint-info: #edf3ff;
+}
+
+.dark {
+  --background: #f7f6f3;
+  --foreground: #37352f;
+  --card: #ffffff;
+  --card-foreground: #37352f;
+  --popover: #ffffff;
+  --popover-foreground: #37352f;
+  --primary: #2f76f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f1ef;
+  --secondary-foreground: #4f4c45;
+  --muted: #f7f6f3;
+  --muted-foreground: #787774;
+  --accent: #2f76f6;
+  --accent-foreground: #ffffff;
+  --destructive: #d64545;
+  --destructive-foreground: #ffffff;
+  --border: #e9e9e7;
+  --input: #ddddda;
+  --ring: #2f76f6;
+  --chart-1: #2f8f5b;
+  --chart-2: #b26b00;
+  --chart-3: #2f76f6;
+  --chart-4: #787774;
+  --chart-5: #9a988f;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #37352f;
+  --sidebar-primary: #2f76f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f1ef;
+  --sidebar-accent-foreground: #4f4c45;
+  --sidebar-border: #e9e9e7;
+  --sidebar-ring: #2f76f6;
+  --role-admin: #bc6c25;
+  --role-manager: #3a5a40;
+  --role-customer: #588157;
+  --role-technicien: #588157;
+  --color-success: #2f8f5b;
+  --color-error: #d64545;
+  --color-warning: #b26b00;
+  --color-info: #2f76f6;
+  --tint-success: #edf7f1;
+  --tint-error: #fdeeee;
+  --tint-warning: #fef5e8;
+  --tint-info: #edf3ff;
+}
+
+@theme inline {
+  --font-sans: 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-tint-success: var(--tint-success);
+  --color-tint-error: var(--tint-error);
+  --color-tint-warning: var(--tint-warning);
+  --color-tint-info: var(--tint-info);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
