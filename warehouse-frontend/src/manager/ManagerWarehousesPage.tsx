@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
 import ManagerSectionLayout from './ManagerSectionLayout';
 import {
   AdminDashboardWarehouse,
@@ -10,6 +11,7 @@ import {
 
 export default function ManagerWarehousesPage() {
   const { token } = useAuth();
+  const { query } = useWorkspaceSearch();
 
   const [warehouses, setWarehouses] = useState<AdminDashboardWarehouse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +57,16 @@ export default function ManagerWarehousesPage() {
     if (sortBy === 'surface') return b.surface - a.surface;
     if (sortBy === 'blocs') return b.blocks.length - a.blocks.length;
     return a.name.localeCompare(b.name);
+  }).filter((warehouse) => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return true;
+    return [
+      String(warehouse.id),
+      warehouse.name,
+      warehouse.description ?? '',
+      String(warehouse.surface),
+      String(warehouse.blocks.length),
+    ].some((value) => value.toLowerCase().includes(normalizedQuery));
   });
 
   return (

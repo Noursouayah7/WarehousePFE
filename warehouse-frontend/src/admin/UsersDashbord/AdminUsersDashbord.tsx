@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
 import { UserRole } from '@/src/auth/auth.types';
 import {
 	AdminDashboardUser,
@@ -16,6 +17,7 @@ const ROLE_OPTIONS: ActiveRole[] = ['ADMIN', 'MANAGER', 'TECHNICIEN', 'CUSTOMER'
 
 export default function AdminUsersDashbord() {
 	const { token } = useAuth();
+	const { query } = useWorkspaceSearch();
 	const [users, setUsers] = useState<AdminDashboardUser[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -66,6 +68,21 @@ export default function AdminUsersDashbord() {
 	}, [token]);
 
 	const usersCount = useMemo(() => users.length, [users]);
+	const visibleUsers = useMemo(() => {
+		const normalizedQuery = query.trim().toLowerCase();
+		if (!normalizedQuery) return users;
+		return users.filter((user) => {
+			return [
+				String(user.id),
+				user.email,
+				user.name ?? '',
+				user.roles ?? '',
+				user.address ?? '',
+				user.phone ?? '',
+				user.cin,
+			].some((value) => value.toLowerCase().includes(normalizedQuery));
+		});
+	}, [users, query]);
 
 	async function handleRoleChange(userId: number, nextRole: ActiveRole) {
 		const accessToken = token;
@@ -161,7 +178,7 @@ export default function AdminUsersDashbord() {
 							</tr>
 						</thead>
 						<tbody>
-							{users.map((user) => {
+							{visibleUsers.map((user) => {
 								const isPending = user.roles === 'PENDING' || !user.roles;
 								const isRoleUpdating = roleUpdatingUserId === user.id;
 								const isDeleting = deletingUserId === user.id;
@@ -228,10 +245,10 @@ export default function AdminUsersDashbord() {
 								);
 							})}
 
-							{users.length === 0 && (
+							{visibleUsers.length === 0 && (
 								<tr>
 									<td colSpan={6} className="px-3 py-8 text-center text-sm text-[#6b705c]">
-										No users found
+										{query.trim() ? 'No users match your search' : 'No users found'}
 									</td>
 								</tr>
 							)}

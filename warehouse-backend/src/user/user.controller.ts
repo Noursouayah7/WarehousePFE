@@ -1,4 +1,5 @@
 import { Controller, Post, Get, Patch, Body, HttpCode, HttpStatus, UseGuards, Request, Param, ParseIntPipe } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -13,7 +14,10 @@ export class UserController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   register(@Body() dto: CreateUserDto) {
-    return this.userService.create(dto);
+    return this.userService.create({
+      ...dto,
+      roles: UserRole.PENDING,
+    });
   }
 
   // Protected — requires JWT

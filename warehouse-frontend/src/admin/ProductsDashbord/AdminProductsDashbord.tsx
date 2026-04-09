@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
 import {
 	AdminDashboardProduct,
 	createAdminProduct,
@@ -53,6 +54,7 @@ function toPayload(form: ProductFormState): ProductPayload {
 
 export default function AdminProductsDashbord() {
 	const { token } = useAuth();
+	const { query } = useWorkspaceSearch();
 	const [products, setProducts] = useState<AdminDashboardProduct[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -122,6 +124,20 @@ export default function AdminProductsDashbord() {
 	}, [token]);
 
 	const productCount = useMemo(() => products.length, [products]);
+	const visibleProducts = useMemo(() => {
+		const normalizedQuery = query.trim().toLowerCase();
+		if (!normalizedQuery) return products;
+		return products.filter((product) => {
+			return [
+				String(product.id),
+				product.name,
+				product.description ?? '',
+				String(product.blocId),
+				String(product.price),
+				String(product.quantity),
+			].some((value) => value.toLowerCase().includes(normalizedQuery));
+		});
+	}, [products, query]);
 	const confirmDeleteProduct = products.find((product) => product.id === confirmDeleteProductId) ?? null;
 	const editingProduct = products.find((product) => product.id === editingProductId) ?? null;
 
@@ -258,7 +274,7 @@ export default function AdminProductsDashbord() {
 							</tr>
 						</thead>
 						<tbody>
-							{products.map((product) => {
+							{visibleProducts.map((product) => {
 								const isDeleting = deletingProductId === product.id;
 
 								return (
@@ -292,10 +308,10 @@ export default function AdminProductsDashbord() {
 								);
 							})}
 
-							{products.length === 0 && (
+							{visibleProducts.length === 0 && (
 								<tr>
 									<td colSpan={8} className="px-3 py-8 text-center text-sm text-[#6b705c]">
-										No products found
+										{query.trim() ? 'No products match your search' : 'No products found'}
 									</td>
 								</tr>
 							)}

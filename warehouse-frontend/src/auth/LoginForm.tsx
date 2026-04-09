@@ -21,99 +21,114 @@ export function LoginForm() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-[#f5f1e8]">
-      {/* Background grid */}
-      <div className="fixed inset-0 z-0 bg-[length:40px_40px] bg-[linear-gradient(rgba(58,90,64,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(58,90,64,0.08)_1px,transparent_1px)]" />
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <div className="grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative flex items-center overflow-hidden border-b border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#f7f6f3_100%)] px-6 py-12 lg:border-b-0 lg:border-r lg:px-12">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(58,90,64,0.10),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(47,118,246,0.10),transparent_30%)]" />
+          <div className="relative max-w-xl">
+            <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-white px-3 py-2 shadow-sm">
+              <div
+                className="h-8 w-8 rounded-md bg-[var(--role-admin)]"
+                style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+              />
+              <span className="text-sm font-semibold tracking-tight">Cerebro WMS</span>
+            </div>
 
-      <div className="relative z-10 w-full max-w-[440px] px-6">
-        {/* Logo / Brand */}
-        <div className="mb-12 text-center">
-          <div className="mb-2 inline-flex items-center gap-3">
-            <div
-              className="h-9 w-9 bg-[var(--role-admin)]"
-              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-            />
-            <span className="text-xl font-semibold tracking-[0.04em] text-[#344e41]">
-              Cerebro WMS
-            </span>
+            <p className="mb-3 text-xs font-medium text-[var(--muted-foreground)]">Warehouse operations</p>
+            <h1 className="text-4xl font-semibold tracking-tight lg:text-5xl">
+              Sign in to a cleaner, faster workspace.
+            </h1>
+            <p className="mt-4 max-w-lg text-sm leading-6 text-[var(--muted-foreground)]">
+              Access orders, shipments, inventory, and approvals from a calm business interface built for daily work.
+            </p>
+
+            <div className="mt-8 grid max-w-lg gap-3 sm:grid-cols-3">
+              {[
+                'Order workflow',
+                'Inventory visibility',
+                'Role-based access',
+              ].map((item) => (
+                <div key={item} className="rounded-xl bg-white px-4 py-3 text-sm text-[var(--foreground)] shadow-sm">
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
-          <p className="mt-1 text-sm text-[#6b705c]">
-            Warehouse management system
-          </p>
         </div>
 
-        {/* Card */}
-        <div className="rounded-2xl border border-[#b7c2a0] bg-[#f5f1e8] p-8 shadow-xl md:p-10">
-          <h1 className="mb-8 text-lg font-semibold tracking-tight text-[#344e41]">
-            Sign in
-          </h1>
-
-          {registered && (
-            <div className="mb-6 rounded-lg border border-[var(--color-success)] bg-[#edf3ea] px-4 py-3 text-sm text-[var(--color-success)]">
-              Registration successful. Login to continue.
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {/* Email */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-medium text-[#6b705c]">
-                Email address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                placeholder="user@warehouse.com"
-                className="rounded-lg border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-admin)]"
-              />
+        <div className="flex items-center justify-center px-6 py-12 lg:px-12">
+          <div className="w-full max-w-[460px] rounded-2xl border border-[var(--border)] bg-white p-8 shadow-sm md:p-10">
+            <div className="mb-8 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium text-[var(--muted-foreground)]">Welcome back</p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight">Sign in</h2>
+              </div>
+              {registered && (
+                <div className="rounded-full bg-[var(--tint-success)] px-3 py-1 text-xs font-medium text-[var(--color-success)]">
+                  Registered
+                </div>
+              )}
             </div>
 
-            {/* Password */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-medium text-[#6b705c]">
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="rounded-lg border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-admin)]"
-              />
-            </div>
-
-            {/* Error */}
-            {error && (
-              <div className="rounded-lg border border-[var(--color-error)] bg-[#f8efe9] px-4 py-3 text-sm text-[var(--color-error)]">
-                {error}
+            {registered && (
+              <div className="mb-6 rounded-xl bg-[var(--tint-success)] px-4 py-3 text-sm text-[var(--color-success)]">
+                Registration successful. Login to continue.
               </div>
             )}
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-2 rounded-xl border-0 px-3.5 py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:bg-[#cfd7bf] disabled:text-[#6b705c] bg-[var(--role-admin)] text-black hover:opacity-90"
-            >
-              {loading ? 'Authenticating...' : 'Login'}
-            </button>
-          </form>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Email address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="user@warehouse.com"
+                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+                />
+              </div>
 
-          <p className="mt-6 text-center text-xs text-[#6b705c]">
-            No account yet?{' '}
-            <Link href="/register" className="text-[var(--role-admin)] underline underline-offset-4">
-              Register
-            </Link>
-          </p>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+                />
+              </div>
+
+              {error && (
+                <div className="rounded-xl bg-[var(--tint-error)] px-4 py-3 text-sm text-[var(--color-error)]">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-2 rounded-xl bg-[var(--role-admin)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#e6ddd1] disabled:text-[#8b857a]"
+              >
+                {loading ? 'Authenticating...' : 'Login'}
+              </button>
+            </form>
+
+            <p className="mt-6 text-center text-sm text-[var(--muted-foreground)]">
+              No account yet?{' '}
+              <Link href="/register" className="font-medium text-[var(--primary)] underline underline-offset-4">
+                Register
+              </Link>
+            </p>
+          </div>
         </div>
-
-        <p className="mt-6 text-center text-[11px] text-[#6b705c]">
-          Cerebro Solutions © 2026
-        </p>
       </div>
+
+      <p className="border-t border-[var(--border)] px-6 py-4 text-center text-xs text-[var(--muted-foreground)] lg:px-12">
+        Cerebro Solutions © 2026
+      </p>
     </div>
   );
 }

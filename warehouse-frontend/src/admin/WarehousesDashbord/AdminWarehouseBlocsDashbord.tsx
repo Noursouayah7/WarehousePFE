@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
 import {
   AdminDashboardWarehouse,
   BlocProduct,
@@ -46,6 +47,7 @@ type AdminWarehouseBlocsDashbordProps = {
 
 export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWarehouseBlocsDashbordProps) {
   const { token } = useAuth();
+  const { query } = useWorkspaceSearch();
   const [warehouse, setWarehouse] = useState<AdminDashboardWarehouse | null>(null);
   const [blocs, setBlocs] = useState<WarehouseBloc[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,6 +108,19 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
   }, [token, warehouseId]);
 
   const blocCount = useMemo(() => blocs.length, [blocs]);
+  const visibleBlocs = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return blocs;
+    return blocs.filter((bloc) => {
+      return [
+        String(bloc.id),
+        bloc.name,
+        String(bloc.capacity),
+        String(bloc.currentUsage),
+        String(bloc.warehouseId),
+      ].some((value) => value.toLowerCase().includes(normalizedQuery));
+    });
+  }, [blocs, query]);
   const confirmDeleteBloc = blocs.find((bloc) => bloc.id === confirmDeleteBlocId) ?? null;
   const editingBloc = blocs.find((bloc) => bloc.id === editingBlocId) ?? null;
 
@@ -270,7 +285,7 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
               </tr>
             </thead>
             <tbody>
-              {blocs.map((bloc) => {
+              {visibleBlocs.map((bloc) => {
                 const isDeleting = deletingBlocId === bloc.id;
 
                 return (
@@ -313,10 +328,10 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
                 );
               })}
 
-              {blocs.length === 0 && (
+              {visibleBlocs.length === 0 && (
                 <tr>
                   <td colSpan={9} className="px-3 py-8 text-center text-sm text-[#6b705c]">
-                    No blocs found in this warehouse
+                    {query.trim() ? 'No blocs match your search' : 'No blocs found in this warehouse'}
                   </td>
                 </tr>
               )}
@@ -443,7 +458,13 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
                     </tr>
                   </thead>
                   <tbody>
-                    {blocProducts.map((product) => (
+                    {blocProducts.filter((product) => {
+                      const normalizedQuery = query.trim().toLowerCase();
+                      if (!normalizedQuery) return true;
+                      return [String(product.id), product.name, product.description ?? '', String(product.price), String(product.quantity)].some((value) =>
+                        value.toLowerCase().includes(normalizedQuery),
+                      );
+                    }).map((product) => (
                       <tr key={product.id}>
                         <td className="rounded-l-lg bg-[#f7f7f5] px-3 py-3 text-[12px] text-[#496553]">{product.id}</td>
                         <td className="bg-[#f7f7f5] px-3 py-3 text-[12px] text-[#496553]">{product.name}</td>
@@ -453,10 +474,16 @@ export default function AdminWarehouseBlocsDashbord({ warehouseId }: AdminWareho
                       </tr>
                     ))}
 
-                    {blocProducts.length === 0 && (
+                    {blocProducts.filter((product) => {
+                      const normalizedQuery = query.trim().toLowerCase();
+                      if (!normalizedQuery) return true;
+                      return [String(product.id), product.name, product.description ?? '', String(product.price), String(product.quantity)].some((value) =>
+                        value.toLowerCase().includes(normalizedQuery),
+                      );
+                    }).length === 0 && (
                       <tr>
                         <td colSpan={5} className="px-3 py-8 text-center text-sm text-[#6b705c]">
-                          No products found in this bloc
+                          {query.trim() ? 'No products match your search' : 'No products found in this bloc'}
                         </td>
                       </tr>
                     )}

@@ -74,45 +74,39 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      {/* Success Message */}
       {success && (
-        <div className="border border-[var(--color-success)] bg-[#edf3ea] px-4 py-3 text-xs tracking-[0.05em] text-[var(--color-success)]">
-          ✓ PROFILE UPDATED SUCCESSFULLY
+        <div className="rounded-xl bg-[var(--tint-success)] px-4 py-3 text-sm text-[var(--color-success)]">
+          Profile updated successfully.
         </div>
       )}
 
-      {/* Error Message */}
       {error && (
-        <div className="border border-[var(--color-error)] bg-[#f8efe9] px-4 py-3 text-xs tracking-[0.05em] text-[var(--color-error)]">
-          ⚠ {error.toUpperCase()}
+        <div className="rounded-xl bg-[var(--tint-error)] px-4 py-3 text-sm text-[var(--color-error)]">
+          {error}
         </div>
       )}
 
-      {/* Profile Picture */}
       <div className="flex flex-col gap-3">
-        <label className="text-[11px] tracking-[0.2em] text-[#6b705c]">PROFILE PICTURE</label>
-        <div className="flex items-center gap-4">
+        <label className="text-xs font-medium text-[var(--muted-foreground)]">Profile picture</label>
+        <div className="flex flex-wrap items-center gap-4">
           {previewImage && (
             <img
               src={previewImage}
               alt="Profile preview"
-              className="h-20 w-20 border border-[#b7c2a0] object-cover"
+              className="h-20 w-20 rounded-xl border border-[var(--border)] object-cover"
             />
           )}
           <input
             type="file"
             accept="image/*"
             onChange={handleImageChange}
-            className="text-xs text-[#6b705c] file:border file:border-[#b7c2a0] file:bg-[#f5f1e8] file:px-3 file:py-1.5 file:text-[11px] file:tracking-[0.1em] file:text-[#344e41]"
+            className="text-xs text-[var(--muted-foreground)] file:mr-4 file:rounded-md file:border file:border-[var(--input)] file:bg-white file:px-3 file:py-2 file:text-xs file:font-medium file:text-[var(--foreground)]"
           />
         </div>
       </div>
 
-      {/* Name */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="name" className="text-[11px] tracking-[0.2em] text-[#6b705c]">
-          FULL NAME
-        </label>
+        <label htmlFor="name" className="text-xs font-medium text-[var(--muted-foreground)]">Full name</label>
         <input
           type="text"
           id="name"
@@ -120,15 +114,12 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           value={formData.name || ''}
           onChange={handleChange}
           placeholder="John Doe"
-          className="border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-admin)]"
+          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
         />
       </div>
 
-      {/* Email */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="email" className="text-[11px] tracking-[0.2em] text-[#6b705c]">
-          EMAIL ADDRESS
-        </label>
+        <label htmlFor="email" className="text-xs font-medium text-[var(--muted-foreground)]">Email address</label>
         <input
           type="email"
           id="email"
@@ -136,15 +127,12 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           value={formData.email || ''}
           onChange={handleChange}
           placeholder="user@warehouse.com"
-          className="border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-admin)]"
+          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
         />
       </div>
 
-      {/* Phone */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="phone" className="text-[11px] tracking-[0.2em] text-[#6b705c]">
-          PHONE NUMBER
-        </label>
+        <label htmlFor="phone" className="text-xs font-medium text-[var(--muted-foreground)]">Phone number</label>
         <input
           type="tel"
           id="phone"
@@ -152,15 +140,12 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           value={formData.phone || ''}
           onChange={handleChange}
           placeholder="+1 (555) 000-0000"
-          className="border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-admin)]"
+          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
         />
       </div>
 
-      {/* Address */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="address" className="text-[11px] tracking-[0.2em] text-[#6b705c]">
-          ADDRESS
-        </label>
+        <label htmlFor="address" className="text-xs font-medium text-[var(--muted-foreground)]">Address</label>
         <textarea
           id="address"
           name="address"
@@ -168,17 +153,16 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           onChange={handleChange}
           placeholder="123 Warehouse St, City, Country"
           rows={3}
-          className="border border-[#b7c2a0] bg-[#f5f1e8] px-4 py-3 text-sm text-[#344e41] outline-none transition-colors placeholder:text-[#6b705c] focus:border-[var(--role-admin)]"
+          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
         />
       </div>
 
-      {/* Submit Button */}
       <button
         type="submit"
         disabled={loading}
-        className="mt-4 border-0 px-3.5 py-3 text-xs font-bold tracking-[0.25em] transition-colors disabled:cursor-not-allowed disabled:bg-[#cfd7bf] disabled:text-[#6b705c] bg-[var(--role-admin)] text-black hover:opacity-90"
+        className="mt-4 rounded-xl bg-[var(--role-admin)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#e6ddd1] disabled:text-[#8b857a]"
       >
-        {loading ? 'UPDATING...' : 'UPDATE PROFILE →'}
+        {loading ? 'Updating...' : 'Update profile'}
       </button>
     </form>
   );

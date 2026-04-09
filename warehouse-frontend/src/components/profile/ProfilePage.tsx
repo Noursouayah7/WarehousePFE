@@ -46,9 +46,11 @@ export function ProfilePage({ backLink, roleLabel, roleBgColor }: ProfilePagePro
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f5f1e8] text-[#344e41]">
-        <div className="flex items-center justify-center py-20">
-          <p className="text-sm text-[var(--muted-foreground)]">Loading...</p>
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        <div className="flex min-h-screen items-center justify-center px-6 py-20">
+          <div className="rounded-2xl border border-[var(--border)] bg-white px-6 py-5 shadow-sm">
+            <p className="text-sm text-[var(--muted-foreground)]">Loading profile...</p>
+          </div>
         </div>
       </div>
     );
@@ -56,13 +58,13 @@ export function ProfilePage({ backLink, roleLabel, roleBgColor }: ProfilePagePro
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-[#f5f1e8] text-[#344e41]">
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <p className="mb-4 text-sm">{error || 'Failed to load profile'}</p>
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        <div className="flex min-h-screen items-center justify-center px-6 py-20">
+          <div className="max-w-md rounded-2xl border border-[var(--border)] bg-white p-8 text-center shadow-sm">
+            <p className="mb-4 text-sm text-[var(--color-error)]">{error || 'Failed to load profile'}</p>
             <Link
               href={backLink}
-              className="inline-block rounded-md border border-[var(--input)] bg-white px-4 py-2 text-xs font-medium text-[#6b705c] transition-colors hover:border-[var(--border)] hover:text-[#6b705c]"
+              className="inline-flex rounded-md border border-[var(--input)] bg-white px-4 py-2 text-xs font-medium text-[#6b705c] transition-colors hover:border-[var(--border)] hover:text-[#344e41]"
             >
               Back
             </Link>
@@ -73,68 +75,75 @@ export function ProfilePage({ backLink, roleLabel, roleBgColor }: ProfilePagePro
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f1e8] text-[#344e41]">
-      {/* Top Bar */}
-      <div className="border-b border-[#a3b18a] px-10 py-4">
-        <div className="flex items-center justify-between">
-          <Link
-            href={backLink}
-            className="text-xs font-medium text-[#6b705c] transition-colors hover:text-[#6b705c]"
-          >
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <div className="border-b border-[var(--border)] bg-white px-6 py-4 md:px-10">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          <Link href={backLink} className="text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:text-[var(--foreground)]">
             ← Back
           </Link>
-          <span className={`rounded-full px-3 py-1 text-[11px] font-semibold text-black`}
-            style={{ backgroundColor: roleBgColor }}>
+          <span className="rounded-full px-3 py-1 text-[11px] font-semibold text-black" style={{ backgroundColor: roleBgColor }}>
             {roleLabel}
           </span>
           <button
             onClick={logout}
-            className="cursor-pointer rounded-md border border-[var(--input)] bg-white px-4 py-1.5 text-xs font-medium text-[#6b705c] transition-colors hover:border-[var(--border)] hover:text-[#6b705c]"
+            className="rounded-md border border-[var(--input)] bg-white px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
           >
             Logout
           </button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-6 py-12">
-        <div className="mb-10">
-          <h1 className="mb-2 text-2xl font-semibold tracking-tight">My profile</h1>
-          <p className="text-sm text-[#6b705c]">Update your personal information</p>
+      <div className="mx-auto max-w-6xl px-6 py-10 md:px-10">
+        <div className="mb-8">
+          <p className="text-xs font-medium text-[var(--muted-foreground)]">Account</p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight">My profile</h1>
+          <p className="mt-2 text-sm text-[var(--muted-foreground)]">Update your personal information and keep delivery details current.</p>
         </div>
 
-        {/* Profile Form */}
-        <div className="rounded-xl border border-[var(--border)] bg-white p-8 shadow-sm">
-          <ProfileForm
-            profile={profile}
-            token={token ?? ''}
-            onSuccess={handleProfileUpdate}
-          />
-        </div>
+        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="rounded-2xl border border-[var(--border)] bg-white p-8 shadow-sm">
+            <ProfileForm profile={profile} token={token ?? ''} onSuccess={handleProfileUpdate} />
+          </div>
 
-        {/* User Info Display */}
-        <div className="mt-8 rounded-xl border border-[var(--border)] bg-white p-8 shadow-sm">
-          <h2 className="mb-6 text-sm font-semibold">Account details</h2>
-          <div className="grid gap-4 text-xs">
-            <div className="flex justify-between border-b border-[#a3b18a] pb-3">
-              <span className="text-[#6b705c]">User ID:</span>
-              <span className="text-[#344e41]">{profile.id}</span>
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-[var(--border)] bg-white p-8 shadow-sm">
+              <p className="text-xs font-medium text-[var(--muted-foreground)]">Profile snapshot</p>
+              <div className="mt-4 flex items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-lg font-semibold text-black" style={{ backgroundColor: roleBgColor }}>
+                  {roleLabel.charAt(0)}
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold">{profile.name || 'Unnamed user'}</h2>
+                  <p className="text-sm text-[var(--muted-foreground)]">{profile.email}</p>
+                </div>
+              </div>
+              <div className="mt-6 grid gap-3 text-sm">
+                {[
+                  ['User ID', String(profile.id)],
+                  ['Role', profile.roles],
+                  ['CIN', profile.cin],
+                  ['Phone', profile.phone || '—'],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-center justify-between rounded-lg bg-[#f7f7f5] px-4 py-3">
+                    <span className="text-[var(--muted-foreground)]">{label}</span>
+                    <span className="font-medium">{value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex justify-between border-b border-[#a3b18a] pb-3">
-              <span className="text-[#6b705c]">Role:</span>
-              <span className="text-[#344e41]">{profile.roles}</span>
-            </div>
-            <div className="flex justify-between border-b border-[#a3b18a] pb-3">
-              <span className="text-[#6b705c]">CIN:</span>
-              <span className="text-[#344e41]">{profile.cin}</span>
-            </div>
-            <div className="flex justify-between border-b border-[#a3b18a] pb-3">
-              <span className="text-[#6b705c]">Member since:</span>
-              <span className="text-[#344e41]">{new Date(profile.createdAt).toLocaleDateString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#6b705c]">Last updated:</span>
-              <span className="text-[#344e41]">{new Date(profile.updatedAt).toLocaleDateString()}</span>
+
+            <div className="rounded-2xl border border-[var(--border)] bg-white p-8 shadow-sm">
+              <h2 className="text-sm font-semibold">Timeline</h2>
+              <div className="mt-4 space-y-3 text-sm">
+                <div className="flex items-center justify-between rounded-lg bg-[#f7f7f5] px-4 py-3">
+                  <span className="text-[var(--muted-foreground)]">Member since</span>
+                  <span className="font-medium">{new Date(profile.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg bg-[#f7f7f5] px-4 py-3">
+                  <span className="text-[var(--muted-foreground)]">Last updated</span>
+                  <span className="font-medium">{new Date(profile.updatedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

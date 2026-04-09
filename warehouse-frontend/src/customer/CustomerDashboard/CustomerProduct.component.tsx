@@ -1,0 +1,56 @@
+'use client';
+
+import { useMemo } from 'react';
+import { CustomerProductOption } from '../customer.api';
+import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
+
+interface CustomerProductProps {
+	products: CustomerProductOption[];
+	isLoading: boolean;
+	onSelectProduct: (productName: string) => void;
+}
+
+export function CustomerProduct({ products, isLoading, onSelectProduct }: CustomerProductProps) {
+	const { query } = useWorkspaceSearch();
+	const visibleProducts = useMemo(() => {
+		const normalizedQuery = query.trim().toLowerCase();
+		if (!normalizedQuery) return products;
+		return products.filter((product) => {
+			return [product.name, String(product.availableQuantity)].some((value) =>
+				value.toLowerCase().includes(normalizedQuery),
+			);
+		});
+	}, [products, query]);
+
+	return (
+		<section id="products-section" className="mt-6 rounded-2xl bg-transparent">
+			<h2 className="text-xl font-semibold tracking-tight">Products</h2>
+			<p className="mt-1 text-sm text-[var(--muted-foreground)]">Click on a product to place an order</p>
+
+			{isLoading ? (
+				<div className="py-10 text-center text-sm text-[#6b705c]">Loading products...</div>
+			) : (
+				<div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					{visibleProducts.map((product) => (
+						<button
+							key={product.name}
+							type="button"
+							onClick={() => onSelectProduct(product.name)}
+							className="text-left rounded-xl bg-[var(--card)] p-4 shadow-sm transition-colors hover:bg-[#f4f3ef]"
+						>
+							<p className="text-[16px] font-semibold text-[var(--color-info)]">{product.name}</p>
+							<p className="mt-2 text-xs text-[var(--muted-foreground)]">Available: {product.availableQuantity}</p>
+							<p className="mt-3 text-xs text-[#6b705c]">Click to order</p>
+						</button>
+					))}
+
+					{visibleProducts.length === 0 && (
+						<div className="col-span-full rounded-lg bg-[#f4f3ef] p-8 text-center text-sm text-[#6b705c]">
+							{query.trim() ? 'No products match your search' : 'No products available right now'}
+						</div>
+					)}
+				</div>
+			)}
+		</section>
+	);
+}

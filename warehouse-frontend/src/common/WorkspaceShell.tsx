@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ReactNode, useMemo, useState } from 'react';
+import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
 
 type NavIcon = 'dashboard' | 'orders' | 'shipments' | 'products' | 'warehouses' | 'users';
@@ -27,6 +27,16 @@ type WorkspaceShellProps = {
   navGroups: ShellNavGroup[];
   children: ReactNode;
 };
+
+type WorkspaceSearchContextValue = {
+  query: string;
+};
+
+const WorkspaceSearchContext = createContext<WorkspaceSearchContextValue>({ query: '' });
+
+export function useWorkspaceSearch() {
+  return useContext(WorkspaceSearchContext);
+}
 
 function formatSegment(segment: string): string {
   if (!segment) return 'Dashboard';
@@ -103,6 +113,7 @@ export default function WorkspaceShell({
   const { logout } = useAuth();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [query, setQuery] = useState('');
 
   const breadcrumb = useMemo(() => {
     const parts = pathname.split('/').filter(Boolean);
@@ -146,7 +157,7 @@ export default function WorkspaceShell({
                   {group.items.map((item) => {
                     const isActive = pathname === item.href;
                     return (
-                      <li key={item.href}>
+                      <li key={`${group.label}-${item.href}-${item.label}`}>
                         <Link
                           href={item.href}
                           className={[
@@ -178,6 +189,8 @@ export default function WorkspaceShell({
               <input
                 aria-label="Search"
                 placeholder="Search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
                 className="w-52 rounded-md border border-[var(--input)] bg-white px-3 py-1.5 text-sm outline-none focus:border-[var(--ring)]"
               />
               <Link
@@ -202,14 +215,16 @@ export default function WorkspaceShell({
             </div>
           </header>
 
-          <main className="flex-1 px-6 py-8 md:px-10">
-            <div className="mb-8">
-              <h1 className="text-4xl font-semibold tracking-tight">{title}</h1>
-              <p className="mt-2 text-sm text-[var(--muted-foreground)]">{description}</p>
-            </div>
+          <WorkspaceSearchContext.Provider value={{ query }}>
+            <main className="flex-1 px-6 py-8 md:px-10">
+              <div className="mb-8">
+                <h1 className="text-4xl font-semibold tracking-tight">{title}</h1>
+                <p className="mt-2 text-sm text-[var(--muted-foreground)]">{description}</p>
+              </div>
 
-            {children}
-          </main>
+              {children}
+            </main>
+          </WorkspaceSearchContext.Provider>
         </div>
       </div>
     </div>

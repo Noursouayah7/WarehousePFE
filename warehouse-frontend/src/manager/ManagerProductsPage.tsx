@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
 import ManagerSectionLayout from './ManagerSectionLayout';
 import { getAdminProducts, AdminDashboardProduct } from '@/src/admin/ProductsDashbord/ProductDashbord.admin.api';
 
 export default function ManagerProductsPage() {
   const { token } = useAuth();
+  const { query } = useWorkspaceSearch();
 
   const [products, setProducts] = useState<AdminDashboardProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,6 +54,17 @@ export default function ManagerProductsPage() {
     if (sortBy === 'price') return b.price - a.price;
     if (sortBy === 'quantity') return b.quantity - a.quantity;
     return b.id - a.id;
+  }).filter((product) => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return true;
+    return [
+      String(product.id),
+      product.name,
+      product.description ?? '',
+      String(product.blocId),
+      String(product.price),
+      String(product.quantity),
+    ].some((value) => value.toLowerCase().includes(normalizedQuery));
   });
 
   return (

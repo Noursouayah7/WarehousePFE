@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
 import {
 	AdminDashboardWarehouse,
 	createAdminWarehouse,
@@ -42,6 +43,7 @@ function toPayload(form: WarehouseFormState): WarehousePayload {
 
 export default function AdminWarehousesDashbord() {
 	const { token } = useAuth();
+	const { query } = useWorkspaceSearch();
 	const [warehouses, setWarehouses] = useState<AdminDashboardWarehouse[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -92,6 +94,19 @@ export default function AdminWarehousesDashbord() {
 	}, [token]);
 
 	const warehouseCount = useMemo(() => warehouses.length, [warehouses]);
+	const visibleWarehouses = useMemo(() => {
+		const normalizedQuery = query.trim().toLowerCase();
+		if (!normalizedQuery) return warehouses;
+		return warehouses.filter((warehouse) => {
+			return [
+				String(warehouse.id),
+				warehouse.name,
+				warehouse.description ?? '',
+				String(warehouse.surface),
+				String(warehouse.blocks.length),
+			].some((value) => value.toLowerCase().includes(normalizedQuery));
+		});
+	}, [warehouses, query]);
 	const confirmDeleteWarehouse = warehouses.find((warehouse) => warehouse.id === confirmDeleteWarehouseId) ?? null;
 	const editingWarehouse = warehouses.find((warehouse) => warehouse.id === editingWarehouseId) ?? null;
 
@@ -219,7 +234,7 @@ export default function AdminWarehousesDashbord() {
 							</tr>
 						</thead>
 						<tbody>
-							{warehouses.map((warehouse) => {
+							{visibleWarehouses.map((warehouse) => {
 								const isDeleting = deletingWarehouseId === warehouse.id;
 
 								return (
@@ -259,10 +274,10 @@ export default function AdminWarehousesDashbord() {
 								);
 							})}
 
-							{warehouses.length === 0 && (
+							{visibleWarehouses.length === 0 && (
 								<tr>
 									<td colSpan={7} className="px-3 py-8 text-center text-sm text-[#6b705c]">
-										No warehouses found
+										{query.trim() ? 'No warehouses match your search' : 'No warehouses found'}
 									</td>
 								</tr>
 							)}

@@ -1,10 +1,10 @@
-import { redirect } from 'next/navigation';
+import CustomerPage from '@/src/customer/CustomerDashboard/CustomerPage';
 import { AuthRedirect } from '@/src/auth/AuthRedirect';
 
-export default function CustomerRoutePage() {
+export default function CustomerProductsRoutePage() {
   return (
     <AuthRedirect mode="protected" allowedRoles={['CUSTOMER']}>
-      {redirect('/customer/orders')}
+      <CustomerPage />
     </AuthRedirect>
   );
 }

@@ -2,6 +2,7 @@
 
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
 import ManagerSectionLayout from './ManagerSectionLayout';
 import {
   getManagerShipments,
@@ -27,6 +28,7 @@ function formatDate(value: string | null): string {
 
 export default function ManagerShipmentsPage() {
   const { token } = useAuth();
+  const { query } = useWorkspaceSearch();
 
   const [shipments, setShipments] = useState<ManagerShipment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +42,19 @@ export default function ManagerShipmentsPage() {
   const visibleShipments = shipments.filter((shipment) => {
     if (statusFilter === 'ALL') return true;
     return shipment.status === statusFilter;
+  }).filter((shipment) => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return true;
+    return [
+      String(shipment.id),
+      shipment.productName,
+      shipment.status,
+      shipment.note ?? '',
+      shipment.trackingNumber ?? '',
+      shipment.order ? String(shipment.order.id) : '',
+      shipment.order?.status ?? '',
+      shipment.bloc.name,
+    ].some((value) => value.toLowerCase().includes(normalizedQuery));
   });
 
   async function loadData(activeToken: string) {

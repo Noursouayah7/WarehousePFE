@@ -2,6 +2,7 @@
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
 import ManagerSectionLayout from './ManagerSectionLayout';
 import {
   approveOrder,
@@ -80,6 +81,7 @@ function getDeliveryDay(value: string | null): string {
 
 export default function ManagerOrdersPage() {
   const { token } = useAuth();
+  const { query } = useWorkspaceSearch();
 
   const [orders, setOrders] = useState<ManagerOrder[]>([]);
   const [blocs, setBlocs] = useState<WarehouseBloc[]>([]);
@@ -102,9 +104,22 @@ export default function ManagerOrdersPage() {
   );
 
   const visibleOrders = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
     const filtered = orders.filter((order) => {
       if (statusFilter === 'ALL') return true;
       return order.status === statusFilter;
+    }).filter((order) => {
+      if (!normalizedQuery) return true;
+      return [
+        String(order.id),
+        order.productName,
+        order.customerName,
+        order.customerPhone,
+        order.status,
+        order.deliveryStatus,
+        order.managerNote ?? '',
+        order.rejectionReason ?? '',
+      ].some((value) => value.toLowerCase().includes(normalizedQuery));
     });
 
     return [...filtered].sort((a, b) => {
