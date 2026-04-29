@@ -11,12 +11,12 @@ import {
 export class CustomerRegisterDto {
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  email!: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
-  password: string;
+  password!: string;
 
   @IsString()
   @IsOptional()
@@ -25,16 +25,16 @@ export class CustomerRegisterDto {
 
   @IsString()
   @IsNotEmpty()
-  address: string;
+  address!: string;
 
   @IsString()
   @IsNotEmpty()
-  phone: string;
+  phone!: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
   @MaxLength(8)
   @Matches(/^\d{8}$/, { message: 'CIN must contain exactly 8 numeric digits' })
-  cin: string;
+  cin!: string;
 }
