@@ -93,6 +93,15 @@ function Icon({ kind }: { kind: NavIcon }) {
     );
   }
 
+  if (kind === 'users') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={iconClass}>
+        <path d="M16 20a4 4 0 0 0-8 0" stroke="currentColor" />
+        <circle cx="12" cy="8" r="4" stroke="currentColor" />
+      </svg>
+    );
+  }
+
   return (
     <svg viewBox="0 0 24 24" fill="none" className={iconClass}>
       <path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="currentColor" />

@@ -18,28 +18,31 @@ import { RolesGuard } from '../auth_old/guards/roles.guard';
 import { Roles } from '../auth_old/guards/roles.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.MANAGER) // TECHNICIEN cannot manage warehouses
 @Controller('warehouse')
 export class WarehouseController {
   constructor(private readonly warehouseService: WarehouseService) {}
 
   @Post()
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.CREATED)
   createWarehouse(@Body() body: { name: string; surface: number; description?: string }) {
     return this.warehouseService.createWarehouse(body.name, body.surface, body.description);
   }
 
   @Get()
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIEN)
   findAllWarehouses() {
     return this.warehouseService.findAllWarehouses();
   }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIEN)
   findOneWarehouse(@Param('id', ParseIntPipe) id: number) {
     return this.warehouseService.findOneWarehouse(id);
   }
 
   @Patch(':id')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   updateWarehouse(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { name?: string; surface?: number; description?: string },
@@ -48,6 +51,7 @@ export class WarehouseController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.OK)
   removeWarehouse(@Param('id', ParseIntPipe) id: number) {
     return this.warehouseService.removeWarehouse(id);

@@ -16,8 +16,7 @@ import { CustomerMyOrder } from './CustomerMyOrder.component';
 import { CustomerOrderForm, CustomerOrderFormModal } from './CustomerOrderFormModal.component';
 
 const emptyForm: CustomerOrderForm = {
-  productName: '',
-  quantity: '',
+  items: [{ productId: '', quantity: '1' }],
   deliveryDeadline: '',
   deliveryAddress: '',
   customerName: '',
@@ -45,6 +44,8 @@ export default function CustomerPage() {
   const [isSending, setIsSending] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState<CustomerOrderForm>(emptyForm);
+  const [deliveryNotice, setDeliveryNotice] = useState<string | null>(null);
+  const [lastDeliveredOrderId, setLastDeliveredOrderId] = useState<number | null>(null);
 
   async function loadData(activeToken: string) {
     const [productData, orderData] = await Promise.all([
@@ -54,6 +55,12 @@ export default function CustomerPage() {
 
     setProducts(productData);
     setOrders(orderData);
+
+    const delivered = orderData.find((order) => order.deliveryStatus === 'DELIVERED' && order.id !== lastDeliveredOrderId);
+    if (delivered) {
+      setDeliveryNotice(`Order #${delivered.id} has been delivered.`);
+      setLastDeliveredOrderId(delivered.id);
+    }
 
     const userProfile = await ProfileService.getProfile(activeToken);
     setProfile(userProfile);
@@ -111,13 +118,18 @@ export default function CustomerPage() {
     },
   ];
 
-  function openOrderForm(productName: string) {
+  function openOrderForm(product?: CustomerProductOption) {
     setForm((current) => ({
       ...emptyForm,
+      items: [
+        {
+          productId: product ? String(product.id) : '',
+          quantity: '1',
+        },
+      ],
       customerName: current.customerName || profile?.name || '',
       customerPhone: current.customerPhone || profile?.phone || '',
       deliveryAddress: current.deliveryAddress || profile?.address || '',
-      productName,
     }));
     setFormError(null);
     setIsFormOpen(true);
@@ -137,14 +149,12 @@ export default function CustomerPage() {
       return;
     }
 
-    const quantity = Number(form.quantity);
-    if (!Number.isFinite(quantity) || quantity <= 0) {
-      setFormError('Quantity must be greater than 0.');
-      return;
-    }
+    const normalizedItems = form.items
+      .map((item) => ({ productId: Number(item.productId), quantity: Number(item.quantity) }))
+      .filter((item) => Number.isFinite(item.productId) && item.productId > 0 && Number.isFinite(item.quantity) && item.quantity > 0);
 
-    if (!form.productName.trim()) {
-      setFormError('Product name is required.');
+    if (normalizedItems.length === 0) {
+      setFormError('Add at least one valid product.');
       return;
     }
 
@@ -159,8 +169,7 @@ export default function CustomerPage() {
 
     try {
       const createdOrder = await createCustomerOrder(token, {
-        productName: form.productName.trim(),
-        quantity,
+        items: normalizedItems,
         deliveryDeadline: form.deliveryDeadline,
         deliveryAddress: form.deliveryAddress.trim(),
         customerName: form.customerName.trim(),
@@ -244,7 +253,7 @@ export default function CustomerPage() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => openOrderForm(form.productName || '')}
+            onClick={() => openOrderForm()}
             className="rounded-md bg-[#eef3ef] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[#e5eee6]"
           >
             New order
@@ -271,6 +280,15 @@ export default function CustomerPage() {
           </div>
         )}
 
+        {deliveryNotice && (
+          <div className="mb-4 flex items-start justify-between gap-3 rounded-md bg-[var(--tint-success)] px-3 py-2 text-sm text-[var(--color-success)]">
+            <p>{deliveryNotice}</p>
+            <button type="button" onClick={() => setDeliveryNotice(null)} className="text-xs font-medium text-[var(--color-success)]">
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {(view === 'overview' || view === 'products') && (
           <CustomerProduct products={products} isLoading={isLoading} onSelectProduct={openOrderForm} />
         )}
@@ -285,6 +303,7 @@ export default function CustomerPage() {
         isSending={isSending}
         formError={formError}
         form={form}
+        products={products}
         onClose={closeOrderForm}
         onSubmit={handleSendOrder}
         onFormChange={setForm}

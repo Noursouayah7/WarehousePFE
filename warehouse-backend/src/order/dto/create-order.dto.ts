@@ -1,22 +1,30 @@
 import {
 	IsDateString,
 	IsInt,
+	IsArray,
 	IsNotEmpty,
+	IsOptional,
 	IsPositive,
 	IsString,
 	Matches,
 	MaxLength,
 } from 'class-validator';
+import { CreateOrderItemDto } from './create-order-item.dto';
 
 export class CreateOrderDto {
+	@IsArray()
+	@IsOptional()
+	items?: CreateOrderItemDto[];
+
 	@IsString()
-	@IsNotEmpty()
+	@IsOptional()
 	@MaxLength(120)
-	productName: string;
+	productName?: string;
 
 	@IsInt()
+	@IsOptional()
 	@IsPositive()
-	quantity: number;
+	quantity?: number;
 
 	@IsDateString()
 	deliveryDeadline: string;

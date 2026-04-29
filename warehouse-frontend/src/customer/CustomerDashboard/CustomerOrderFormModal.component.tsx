@@ -1,10 +1,10 @@
 'use client';
 
 import { FormEvent } from 'react';
+import { CustomerProductOption } from '../customer.api';
 
 export type CustomerOrderForm = {
-  productName: string;
-  quantity: string;
+  items: Array<{ productId: string; quantity: string }>;
   deliveryDeadline: string;
   deliveryAddress: string;
   customerName: string;
@@ -16,6 +16,7 @@ interface CustomerOrderFormModalProps {
   isSending: boolean;
   formError: string | null;
   form: CustomerOrderForm;
+  products: CustomerProductOption[];
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onFormChange: (updater: (current: CustomerOrderForm) => CustomerOrderForm) => void;
@@ -26,6 +27,7 @@ export function CustomerOrderFormModal({
   isSending,
   formError,
   form,
+  products,
   onClose,
   onSubmit,
   onFormChange,
@@ -55,20 +57,75 @@ export function CustomerOrderFormModal({
         )}
 
         <form onSubmit={onSubmit} className="grid gap-3">
-          <input
-            value={form.productName}
-            onChange={(event) => onFormChange((current) => ({ ...current, productName: event.target.value }))}
-            placeholder="Product name"
-            className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
-          />
-          <input
-            value={form.quantity}
-            onChange={(event) => onFormChange((current) => ({ ...current, quantity: event.target.value }))}
-            placeholder="Quantity"
-            type="number"
-            min={1}
-            className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
-          />
+          <div className="space-y-2">
+            {form.items.map((item, index) => (
+              <div key={index} className="grid gap-2 rounded-lg border border-[var(--input)] bg-[#faf9f7] p-3 md:grid-cols-[1fr_120px_auto]">
+                <select
+                  value={item.productId}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    onFormChange((current) => {
+                      const nextItems = [...current.items];
+                      nextItems[index] = { ...nextItems[index], productId: value };
+                      return { ...current, items: nextItems };
+                    });
+                  }}
+                  className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+                >
+                  <option value="">Select a product</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={String(product.id)}>
+                      {product.name} - ${product.price.toFixed(2)} ({product.quantity} available)
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  value={item.quantity}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    onFormChange((current) => {
+                      const nextItems = [...current.items];
+                      nextItems[index] = { ...nextItems[index], quantity: value };
+                      return { ...current, items: nextItems };
+                    });
+                  }}
+                  placeholder="Qty"
+                  type="number"
+                  min={1}
+                  className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onFormChange((current) => ({
+                      ...current,
+                      items: current.items.filter((_, currentIndex) => currentIndex !== index),
+                    }));
+                  }}
+                  disabled={form.items.length === 1}
+                  className="rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--muted-foreground)] disabled:opacity-40"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              onFormChange((current) => ({
+                ...current,
+                items: [...current.items, { productId: '', quantity: '1' }],
+              }))
+            }
+            className="rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm font-medium text-[var(--foreground)]"
+          >
+            Add product
+          </button>
+
           <input
             value={form.deliveryDeadline}
             onChange={(event) => onFormChange((current) => ({ ...current, deliveryDeadline: event.target.value }))}

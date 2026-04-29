@@ -74,7 +74,10 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 								<tr key={order.id} className="align-top">
 									<td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[#496553]">#{order.id}</td>
 									<td className="bg-[var(--card)] px-3 py-3 font-semibold">{order.productName}</td>
-									<td className="bg-[var(--card)] px-3 py-3 text-[#5f6f59]">{order.quantity}</td>
+									<td className="bg-[var(--card)] px-3 py-3 text-[#5f6f59]">
+										<p>{order.quantity}</p>
+										<p className="text-xs text-[#6b705c]">${order.totalAmount.toFixed(2)}</p>
+									</td>
 									<td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">{formatDate(order.deliveryDeadline)}</td>
 									<td className="bg-[var(--card)] px-3 py-3">
 										<span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusClasses(order.status)}`}>
@@ -82,7 +85,19 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 										</span>
 										<p className="mt-2 text-xs text-[#6b705c]">{order.deliveryStatus}</p>
 									</td>
-									<td className="rounded-r-lg bg-[var(--card)] px-3 py-3 text-xs text-[#6b705c]">{order.rejectionReason || order.managerNote || '—'}</td>
+									<td className="rounded-r-lg bg-[var(--card)] px-3 py-3 text-xs text-[#6b705c]">
+										{order.items.length > 0 ? (
+											<div className="space-y-1">
+												{order.items.map((item) => (
+													<p key={item.id}>
+														{item.productName} x{item.quantity}
+													</p>
+												))}
+											</div>
+										) : (
+											order.rejectionReason || order.managerNote || '—'
+										)}
+									</td>
 								</tr>
 							))}
 

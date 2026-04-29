@@ -17,7 +17,10 @@ export default function AdminSectionLayout({ title, description, children }: Adm
     },
     {
       label: 'Administration',
-      items: [{ label: 'Users', href: '/admin/users', icon: 'users' as const }],
+      items: [
+        { label: 'Users', href: '/admin/users', icon: 'users' as const },
+        { label: 'Support tickets', href: '/admin/support-tickets', icon: 'users' as const },
+      ],
     },
     {
       label: 'Inventory',

@@ -18,12 +18,12 @@ import { RolesGuard } from '../auth_old/guards/roles.guard';
 import { Roles } from '../auth_old/guards/roles.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.MANAGER) // TECHNICIEN cannot manage blocs
 @Controller('warehouses/:warehouseId/blocs')
 export class BlocController {
   constructor(private readonly blocService: BlocService) {}
 
   @Post()
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.CREATED)
   create(
     @Param('warehouseId', ParseIntPipe) warehouseId: number,
@@ -33,11 +33,13 @@ export class BlocController {
   }
 
   @Get()
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIEN)
   findAll(@Param('warehouseId', ParseIntPipe) warehouseId: number) {
     return this.blocService.findAll(warehouseId);
   }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIEN)
   findOne(
     @Param('warehouseId', ParseIntPipe) warehouseId: number,
     @Param('id', ParseIntPipe) id: number,
@@ -46,6 +48,7 @@ export class BlocController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   update(
     @Param('warehouseId', ParseIntPipe) warehouseId: number,
     @Param('id', ParseIntPipe) id: number,
@@ -55,6 +58,7 @@ export class BlocController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.OK)
   remove(
     @Param('warehouseId', ParseIntPipe) warehouseId: number,

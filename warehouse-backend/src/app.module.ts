@@ -10,6 +10,7 @@ import { AdminModule } from './admin/admin.module';
 import { OrderModule } from './order/order.module';
 import { ShipmentModule } from './shipment/shipment.module';
 import { AuthModule } from './auth/auth.module';
+import { SupportTicketModule } from './support-ticket/support-ticket.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AuthModule } from './auth/auth.module';
     AdminModule,
     OrderModule,
     ShipmentModule,
+    SupportTicketModule,
   ],
   controllers: [AppController],
   providers: [AppService],

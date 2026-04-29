@@ -11,6 +11,12 @@ import { OrderNoteDto } from './dto/order-note.dto';
 import { RejectOrderDto } from './dto/reject-order.dto';
 import { CreateRestockRequestDto } from './dto/create-restock-request.dto';
 
+type NormalizedOrderLine = {
+  productId: number;
+  productName: string;
+  quantity: number;
+};
+
 @Injectable()
 export class OrderService {
   constructor(private readonly prisma: PrismaService) {}
@@ -21,52 +27,155 @@ export class OrderService {
       select: {
         id: true,
         name: true,
+        description: true,
+        price: true,
         quantity: true,
+        blocId: true,
+        bloc: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
       orderBy: [{ name: 'asc' }, { createdAt: 'desc' }],
     });
 
-    const grouped = new Map<string, { name: string; availableQuantity: number }>();
-    for (const product of products) {
-      const current = grouped.get(product.name);
-      if (current) {
-        current.availableQuantity += product.quantity;
-      } else {
-        grouped.set(product.name, {
-          name: product.name,
-          availableQuantity: product.quantity,
-        });
-      }
-    }
-
-    return Array.from(grouped.values()).sort((a, b) => a.name.localeCompare(b.name));
+    return products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      quantity: product.quantity,
+      blocId: product.blocId,
+      blocName: product.bloc.name,
+    }));
   }
 
   findMine(customerId: number) {
     return this.prisma.order.findMany({
       where: { customerId },
-      include: { shipments: true },
+      include: { shipments: true, items: true },
       orderBy: { createdAt: 'desc' },
     });
   }
 
+  private normalizeItems(dto: CreateOrderDto): NormalizedOrderLine[] {
+    if (dto.items && dto.items.length > 0) {
+      const grouped = new Map<number, NormalizedOrderLine>();
+
+      for (const item of dto.items) {
+        const current = grouped.get(item.productId);
+        if (current) {
+          current.quantity += item.quantity;
+        } else {
+          grouped.set(item.productId, {
+            productId: item.productId,
+            productName: '',
+            quantity: item.quantity,
+          });
+        }
+      }
+
+      return Array.from(grouped.values());
+    }
+
+    if (!dto.productName || !dto.quantity) {
+      throw new BadRequestException('Order items are required');
+    }
+
+    return [
+      {
+        productId: 0,
+        productName: dto.productName,
+        quantity: dto.quantity,
+      },
+    ];
+  }
+
   async create(customerId: number, dto: CreateOrderDto) {
+    const normalizedItems = this.normalizeItems(dto);
+    const productIds = normalizedItems.filter((item) => item.productId > 0).map((item) => item.productId);
+
+    const products = productIds.length > 0
+      ? await this.prisma.product.findMany({
+          where: { id: { in: productIds } },
+          select: { id: true, name: true, price: true, quantity: true, blocId: true },
+        })
+      : await this.prisma.product.findMany({
+          where: {
+            name: { equals: normalizedItems[0].productName, mode: 'insensitive' },
+            quantity: { gt: 0 },
+          },
+          select: { id: true, name: true, price: true, quantity: true, blocId: true },
+          orderBy: { quantity: 'desc' },
+        });
+
+    if (productIds.length > 0 && products.length !== productIds.length) {
+      throw new BadRequestException('One or more requested products were not found');
+    }
+
+    const quantityByProductId = new Map<number, number>();
+    for (const item of normalizedItems) {
+      if (item.productId > 0) {
+        quantityByProductId.set(item.productId, (quantityByProductId.get(item.productId) ?? 0) + item.quantity);
+      }
+    }
+
+    let totalQuantity = 0;
+    let totalAmount = 0;
+
+    const orderItems = normalizedItems.map((item) => {
+      const product = item.productId > 0
+        ? products.find((candidate) => candidate.id === item.productId)
+        : products[0];
+
+      if (!product) {
+        throw new BadRequestException(`Product not found for order line: ${item.productName || item.productId}`);
+      }
+
+      if (product.quantity < item.quantity) {
+        throw new BadRequestException(
+          `Not enough stock for ${product.name}. Available: ${product.quantity}, required: ${item.quantity}`,
+        );
+      }
+
+      const lineTotal = product.price * item.quantity;
+      totalQuantity += item.quantity;
+      totalAmount += lineTotal;
+
+      return {
+        productId: product.id,
+        productName: product.name,
+        unitPrice: product.price,
+        quantity: item.quantity,
+        lineTotal,
+      };
+    });
+
+    const summaryName = orderItems.length === 1 ? orderItems[0].productName : `${orderItems.length} products`;
+
     return this.prisma.order.create({
       data: {
         customerId,
-        productName: dto.productName,
-        quantity: dto.quantity,
+        productName: summaryName,
+        quantity: totalQuantity,
+        totalAmount,
         deliveryDeadline: new Date(dto.deliveryDeadline),
         deliveryAddress: dto.deliveryAddress,
         customerName: dto.customerName,
         customerPhone: dto.customerPhone,
+        items: {
+          create: orderItems,
+        },
       },
+      include: { items: true },
     });
   }
 
   findAll() {
     return this.prisma.order.findMany({
-      include: { shipments: true },
+      include: { shipments: true, items: true },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -74,7 +183,7 @@ export class OrderService {
   async findOne(id: number) {
     const order = await this.prisma.order.findUnique({
       where: { id },
-      include: { shipments: true },
+      include: { shipments: true, items: true },
     });
 
     if (!order) {
@@ -95,6 +204,8 @@ export class OrderService {
       id: order.id,
       productName: order.productName,
       quantity: order.quantity,
+      totalAmount: order.totalAmount,
+      items: order.items,
       deliveryStatus: order.deliveryStatus,
       status: order.status,
       approvedAt: order.approvedAt,
@@ -105,7 +216,14 @@ export class OrderService {
   }
 
   async approve(id: number, dto: OrderNoteDto) {
-    const order = await this.findOne(id);
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order #${id} not found`);
+    }
 
     if (order.status === OrderStatus.COMPLETED) {
       throw new BadRequestException('Order is already completed');
@@ -115,43 +233,58 @@ export class OrderService {
       throw new BadRequestException('Order is already approved');
     }
 
-    const products = await this.prisma.product.findMany({
-      where: {
-        name: { equals: order.productName, mode: 'insensitive' },
-        quantity: { gt: 0 },
-      },
-      orderBy: { quantity: 'desc' },
-    });
-
-    const totalStock = products.reduce((sum, product) => sum + product.quantity, 0);
-    if (totalStock < order.quantity) {
-      throw new BadRequestException(
-        `Not enough stock for ${order.productName}. Available: ${totalStock}, required: ${order.quantity}`,
-      );
-    }
+    const orderLines = order.items.length > 0
+      ? order.items.map((item) => ({
+          productId: item.productId,
+          productName: item.productName,
+          quantity: item.quantity,
+        }))
+      : [{ productId: 0, productName: order.productName, quantity: order.quantity }];
 
     return this.prisma.$transaction(async (tx) => {
-      let remaining = order.quantity;
       const blocUsageDecrement = new Map<number, number>();
 
-      for (const product of products) {
-        if (remaining <= 0) {
-          break;
+      for (const line of orderLines) {
+        const products = line.productId > 0
+          ? await tx.product.findMany({
+              where: { id: line.productId },
+            })
+          : await tx.product.findMany({
+              where: {
+                name: { equals: line.productName, mode: 'insensitive' },
+                quantity: { gt: 0 },
+              },
+              orderBy: { quantity: 'desc' },
+            });
+
+        const totalStock = products.reduce((sum, product) => sum + product.quantity, 0);
+        if (totalStock < line.quantity) {
+          throw new BadRequestException(
+            `Not enough stock for ${line.productName}. Available: ${totalStock}, required: ${line.quantity}`,
+          );
         }
 
-        const take = Math.min(product.quantity, remaining);
+        let remaining = line.quantity;
 
-        await tx.product.update({
-          where: { id: product.id },
-          data: { quantity: { decrement: take } },
-        });
+        for (const product of products) {
+          if (remaining <= 0) {
+            break;
+          }
 
-        blocUsageDecrement.set(
-          product.blocId,
-          (blocUsageDecrement.get(product.blocId) ?? 0) + take,
-        );
+          const take = Math.min(product.quantity, remaining);
 
-        remaining -= take;
+          await tx.product.update({
+            where: { id: product.id },
+            data: { quantity: { decrement: take } },
+          });
+
+          blocUsageDecrement.set(
+            product.blocId,
+            (blocUsageDecrement.get(product.blocId) ?? 0) + take,
+          );
+
+          remaining -= take;
+        }
       }
 
       for (const [blocId, quantity] of blocUsageDecrement.entries()) {
@@ -170,7 +303,7 @@ export class OrderService {
           managerNote: dto.managerNote,
           rejectionReason: null,
         },
-        include: { shipments: true },
+        include: { shipments: true, items: true },
       });
     });
   }
