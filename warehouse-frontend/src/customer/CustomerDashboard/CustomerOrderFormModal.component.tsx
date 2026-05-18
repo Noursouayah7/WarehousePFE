@@ -15,6 +15,7 @@ interface CustomerOrderFormModalProps {
   isOpen: boolean;
   isSending: boolean;
   formError: string | null;
+  deliveryWarning: string | null;
   form: CustomerOrderForm;
   products: CustomerProductOption[];
   onClose: () => void;
@@ -26,6 +27,7 @@ export function CustomerOrderFormModal({
   isOpen,
   isSending,
   formError,
+  deliveryWarning,
   form,
   products,
   onClose,
@@ -134,6 +136,11 @@ export function CustomerOrderFormModal({
             aria-label="Delivery date"
             className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
           />
+          {deliveryWarning && (
+            <p className="-mt-1 rounded-lg bg-[var(--tint-warning)] px-3 py-2 text-xs text-[var(--color-warning)]">
+              {deliveryWarning}
+            </p>
+          )}
           <input
             value={form.deliveryAddress}
             onChange={(event) => onFormChange((current) => ({ ...current, deliveryAddress: event.target.value }))}
@@ -159,10 +166,10 @@ export function CustomerOrderFormModal({
 
           <button
             type="submit"
-            disabled={isSending}
+            disabled={isSending || !!deliveryWarning}
             className="mt-2 rounded-lg border border-[var(--color-info)] bg-[#edf2ee] px-4 py-2 text-sm font-medium text-[var(--color-info)] transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {isSending ? 'Sending order...' : 'Send order'}
+            {isSending ? 'Sending order...' : deliveryWarning ? 'Fix delivery date first' : 'Send order'}
           </button>
         </form>
       </div>

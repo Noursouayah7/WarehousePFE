@@ -122,6 +122,13 @@ export function LoginForm() {
                 Register
               </Link>
             </p>
+
+            <p className="mt-2 text-center text-xs text-[var(--muted-foreground)]">
+              Visiting first?{' '}
+              <Link href="/" className="font-medium text-[var(--role-manager)] underline underline-offset-4">
+                Open the public landing page
+              </Link>
+            </p>
           </div>
         </div>
       </div>

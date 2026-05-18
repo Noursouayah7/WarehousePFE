@@ -239,6 +239,12 @@ export default function ManagerPage() {
         <div className="flex items-center gap-6">
           <span className="rounded-full bg-[var(--role-manager)] px-3 py-1 text-[11px] font-semibold tracking-[0.04em] text-black">Manager</span>
           <Link
+            href="/assistant"
+            className="cursor-pointer rounded-lg border border-[#d6d3cc] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
+          >
+            AI Assistant
+          </Link>
+          <Link
             href="/manager/profile"
             className="cursor-pointer rounded-lg border border-[#d6d3cc] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
           >
@@ -280,7 +286,7 @@ export default function ManagerPage() {
 
         <section className="mt-10 rounded-2xl border border-[#a3b18a] bg-[#f5f1e8] p-6 shadow-sm">
           <h2 className="text-xl font-semibold tracking-tight">Orders operations</h2>
-          <p className="mt-1 text-sm text-[#6b705c]">Approve, reject, restock, and mark delivered</p>
+          <p className="mt-1 text-sm text-[#6b705c]">Approve, reject, and request restock</p>
 
           {isLoading ? (
             <div className="py-10 text-center text-sm text-[#6b705c]">Loading orders...</div>
@@ -303,7 +309,6 @@ export default function ManagerPage() {
                     const canApprove = order.status === 'PENDING';
                     const canReject = order.status === 'PENDING' || order.status === 'RESTOCK_REQUESTED';
                     const canRestock = order.status === 'PENDING' || order.status === 'RESTOCK_REQUESTED';
-                    const canDeliver = order.status === 'APPROVED' && order.deliveryStatus !== 'DELIVERED';
                     const isRejectOpen = rejectOrderId === order.id;
                     const isRestockOpen = restockOrderId === order.id;
 
@@ -318,7 +323,6 @@ export default function ManagerPage() {
                         <td className="px-3 py-3 text-[#496553]">{order.quantity}</td>
                         <td className="px-3 py-3">
                           <span className="border border-[#b7c2a0] px-2 py-1 text-xs">{order.status}</span>
-                          <p className="mt-2 text-xs text-[#6b705c]">{order.deliveryStatus}</p>
                         </td>
                         <td className="px-3 py-3 text-xs text-[#5f6f59]">{formatDate(order.deliveryDeadline)}</td>
                         <td className="px-3 py-3 text-xs text-[#5f6f59]">
@@ -352,18 +356,7 @@ export default function ManagerPage() {
                               disabled={!canRestock || busyAction !== null}
                               className="border border-[var(--color-warning)] bg-[var(--tint-warning)] px-3 py-1.5 text-[11px] tracking-[0.12em] text-[var(--color-warning)] disabled:opacity-40"
                             >
-                              RESTOCK
-                            </button>
-                            <button
-                              onClick={() =>
-                                runAction(`deliver-${order.id}`, (activeToken) =>
-                                  markOrderDelivered(activeToken, order.id, 'Order delivered by manager').then(() => undefined),
-                                )
-                              }
-                              disabled={!canDeliver || busyAction !== null}
-                              className="border border-[var(--color-info)] bg-[var(--tint-info)] px-3 py-1.5 text-[11px] tracking-[0.12em] text-[var(--color-info)] disabled:opacity-40"
-                            >
-                              DELIVERED
+                              RESTOCK REQUEST
                             </button>
                           </div>
 

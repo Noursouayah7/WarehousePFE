@@ -11,6 +11,7 @@ const ROLE_ROUTES: Record<ActiveRole, string> = {
   MANAGER: '/manager',
   TECHNICIEN: '/technicien',
   CUSTOMER: '/customer',
+  VISITOR: '/',
 };
 
 function resolveDestination(role: UserRole | null): string {

@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'MANAGER' | 'TECHNICIEN' | 'CUSTOMER' | 'PENDING';
+export type UserRole = 'ADMIN' | 'MANAGER' | 'TECHNICIEN' | 'CUSTOMER' | 'VISITOR' | 'PENDING';
 
 export type ActiveRole = Exclude<UserRole, 'PENDING'>;
 

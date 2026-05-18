@@ -7,12 +7,14 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/Jwt.auth.guard';
 import { Roles } from '../auth/guards/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { RequestUser } from '../auth/strategies/Jwt.strategy';
 import { CreateShipmentDto } from './dto/create-shipment.dto';
 import { ReceiveShipmentDto } from './dto/receive-shipment.dto';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
@@ -25,8 +27,8 @@ export class ShipmentController {
   constructor(private readonly shipmentService: ShipmentService) {}
 
   @Post()
-  create(@Body() dto: CreateShipmentDto) {
-    return this.shipmentService.create(dto);
+  create(@Request() req: { user: RequestUser }, @Body() dto: CreateShipmentDto) {
+    return this.shipmentService.create(dto, req.user.id);
   }
 
   @Get()
@@ -50,8 +52,8 @@ export class ShipmentController {
   }
 
   @Patch(':id/receive')
-  receive(@Param('id', ParseIntPipe) id: number, @Body() dto: ReceiveShipmentDto) {
-    return this.shipmentService.receive(id, dto);
+  receive(@Request() req: { user: RequestUser }, @Param('id', ParseIntPipe) id: number, @Body() dto: ReceiveShipmentDto) {
+    return this.shipmentService.receive(id, dto, req.user.id);
   }
 
   @Delete(':id')

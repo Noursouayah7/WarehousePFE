@@ -13,7 +13,7 @@ import {
 
 type ActiveRole = Exclude<UserRole, 'PENDING'>;
 
-const ROLE_OPTIONS: ActiveRole[] = ['ADMIN', 'MANAGER', 'TECHNICIEN', 'CUSTOMER'];
+const ROLE_OPTIONS: ActiveRole[] = ['ADMIN', 'MANAGER', 'TECHNICIEN', 'CUSTOMER', 'VISITOR'];
 
 export default function AdminUsersDashbord() {
 	const { token } = useAuth();

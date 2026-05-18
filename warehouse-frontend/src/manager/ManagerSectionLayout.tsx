@@ -13,7 +13,10 @@ export default function ManagerSectionLayout({ title, description, children }: M
   const navGroups = [
     {
       label: 'General',
-      items: [{ label: 'Dashboard', href: '/manager', icon: 'dashboard' as const }],
+      items: [
+        { label: 'Dashboard', href: '/manager', icon: 'dashboard' as const },
+        { label: 'Assistant', href: '/assistant', icon: 'assistant' as const },
+      ],
     },
     {
       label: 'Workflow',

@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { ProductService } from './product.service';
@@ -18,6 +19,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from '../auth_old/guards/Jwt.auth.guard';
 import { RolesGuard } from '../auth_old/guards/roles.guard';
 import { Roles } from '../auth_old/guards/roles.decorator';
+import { RequestUser } from '../auth/strategies/Jwt.strategy';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIEN) // all 3 roles can manage products
@@ -27,8 +29,8 @@ export class ProductController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: CreateProductDto) {
-    return this.productService.create(dto);
+  create(@Request() req: { user: RequestUser }, @Body() dto: CreateProductDto) {
+    return this.productService.create(dto, req.user.id);
   }
 
   @Get()
@@ -47,13 +49,13 @@ export class ProductController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProductDto) {
-    return this.productService.update(id, dto);
+  update(@Request() req: { user: RequestUser }, @Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProductDto) {
+    return this.productService.update(id, dto, req.user.id);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.productService.remove(id);
+  remove(@Request() req: { user: RequestUser }, @Param('id', ParseIntPipe) id: number) {
+    return this.productService.remove(id, req.user.id);
   }
 }

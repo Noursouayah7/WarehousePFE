@@ -11,6 +11,8 @@ import { OrderModule } from './order/order.module';
 import { ShipmentModule } from './shipment/shipment.module';
 import { AuthModule } from './auth/auth.module';
 import { SupportTicketModule } from './support-ticket/support-ticket.module';
+import { AssistantModule } from './assistant/assistant.module';
+import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { SupportTicketModule } from './support-ticket/support-ticket.module';
     OrderModule,
     ShipmentModule,
     SupportTicketModule,
+    AssistantModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

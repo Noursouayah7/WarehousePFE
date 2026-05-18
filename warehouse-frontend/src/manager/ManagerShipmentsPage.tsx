@@ -19,6 +19,27 @@ type ReceiveForm = {
 
 const defaultReceiveForm: ReceiveForm = { receivedQuantity: '', trackingNumber: '', note: '' };
 
+function getShipmentBadge(status: ManagerShipment['status']): { label: string; className: string } {
+  if (status === 'RECEIVED') {
+    return {
+      label: 'Delivered',
+      className: 'bg-[var(--tint-success)] text-[var(--color-success)]',
+    };
+  }
+
+  if (status === 'IN_TRANSIT') {
+    return {
+      label: 'In Transit',
+      className: 'bg-[var(--tint-info)] text-[var(--color-info)]',
+    };
+  }
+
+  return {
+    label: 'Sent',
+    className: 'bg-[var(--tint-warning)] text-[var(--color-warning)]',
+  };
+}
+
 function formatDate(value: string | null): string {
   if (!value) return '—';
   const date = new Date(value);
@@ -147,9 +168,9 @@ export default function ManagerShipmentsPage() {
             className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
           >
             <option value="ALL">Filter: All statuses</option>
-            <option value="REQUESTED">Filter: Requested</option>
-            <option value="IN_TRANSIT">Filter: In transit</option>
-            <option value="RECEIVED">Filter: Received</option>
+            <option value="REQUESTED">Filter: Sent</option>
+            <option value="IN_TRANSIT">Filter: In Transit</option>
+            <option value="RECEIVED">Filter: Delivered</option>
           </select>
         </div>
         <p className="text-sm text-[var(--muted-foreground)]">{visibleShipments.length} visible shipments</p>
@@ -164,7 +185,7 @@ export default function ManagerShipmentsPage() {
 
       <section className="rounded-2xl bg-transparent">
         <h2 className="text-lg font-semibold tracking-tight">Shipment workflow</h2>
-        <p className="mt-1 text-sm text-[var(--muted-foreground)]">Move to transit status and receive inventory.</p>
+        <p className="mt-1 text-sm text-[var(--muted-foreground)]">Move shipments from Sent to In Transit and close them as Delivered.</p>
 
         {isLoading ? (
           <div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading shipments...</div>
@@ -178,20 +199,16 @@ export default function ManagerShipmentsPage() {
                   <th className="px-3 py-2">ORDER</th>
                   <th className="px-3 py-2">BLOC</th>
                   <th className="px-3 py-2">STATUS</th>
-                  <th className="px-3 py-2">ETA / RECEIVED</th>
+                  <th className="px-3 py-2">ETA / DELIVERY</th>
                   <th className="px-3 py-2">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {visibleShipments.map((shipment) => {
                   const canTransit = shipment.status === 'REQUESTED';
-                  const canReceive = shipment.status !== 'RECEIVED';
+                  const canDeliver = shipment.status !== 'RECEIVED';
                   const isReceiveOpen = receiveShipmentId === shipment.id;
-                  const statusClass = shipment.status === 'RECEIVED'
-                    ? 'bg-[var(--tint-success)] text-[var(--color-success)]'
-                    : shipment.status === 'IN_TRANSIT'
-                      ? 'bg-[var(--tint-info)] text-[var(--color-info)]'
-                      : 'bg-[var(--tint-warning)] text-[var(--color-warning)]';
+                  const badge = getShipmentBadge(shipment.status);
 
                   return (
                     <tr key={shipment.id} className="align-top">
@@ -209,11 +226,11 @@ export default function ManagerShipmentsPage() {
                         <p className="text-[#6b705c]">usage {shipment.bloc.currentUsage}/{shipment.bloc.capacity}</p>
                       </td>
                       <td className="bg-[var(--card)] px-3 py-3">
-                        <span className={[ 'inline-flex rounded-full px-2.5 py-1 text-xs font-medium', statusClass ].join(' ')}>{shipment.status}</span>
+                        <span className={[ 'inline-flex rounded-full px-2.5 py-1 text-xs font-medium', badge.className ].join(' ')}>{badge.label}</span>
                       </td>
                       <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">
                         <p>ETA: {formatDate(shipment.expectedAt)}</p>
-                        <p>Received: {formatDate(shipment.receivedAt)}</p>
+                        <p>Delivered: {formatDate(shipment.receivedAt)}</p>
                       </td>
                       <td className="rounded-r-lg bg-[var(--card)] px-3 py-3">
                         <div className="flex flex-wrap gap-2">
@@ -226,7 +243,7 @@ export default function ManagerShipmentsPage() {
                             disabled={!canTransit || busyAction !== null}
                             className="rounded-md bg-[var(--tint-info)] px-3 py-1.5 text-xs font-medium text-[var(--color-info)] disabled:opacity-40"
                           >
-                            In transit
+                            Mark in transit
                           </button>
                           <button
                             onClick={() => {
@@ -237,10 +254,10 @@ export default function ManagerShipmentsPage() {
                                 trackingNumber: shipment.trackingNumber ?? '',
                               });
                             }}
-                            disabled={!canReceive || busyAction !== null}
+                            disabled={!canDeliver || busyAction !== null}
                             className="rounded-md bg-[var(--tint-success)] px-3 py-1.5 text-xs font-medium text-[var(--color-success)] disabled:opacity-40"
                           >
-                            Receive
+                            Mark delivered
                           </button>
                         </div>
 
@@ -248,7 +265,7 @@ export default function ManagerShipmentsPage() {
                           <form onSubmit={submitReceive} className="mt-3 space-y-2 rounded-md bg-[#f4f3ef] p-3">
                             <input
                               name="receivedQuantity"
-                              placeholder="Received quantity"
+                              placeholder="Delivered quantity"
                               value={receiveForm.receivedQuantity}
                               onChange={onReceiveInputChange}
                               className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[#344e41] outline-none"
@@ -262,7 +279,7 @@ export default function ManagerShipmentsPage() {
                             />
                             <textarea
                               name="note"
-                              placeholder="Receive note"
+                              placeholder="Delivery note"
                               value={receiveForm.note}
                               onChange={onReceiveInputChange}
                               rows={2}
@@ -274,7 +291,7 @@ export default function ManagerShipmentsPage() {
                                 disabled={busyAction !== null}
                                 className="rounded-md bg-[var(--tint-success)] px-3 py-1 text-xs font-medium text-[var(--color-success)] disabled:opacity-40"
                               >
-                                Confirm receive
+                                Confirm delivery
                               </button>
                               <button
                                 type="button"

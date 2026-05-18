@@ -13,7 +13,10 @@ export default function AdminSectionLayout({ title, description, children }: Adm
   const navGroups = [
     {
       label: 'General',
-      items: [{ label: 'Dashboard', href: '/admin', icon: 'dashboard' as const }],
+      items: [
+        { label: 'Dashboard', href: '/admin', icon: 'dashboard' as const },
+        { label: 'Assistant', href: '/assistant', icon: 'assistant' as const },
+      ],
     },
     {
       label: 'Administration',

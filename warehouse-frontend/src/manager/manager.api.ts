@@ -20,6 +20,15 @@ export interface ManagerOrderShipment {
   updatedAt: string;
 }
 
+export interface ManagerOrderItem {
+  id: number;
+  productId: number;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+}
+
 export interface ManagerOrder {
   id: number;
   productName: string;
@@ -38,6 +47,7 @@ export interface ManagerOrder {
   createdAt: string;
   updatedAt: string;
   shipments: ManagerOrderShipment[];
+  items: ManagerOrderItem[];
 }
 
 export interface ShipmentOrderRef {
@@ -175,6 +185,30 @@ function normalizeOrder(data: unknown): ManagerOrder {
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
     shipments: raw.shipments.map(normalizeOrderShipment),
+    items: Array.isArray(raw.items)
+      ? raw.items.map((item) => {
+          const entry = asRecord(item, 'order item');
+          if (
+            typeof entry.id !== 'number' ||
+            typeof entry.productId !== 'number' ||
+            typeof entry.productName !== 'string' ||
+            typeof entry.unitPrice !== 'number' ||
+            typeof entry.quantity !== 'number' ||
+            typeof entry.lineTotal !== 'number'
+          ) {
+            throw new Error('Invalid order item payload');
+          }
+
+          return {
+            id: entry.id,
+            productId: entry.productId,
+            productName: entry.productName,
+            unitPrice: entry.unitPrice,
+            quantity: entry.quantity,
+            lineTotal: entry.lineTotal,
+          } satisfies ManagerOrderItem;
+        })
+      : [],
   };
 }
 

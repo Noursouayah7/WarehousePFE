@@ -69,8 +69,8 @@ export class OrderController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @Patch(':id/approve')
-  approve(@Param('id', ParseIntPipe) id: number, @Body() dto: OrderNoteDto) {
-    return this.orderService.approve(id, dto);
+  approve(@Request() req: { user: RequestUser }, @Param('id', ParseIntPipe) id: number, @Body() dto: OrderNoteDto) {
+    return this.orderService.approve(id, dto, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -84,10 +84,11 @@ export class OrderController {
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @Post(':id/restock-request')
   createRestockRequest(
+    @Request() req: { user: RequestUser },
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateRestockRequestDto,
   ) {
-    return this.orderService.createRestockRequest(id, dto);
+    return this.orderService.createRestockRequest(id, dto, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

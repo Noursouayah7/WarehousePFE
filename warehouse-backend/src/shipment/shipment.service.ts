@@ -3,7 +3,7 @@ import {
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common';
-import { OrderStatus, ShipmentStatus, ShipmentType } from '@prisma/client';
+import { InventoryOperationType, OrderStatus, ShipmentStatus, ShipmentType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateShipmentDto } from './dto/create-shipment.dto';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
@@ -13,26 +13,42 @@ import { ReceiveShipmentDto } from './dto/receive-shipment.dto';
 export class ShipmentService {
 	constructor(private readonly prisma: PrismaService) {}
 
-	async create(dto: CreateShipmentDto) {
-		await this.prisma.bloc.findUniqueOrThrow({ where: { id: dto.blocId } });
+	async create(dto: CreateShipmentDto, technicianId?: number) {
+		return this.prisma.$transaction(async (tx) => {
+			await tx.bloc.findUniqueOrThrow({ where: { id: dto.blocId } });
 
-		if (dto.orderId) {
-			await this.prisma.order.findUniqueOrThrow({ where: { id: dto.orderId } });
-		}
+			if (dto.orderId) {
+				await tx.order.findUniqueOrThrow({ where: { id: dto.orderId } });
+			}
 
-		return this.prisma.shipment.create({
-			data: {
-				orderId: dto.orderId,
-				type: dto.type ?? ShipmentType.RESTOCK,
-				productName: dto.productName,
-				quantity: dto.quantity,
-				blocId: dto.blocId,
-				supplierName: dto.supplierName,
-				trackingNumber: dto.trackingNumber,
-				expectedAt: dto.expectedAt ? new Date(dto.expectedAt) : null,
-				note: dto.note,
-			},
-			include: { order: true, bloc: true },
+			const shipment = await tx.shipment.create({
+				data: {
+					orderId: dto.orderId,
+					type: dto.type ?? ShipmentType.RESTOCK,
+					productName: dto.productName,
+					quantity: dto.quantity,
+					blocId: dto.blocId,
+					supplierName: dto.supplierName,
+					trackingNumber: dto.trackingNumber,
+					expectedAt: dto.expectedAt ? new Date(dto.expectedAt) : null,
+					note: dto.note,
+				},
+			});
+
+			await tx.inventoryMovement.create({
+				data: {
+					productName: dto.productName,
+					quantity: dto.quantity,
+					operationType: InventoryOperationType.SHIPMENT_CREATED,
+					destinationBlocId: dto.blocId,
+					orderId: dto.orderId ?? null,
+					shipmentId: shipment.id,
+					technicianId: technicianId ?? null,
+					note: dto.note ?? 'Shipment created',
+				},
+			});
+
+			return tx.shipment.findUniqueOrThrow({ where: { id: shipment.id }, include: { order: true, bloc: true } });
 		});
 	}
 
@@ -91,7 +107,7 @@ export class ShipmentService {
 		});
 	}
 
-	async receive(id: number, dto: ReceiveShipmentDto) {
+	async receive(id: number, dto: ReceiveShipmentDto, technicianId?: number) {
 		const shipment = await this.findOne(id);
 
 		if (shipment.status === ShipmentStatus.RECEIVED) {
@@ -148,6 +164,20 @@ export class ShipmentService {
 				});
 			}
 
+			await tx.inventoryMovement.create({
+				data: {
+					productId: product.id,
+					productName: product.name,
+					quantity: receivedQuantity,
+					operationType: InventoryOperationType.STOCK_IN,
+					destinationBlocId: shipment.blocId,
+					shipmentId: shipment.id,
+					orderId: shipment.orderId,
+					technicianId: technicianId ?? null,
+					note: dto.note ?? shipment.note,
+				},
+			});
+
 			return tx.shipment.update({
 				where: { id },
 				data: {
@@ -163,7 +193,12 @@ export class ShipmentService {
 	}
 
 	async remove(id: number) {
-		await this.findOne(id);
+		const shipment = await this.findOne(id);
+
+		if (shipment.status === ShipmentStatus.RECEIVED) {
+			throw new BadRequestException('Received shipments cannot be deleted; reverse the stock first');
+		}
+
 		await this.prisma.shipment.delete({ where: { id } });
 		return { message: `Shipment #${id} deleted successfully` };
 	}

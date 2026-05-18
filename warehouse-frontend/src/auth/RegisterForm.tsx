@@ -188,6 +188,13 @@ export function RegisterForm() {
                 Login
               </Link>
             </p>
+
+            <p className="mt-2 text-center text-xs text-[var(--muted-foreground)]">
+              Want to explore the company first?{' '}
+              <Link href="/" className="font-medium text-[var(--role-manager)] underline underline-offset-4">
+                Go to landing page
+              </Link>
+            </p>
           </div>
         </div>
       </div>

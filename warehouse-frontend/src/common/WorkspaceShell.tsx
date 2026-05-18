@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
 
-type NavIcon = 'dashboard' | 'orders' | 'shipments' | 'products' | 'warehouses' | 'users';
+type NavIcon = 'dashboard' | 'orders' | 'shipments' | 'products' | 'warehouses' | 'users' | 'assistant';
 
 type ShellNavItem = {
   label: string;
@@ -98,6 +98,15 @@ function Icon({ kind }: { kind: NavIcon }) {
       <svg viewBox="0 0 24 24" fill="none" className={iconClass}>
         <path d="M16 20a4 4 0 0 0-8 0" stroke="currentColor" />
         <circle cx="12" cy="8" r="4" stroke="currentColor" />
+      </svg>
+    );
+  }
+
+  if (kind === 'assistant') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={iconClass}>
+        <path d="M6 7.5A3.5 3.5 0 0 1 9.5 4h5A3.5 3.5 0 0 1 18 7.5v5A3.5 3.5 0 0 1 14.5 16H11l-4 4v-4H9.5A3.5 3.5 0 0 1 6 12.5z" stroke="currentColor" />
+        <path d="M10 8.5h4M10 11h2.5" stroke="currentColor" strokeLinecap="round" />
       </svg>
     );
   }

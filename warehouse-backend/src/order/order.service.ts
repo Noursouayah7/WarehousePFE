@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DeliveryStatus, OrderStatus, ShipmentType } from '@prisma/client';
+import { DeliveryStatus, InventoryOperationType, OrderStatus, ShipmentType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderNoteDto } from './dto/order-note.dto';
@@ -19,6 +19,8 @@ type NormalizedOrderLine = {
 
 @Injectable()
 export class OrderService {
+  private readonly minimumDeliveryDelayMs = 10 * 24 * 60 * 60 * 1000;
+
   constructor(private readonly prisma: PrismaService) {}
 
   async customerProducts() {
@@ -94,6 +96,16 @@ export class OrderService {
   }
 
   async create(customerId: number, dto: CreateOrderDto) {
+    const deliveryDeadline = new Date(dto.deliveryDeadline);
+
+    if (Number.isNaN(deliveryDeadline.getTime())) {
+      throw new BadRequestException('Invalid delivery deadline');
+    }
+
+    if (deliveryDeadline.getTime() - Date.now() < this.minimumDeliveryDelayMs) {
+      throw new BadRequestException('Delivery date must be at least 10 days from today');
+    }
+
     const normalizedItems = this.normalizeItems(dto);
     const productIds = normalizedItems.filter((item) => item.productId > 0).map((item) => item.productId);
 
@@ -161,7 +173,7 @@ export class OrderService {
         productName: summaryName,
         quantity: totalQuantity,
         totalAmount,
-        deliveryDeadline: new Date(dto.deliveryDeadline),
+        deliveryDeadline,
         deliveryAddress: dto.deliveryAddress,
         customerName: dto.customerName,
         customerPhone: dto.customerPhone,
@@ -215,7 +227,7 @@ export class OrderService {
     };
   }
 
-  async approve(id: number, dto: OrderNoteDto) {
+  async approve(id: number, dto: OrderNoteDto, technicianId?: number) {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: { items: true },
@@ -278,6 +290,29 @@ export class OrderService {
             data: { quantity: { decrement: take } },
           });
 
+          await tx.inventoryMovement.create({
+            data: {
+              productId: product.id,
+              productName: product.name,
+              quantity: take,
+              operationType: InventoryOperationType.STOCK_OUT,
+              sourceBlocId: product.blocId,
+              orderId: id,
+              technicianId: technicianId ?? null,
+              note: `Order #${id} approved`,
+            },
+          });
+
+          const shipment = await tx.shipment.create({
+            data: {
+              orderId: id,
+              type: ShipmentType.ORDER,
+              productName: product.name,
+              quantity: take,
+              blocId: product.blocId,
+              note: `Auto-created from order #${id}`,
+            },
+          });
           blocUsageDecrement.set(
             product.blocId,
             (blocUsageDecrement.get(product.blocId) ?? 0) + take,
@@ -321,7 +356,7 @@ export class OrderService {
     });
   }
 
-  async createRestockRequest(id: number, dto: CreateRestockRequestDto) {
+  async createRestockRequest(id: number, dto: CreateRestockRequestDto, technicianId?: number) {
     const order = await this.findOne(id);
 
     if (order.status === OrderStatus.COMPLETED) {
@@ -343,7 +378,7 @@ export class OrderService {
         },
       });
 
-      return tx.shipment.create({
+      const shipment = await tx.shipment.create({
         data: {
           orderId: id,
           type: ShipmentType.RESTOCK,
@@ -356,6 +391,21 @@ export class OrderService {
           note: dto.note,
         },
       });
+
+      await tx.inventoryMovement.create({
+        data: {
+          productName,
+          quantity: requestedQuantity,
+          operationType: InventoryOperationType.SHIPMENT_CREATED,
+          destinationBlocId: dto.blocId,
+          orderId: id,
+          shipmentId: shipment.id,
+          technicianId: technicianId ?? null,
+          note: dto.note ?? 'Restock request created',
+        },
+      });
+
+      return shipment;
     });
   }
 

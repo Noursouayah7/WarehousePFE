@@ -23,6 +23,26 @@ const emptyForm: CustomerOrderForm = {
   customerPhone: '',
 };
 
+const minimumDeliveryDelayMs = 10 * 24 * 60 * 60 * 1000;
+
+function getDeliveryWarning(deliveryDeadline: string): string | null {
+  if (!deliveryDeadline) {
+    return null;
+  }
+
+  const selectedDate = new Date(deliveryDeadline);
+  if (Number.isNaN(selectedDate.getTime())) {
+    return 'Choose a valid delivery date.';
+  }
+
+  const delta = selectedDate.getTime() - Date.now();
+  if (delta < minimumDeliveryDelayMs) {
+    return 'Delivery must be scheduled at least 10 days in advance.';
+  }
+
+  return null;
+}
+
 export default function CustomerPage() {
   const { token } = useAuth();
 
@@ -46,6 +66,7 @@ export default function CustomerPage() {
   const [form, setForm] = useState<CustomerOrderForm>(emptyForm);
   const [deliveryNotice, setDeliveryNotice] = useState<string | null>(null);
   const [lastDeliveredOrderId, setLastDeliveredOrderId] = useState<number | null>(null);
+  const deliveryWarning = useMemo(() => getDeliveryWarning(form.deliveryDeadline), [form.deliveryDeadline]);
 
   async function loadData(activeToken: string) {
     const [productData, orderData] = await Promise.all([
@@ -160,6 +181,11 @@ export default function CustomerPage() {
 
     if (!/^\d{8}$/.test(form.customerPhone.trim())) {
       setFormError('Phone number must contain exactly 8 digits.');
+      return;
+    }
+
+    if (deliveryWarning) {
+      setFormError(deliveryWarning);
       return;
     }
 
@@ -304,6 +330,7 @@ export default function CustomerPage() {
         formError={formError}
         form={form}
         products={products}
+        deliveryWarning={deliveryWarning}
         onClose={closeOrderForm}
         onSubmit={handleSendOrder}
         onFormChange={setForm}

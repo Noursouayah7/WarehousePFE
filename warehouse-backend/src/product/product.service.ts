@@ -4,6 +4,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
+import { InventoryOperationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -24,7 +25,7 @@ export class ProductService {
 
   // ─── CRUD ─────────────────────────────────────────────────────────────────────
 
-  async create(dto: CreateProductDto) {
+  async create(dto: CreateProductDto, technicianId?: number) {
     const bloc = await this.findBloc(dto.blocId);
 
     // Check duplicate product name within the same bloc
@@ -59,6 +60,17 @@ export class ProductService {
       await tx.bloc.update({
         where: { id: dto.blocId },
         data: { currentUsage: { increment: incomingQuantity } },
+      });
+      await tx.inventoryMovement.create({
+        data: {
+          productId: newProduct.id,
+          productName: newProduct.name,
+          quantity: incomingQuantity,
+          operationType: InventoryOperationType.STOCK_IN,
+          destinationBlocId: dto.blocId,
+          technicianId: technicianId ?? null,
+          note: 'Product created',
+        },
       });
       return newProduct;
     });
@@ -95,8 +107,12 @@ export class ProductService {
     });
   }
 
-  async update(id: number, dto: UpdateProductDto) {
+  async update(id: number, dto: UpdateProductDto, technicianId?: number) {
     const product = await this.findOne(id);
+
+    if (dto.blocId !== undefined && dto.blocId !== product.blocId) {
+      throw new BadRequestException('Use inventory transfer to move products between blocs');
+    }
 
     // If quantity is being changed, update bloc currentUsage accordingly
     if (dto.quantity !== undefined && dto.quantity !== product.quantity) {
@@ -119,6 +135,18 @@ export class ProductService {
           where: { id: product.blocId },
           data: { currentUsage: { increment: diff } },
         }),
+        this.prisma.inventoryMovement.create({
+          data: {
+            productId: product.id,
+            productName: product.name,
+            quantity: Math.abs(diff),
+            operationType: diff > 0 ? InventoryOperationType.STOCK_IN : InventoryOperationType.STOCK_OUT,
+            sourceBlocId: diff > 0 ? null : product.blocId,
+            destinationBlocId: diff > 0 ? product.blocId : null,
+            technicianId: technicianId ?? null,
+            note: diff > 0 ? 'Manual stock increase' : 'Manual stock decrease',
+          },
+        }),
       ]);
 
       return updated;
@@ -131,11 +159,22 @@ export class ProductService {
     });
   }
 
-  async remove(id: number) {
+  async remove(id: number, technicianId?: number) {
     const product = await this.findOne(id);
 
     // Free up the bloc capacity when product is deleted
     await this.prisma.$transaction([
+      this.prisma.inventoryMovement.create({
+        data: {
+          productId: product.id,
+          productName: product.name,
+          quantity: product.quantity,
+          operationType: InventoryOperationType.STOCK_OUT,
+          sourceBlocId: product.blocId,
+          technicianId: technicianId ?? null,
+          note: 'Product deleted',
+        },
+      }),
       this.prisma.product.delete({ where: { id } }),
       this.prisma.bloc.update({
         where: { id: product.blocId },

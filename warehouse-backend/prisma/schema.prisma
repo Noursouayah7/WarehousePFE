@@ -16,6 +16,7 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   bloc        Bloc     @relation(fields: [blocId], references: [id], onDelete: Cascade)
+  inventoryMovements InventoryMovement[]
 
   @@map("products")
 }
@@ -44,6 +45,8 @@ model Bloc {
   warehouse    Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
   products     Product[]
   shipments    Shipment[]
+  sourceInventoryMovements InventoryMovement[] @relation("InventoryMovementSourceBloc")
+  destinationInventoryMovements InventoryMovement[] @relation("InventoryMovementDestinationBloc")
 
   @@map("blocs")
 }
@@ -63,6 +66,7 @@ model User {
 
   orders           Order[]
   supportTickets   SupportTicket[]
+  inventoryMovements InventoryMovement[] @relation("InventoryMovementTechnician")
 }
 
 model Order {
@@ -88,6 +92,7 @@ model Order {
   customer         User?          @relation(fields: [customerId], references: [id], onDelete: SetNull)
   shipments        Shipment[]
   items            OrderItem[]
+  inventoryMovements InventoryMovement[]
 
   @@map("orders")
 }
@@ -126,8 +131,33 @@ model Shipment {
 
   order          Order?         @relation(fields: [orderId], references: [id], onDelete: SetNull)
   bloc           Bloc           @relation(fields: [blocId], references: [id], onDelete: Restrict)
+  inventoryMovements InventoryMovement[]
 
   @@map("shipments")
+}
+
+model InventoryMovement {
+  id                Int                     @id @default(autoincrement())
+  productId         Int?
+  productName       String
+  quantity          Int
+  operationType     InventoryOperationType
+  sourceBlocId      Int?
+  destinationBlocId Int?
+  orderId           Int?
+  shipmentId        Int?
+  technicianId      Int?
+  note              String?
+  createdAt         DateTime                @default(now())
+
+  product           Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  sourceBloc        Bloc?     @relation("InventoryMovementSourceBloc", fields: [sourceBlocId], references: [id], onDelete: SetNull)
+  destinationBloc   Bloc?     @relation("InventoryMovementDestinationBloc", fields: [destinationBlocId], references: [id], onDelete: SetNull)
+  order             Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  shipment          Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  technician        User?     @relation("InventoryMovementTechnician", fields: [technicianId], references: [id], onDelete: SetNull)
+
+  @@map("inventory_movements")
 }
 
 model SupportTicket {
@@ -152,6 +182,7 @@ enum UserRole {
   MANAGER
   TECHNICIEN
   CUSTOMER
+  VISITOR
   PENDING
 }
 
@@ -170,6 +201,7 @@ enum DeliveryStatus {
 }
 enum ShipmentType {
   RESTOCK
+  ORDER
 }
 enum ShipmentStatus {
   REQUESTED
@@ -196,4 +228,14 @@ enum SupportTicketStatus {
   IN_PROGRESS
   RESOLVED
   CLOSED
+}
+
+enum InventoryOperationType {
+  STOCK_IN
+  STOCK_OUT
+  TRANSFER
+  DAMAGE
+  RESTOCK
+  SHIPMENT_CREATED
+  ORDER_APPROVED
 }

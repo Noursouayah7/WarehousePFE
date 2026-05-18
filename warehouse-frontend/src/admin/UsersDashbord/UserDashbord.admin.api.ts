@@ -37,6 +37,7 @@ function isUserRole(value: unknown): value is UserRole {
 		value === 'MANAGER' ||
 		value === 'TECHNICIEN' ||
 		value === 'CUSTOMER' ||
+		value === 'VISITOR' ||
 		value === 'PENDING'
 	);
 }
