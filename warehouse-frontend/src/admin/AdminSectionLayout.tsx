@@ -23,6 +23,7 @@ export default function AdminSectionLayout({ title, description, children }: Adm
       items: [
         { label: 'Users', href: '/admin/users', icon: 'users' as const },
         { label: 'Support tickets', href: '/admin/support-tickets', icon: 'users' as const },
+        { label: 'Reclamations', href: '/admin/reclamations', icon: 'users' as const },
       ],
     },
     {

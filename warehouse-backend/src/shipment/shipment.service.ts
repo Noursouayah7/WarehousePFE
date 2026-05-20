@@ -72,6 +72,18 @@ export class ShipmentService {
 		return shipment;
 	}
 
+	async findByCustomerId(customerId: number) {
+		return this.prisma.shipment.findMany({
+			where: {
+				order: {
+					customerId: customerId,
+				},
+			},
+			include: { order: true, bloc: true },
+			orderBy: { createdAt: 'desc' },
+		});
+	}
+
 	async update(id: number, dto: UpdateShipmentDto) {
 		await this.findOne(id);
 

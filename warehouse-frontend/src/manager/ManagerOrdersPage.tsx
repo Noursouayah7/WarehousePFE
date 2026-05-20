@@ -20,23 +20,25 @@ type RejectForm = {
 };
 
 type RestockForm = {
+  productId: string;
+  productName: string;
+  currentStock: string;
+  requestedQuantity: string;
+  warehouseId: string;
   blocId: string;
-  quantity: string;
-  urgency: 'LOW' | 'MEDIUM' | 'HIGH';
-  supplierName: string;
-  trackingNumber: string;
-  expectedAt: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
   note: string;
 };
 
 const defaultRejectForm: RejectForm = { reason: '', managerNote: '' };
 const defaultRestockForm: RestockForm = {
+  productId: '',
+  productName: '',
+  currentStock: '',
+  requestedQuantity: '',
+  warehouseId: '',
   blocId: '',
-  quantity: '',
-  urgency: 'MEDIUM',
-  supplierName: '',
-  trackingNumber: '',
-  expectedAt: '',
+  priority: 'MEDIUM',
   note: '',
 };
 
@@ -66,18 +68,6 @@ function getOrderBadge(order: ManagerOrder): { label: string; className: string 
     label: 'Pending',
     className: 'bg-[var(--tint-warning)] text-[var(--color-warning)]',
   };
-}
-
-function getUrgencyClass(value: 'LOW' | 'MEDIUM' | 'HIGH'): string {
-  if (value === 'HIGH') {
-    return 'bg-[var(--tint-error)] text-[var(--color-error)]';
-  }
-
-  if (value === 'MEDIUM') {
-    return 'bg-[var(--tint-warning)] text-[var(--color-warning)]';
-  }
-
-  return 'bg-[var(--tint-info)] text-[var(--color-info)]';
 }
 
 function getDeliveryDay(value: string | null): string {
@@ -112,7 +102,6 @@ export default function ManagerOrdersPage() {
   const [view, setView] = useState<'table' | 'kanban' | 'calendar'>('table');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
   const [sortBy, setSortBy] = useState<'latest' | 'deadline' | 'quantity'>('latest');
-  const [showNewOrderHint, setShowNewOrderHint] = useState(false);
   const pendingOrdersCount = useMemo(
     () => orders.filter((order) => order.status === 'PENDING').length,
     [orders],
@@ -121,6 +110,7 @@ export default function ManagerOrdersPage() {
   const visibleOrders = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     const filtered = orders.filter((order) => {
+      if (order.status === 'COMPLETED') return false;
       if (statusFilter === 'ALL') return true;
       return order.status === statusFilter;
     }).filter((order) => {
@@ -324,34 +314,47 @@ export default function ManagerOrdersPage() {
     event.preventDefault();
     if (!stockReviewOrder) return;
 
+    const productId = Number(restockForm.productId);
+    const currentStock = Number(restockForm.currentStock);
+    const requestedQuantity = Number(restockForm.requestedQuantity);
+    const warehouseId = Number(restockForm.warehouseId);
     const blocId = Number(restockForm.blocId);
+
+    if (!Number.isFinite(productId) || productId <= 0) {
+      setError('Please select a valid product.');
+      return;
+    }
+
+    if (!Number.isFinite(currentStock) || currentStock < 0) {
+      setError('Current stock must be a valid number.');
+      return;
+    }
+
+    if (!Number.isFinite(requestedQuantity) || requestedQuantity <= 0) {
+      setError('Requested quantity must be greater than 0.');
+      return;
+    }
+
+    if (!Number.isFinite(warehouseId) || warehouseId <= 0) {
+      setError('Please select a valid warehouse.');
+      return;
+    }
+
     if (!Number.isFinite(blocId) || blocId <= 0) {
       setError('Please select a valid bloc.');
       return;
     }
 
-    const quantityText = restockForm.quantity.trim();
-    const quantity = quantityText ? Number(quantityText) : undefined;
-    if (quantity !== undefined && (!Number.isFinite(quantity) || quantity <= 0)) {
-      setError('Restock quantity must be greater than 0.');
-      return;
-    }
-
     await runAction(`restock-${stockReviewOrder.id}`, async (activeToken) => {
-      const urgency = restockForm.urgency;
-      const noteParts = [
-        `Urgency: ${urgency}`,
-        restockForm.note.trim(),
-      ].filter(Boolean);
-
       await requestRestock(activeToken, stockReviewOrder.id, {
+        productId,
+        productName: restockForm.productName,
+        currentStock,
+        requestedQuantity,
+        warehouseId,
         blocId,
-        quantity,
-        productName: stockReviewOrder.productName,
-        supplierName: restockForm.supplierName.trim() || undefined,
-        trackingNumber: restockForm.trackingNumber.trim() || undefined,
-        expectedAt: restockForm.expectedAt || undefined,
-        note: noteParts.join('. '),
+        priority: restockForm.priority,
+        note: restockForm.note.trim() || undefined,
       });
       setSuccessMessage('Restock request successfully sent to technician.');
       setRestockOrderId(null);
@@ -362,17 +365,10 @@ export default function ManagerOrdersPage() {
   return (
     <ManagerSectionLayout
       title="Orders"
-      description="Track and process order workflow from request to delivery."
+      description="Track customer orders and send restock alerts when stock is low."
     >
       <section className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowNewOrderHint(true)}
-            className="rounded-md bg-[#eef3ef] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[#e5eee6]"
-          >
-            New order
-          </button>
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value as 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED')}
@@ -412,15 +408,6 @@ export default function ManagerOrdersPage() {
           ))}
         </div>
       </section>
-
-      {showNewOrderHint && (
-        <div className="mb-4 flex items-start justify-between gap-3 rounded-md bg-[#edf3ff] px-3 py-2 text-sm text-[#2d5cc0]">
-          <p>Use the customer portal to create new orders, then process them here.</p>
-          <button type="button" onClick={() => setShowNewOrderHint(false)} className="text-xs font-medium text-[#2d5cc0]">
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {error && (
         <div className="mb-4 flex items-start gap-2 rounded-md bg-[var(--tint-error)] px-3 py-2 text-sm text-[var(--color-error)]">
@@ -464,7 +451,7 @@ export default function ManagerOrdersPage() {
               </button>
             </div>
 
-            <div className="grid gap-4 overflow-y-auto px-6 py-5 lg:grid-cols-[1.1fr_0.9fr]">
+            <form onSubmit={submitRestock} className="grid gap-4 overflow-y-auto px-6 py-5 lg:grid-cols-[0.95fr_1.05fr]">
               <div className="space-y-4">
                 {stockReviewLines.map((entry) => (
                   <div key={entry.line.id || entry.line.productName} className="rounded-2xl border border-[var(--border)] bg-[#fbfbf8] p-4">
@@ -481,14 +468,6 @@ export default function ManagerOrdersPage() {
                         <p className="mt-1 text-2xl font-semibold">{entry.currentStock}</p>
                       </div>
                       <div className="rounded-xl bg-white px-4 py-3">
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Reserved</p>
-                        <p className="mt-1 text-2xl font-semibold">{entry.reservedQuantity}</p>
-                      </div>
-                      <div className="rounded-xl bg-white px-4 py-3">
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Available</p>
-                        <p className="mt-1 text-2xl font-semibold">{entry.availableQuantity}</p>
-                      </div>
-                      <div className="rounded-xl bg-white px-4 py-3">
                         <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Requested</p>
                         <p className="mt-1 text-2xl font-semibold">{entry.line.quantity}</p>
                       </div>
@@ -503,74 +482,72 @@ export default function ManagerOrdersPage() {
               </div>
 
               <div className="rounded-2xl border border-[var(--border)] bg-[#f8f5ea] p-4">
-                <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted-foreground)]">Workflow</p>
-                <div className="mt-4 space-y-3 text-sm">
-                  <div className="rounded-xl bg-white px-4 py-3">1. Review current stock and bloc location</div>
-                  <div className="rounded-xl bg-white px-4 py-3">2. Check reserved quantity and availability</div>
-                  <div className="rounded-xl bg-white px-4 py-3">3. Send one restock request to the technician</div>
-                  <div className="rounded-xl bg-white px-4 py-3">4. Technician sees it in the inventory ledger and operation history</div>
-                </div>
-
-                <form onSubmit={submitRestock} className="mt-5 flex flex-col gap-3">
-                  <div className="rounded-xl bg-white px-4 py-3 text-sm text-[var(--muted-foreground)]">
-                    Sent requests become shipment records and show up in technician operations automatically.
-                  </div>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted-foreground)]">Restock alert form</p>
+                <div className="mt-4 grid gap-3">
+                  <input
+                    name="productName"
+                    value={restockForm.productName}
+                    readOnly
+                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
+                  />
+                  <input
+                    name="currentStock"
+                    value={restockForm.currentStock}
+                    readOnly
+                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
+                  />
+                  <input
+                    name="requestedQuantity"
+                    type="number"
+                    min="1"
+                    value={restockForm.requestedQuantity}
+                    onChange={onRestockInputChange}
+                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
+                  />
+                  <select
+                    name="warehouseId"
+                    value={restockForm.warehouseId}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setRestockForm((current) => ({ ...current, warehouseId: value, blocId: '' }));
+                    }}
+                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
+                  >
+                    <option value="">Target warehouse</option>
+                    {warehouses.map((warehouse) => (
+                      <option key={warehouse.id} value={String(warehouse.id)}>
+                        {warehouse.name}
+                      </option>
+                    ))}
+                  </select>
                   <select
                     name="blocId"
                     value={restockForm.blocId}
                     onChange={onRestockInputChange}
                     className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
                   >
-                    <option value="">Select bloc</option>
-                    {blocs.map((bloc) => (
-                      <option key={bloc.id} value={String(bloc.id)}>
-                        {bloc.name} (usage {bloc.currentUsage}/{bloc.capacity})
-                      </option>
-                    ))}
+                    <option value="">Target bloc</option>
+                    {blocs
+                      .filter((bloc) => !restockForm.warehouseId || bloc.warehouseId === Number(restockForm.warehouseId))
+                      .map((bloc) => (
+                        <option key={bloc.id} value={String(bloc.id)}>
+                          {bloc.name} (usage {bloc.currentUsage}/{bloc.capacity})
+                        </option>
+                      ))}
                   </select>
-                  <input
-                    name="quantity"
-                    placeholder="Requested quantity"
-                    value={restockForm.quantity}
-                    onChange={onRestockInputChange}
-                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
-                  />
                   <select
-                    name="urgency"
-                    value={restockForm.urgency}
+                    name="priority"
+                    value={restockForm.priority}
                     onChange={onRestockInputChange}
                     className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
                   >
-                    <option value="LOW">Low urgency</option>
-                    <option value="MEDIUM">Medium urgency</option>
-                    <option value="HIGH">High urgency</option>
+                    <option value="LOW">Low priority</option>
+                    <option value="MEDIUM">Medium priority</option>
+                    <option value="HIGH">High priority</option>
                   </select>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <input
-                      name="supplierName"
-                      placeholder="Supplier name"
-                      value={restockForm.supplierName}
-                      onChange={onRestockInputChange}
-                      className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
-                    />
-                    <input
-                      name="trackingNumber"
-                      placeholder="Tracking number"
-                      value={restockForm.trackingNumber}
-                      onChange={onRestockInputChange}
-                      className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
-                    />
-                  </div>
-                  <input
-                    type="datetime-local"
-                    name="expectedAt"
-                    value={restockForm.expectedAt}
-                    onChange={onRestockInputChange}
-                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
-                  />
                   <textarea
                     name="note"
-                    placeholder="Message for technician"
+                    placeholder="Optional note for the technician"
                     value={restockForm.note}
                     onChange={onRestockInputChange}
                     rows={4}
@@ -582,7 +559,7 @@ export default function ManagerOrdersPage() {
                       disabled={busyAction !== null}
                       className="rounded-md bg-[var(--tint-warning)] px-4 py-2 text-sm font-medium text-[var(--color-warning)] disabled:opacity-40"
                     >
-                      Send request
+                      Send Restock Alert
                     </button>
                     <button
                       type="button"
@@ -595,11 +572,11 @@ export default function ManagerOrdersPage() {
                       Cancel
                     </button>
                   </div>
-                </form>
                 </div>
               </div>
-            </div>
+            </form>
           </div>
+        </div>
       )}
 
       <section className="rounded-2xl bg-transparent">
@@ -682,13 +659,19 @@ export default function ManagerOrdersPage() {
                                 return candidate.name.toLowerCase() === order.productName.toLowerCase();
                               }) ?? null;
                               const matchedLocation = matchedProduct ? blocs.find((bloc) => bloc.id === matchedProduct.blocId) : null;
+                              const matchedWarehouse = matchedLocation ? warehouses.find((item) => item.id === matchedLocation.warehouseId) : null;
 
                               setRestockOrderId(order.id);
                               setRestockForm({
                                 ...defaultRestockForm,
+                                productId: matchedProduct ? String(matchedProduct.id) : String(order.items[0]?.productId ?? ''),
+                                productName: matchedProduct?.name ?? order.productName,
+                                currentStock: String(matchedProduct?.quantity ?? 0),
+                                requestedQuantity: String(order.quantity),
+                                warehouseId: matchedWarehouse ? String(matchedWarehouse.id) : '',
                                 blocId: matchedLocation ? String(matchedLocation.id) : '',
-                                quantity: String(order.quantity),
-                                note: `Restock request for ${order.productName}`,
+                                priority: 'MEDIUM',
+                                note: `Restock request for ${matchedProduct?.name ?? order.productName}`,
                               });
                             }}
                             disabled={busyAction !== null}
@@ -755,8 +738,8 @@ export default function ManagerOrdersPage() {
               <div className="mt-5 grid gap-4 md:grid-cols-3">
                 {[
                   { key: 'Pending', matcher: (order: ManagerOrder) => getOrderBadge(order).label === 'Pending' },
-                  { key: 'Completed', matcher: (order: ManagerOrder) => getOrderBadge(order).label === 'Completed' },
-                  { key: 'Delayed', matcher: (order: ManagerOrder) => getOrderBadge(order).label === 'Delayed' },
+                  { key: 'Approved', matcher: (order: ManagerOrder) => getOrderBadge(order).label === 'Approved' },
+                  { key: 'Rejected', matcher: (order: ManagerOrder) => getOrderBadge(order).label === 'Rejected' },
                 ].map((lane) => {
                   const laneOrders = visibleOrders.filter(lane.matcher);
                   return (

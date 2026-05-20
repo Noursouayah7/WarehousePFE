@@ -14,9 +14,6 @@ export interface CustomerProductOption {
   name: string;
   description: string | null;
   price: number;
-  quantity: number;
-  blocId: number;
-  blocName: string;
 }
 
 export interface CreateCustomerOrderItemPayload {
@@ -113,8 +110,7 @@ function normalizeCustomerProduct(data: unknown): CustomerProductOption {
     typeof raw.id !== 'number' ||
     typeof raw.name !== 'string' ||
     typeof raw.price !== 'number' ||
-    typeof raw.quantity !== 'number' ||
-    typeof raw.blocId !== 'number'
+    (typeof raw.description !== 'string' && raw.description !== null && typeof raw.description !== 'undefined')
   ) {
     throw new Error('Invalid customer product payload');
   }
@@ -124,9 +120,6 @@ function normalizeCustomerProduct(data: unknown): CustomerProductOption {
     name: raw.name,
     description: typeof raw.description === 'string' ? raw.description : null,
     price: raw.price,
-    quantity: raw.quantity,
-    blocId: raw.blocId,
-    blocName: typeof raw.blocName === 'string' ? raw.blocName : 'Unknown bloc',
   };
 }
 

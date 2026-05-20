@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
-import WorkspaceShell from '@/src/common/WorkspaceShell';
 import {
   createCustomerOrder,
   CustomerOrder,
@@ -41,6 +40,21 @@ function getDeliveryWarning(deliveryDeadline: string): string | null {
   }
 
   return null;
+}
+
+function getCustomerOrderErrorMessage(error: unknown): string {
+  const fallback = 'We could not create your order. Please review your request and try again.';
+
+  if (!(error instanceof Error)) {
+    return fallback;
+  }
+
+  const lowerMessage = error.message.toLowerCase();
+  if (lowerMessage.includes('stock') || lowerMessage.includes('available') || lowerMessage.includes('inventory')) {
+    return 'One or more selected products cannot be fulfilled right now. Please refresh the product list and try again.';
+  }
+
+  return error.message || fallback;
 }
 
 export default function CustomerPage() {
@@ -129,16 +143,6 @@ export default function CustomerPage() {
     return orders.filter((order) => order.status === statusFilter);
   }, [orders, statusFilter]);
 
-  const navGroups = [
-    {
-      label: 'Workspace',
-      items: [
-        { label: 'Orders', href: '/customer/orders', icon: 'orders' as const },
-        { label: 'Products', href: '/customer/products', icon: 'products' as const },
-      ],
-    },
-  ];
-
   function openOrderForm(product?: CustomerProductOption) {
     setForm((current) => ({
       ...emptyForm,
@@ -211,21 +215,14 @@ export default function CustomerPage() {
         deliveryAddress: current.deliveryAddress || profile?.address || '',
       }));
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Failed to create order');
+      setFormError(getCustomerOrderErrorMessage(err));
     } finally {
       setIsSending(false);
     }
   }
 
   return (
-    <WorkspaceShell
-      title="Customer"
-      description="Browse products, place requests, and track order progress."
-      roleLabel="Customer"
-      roleColor="var(--role-customer)"
-      profileHref="/customer/profile"
-      navGroups={navGroups}
-    >
+    <div>
       <section className="mb-6 grid gap-4 md:grid-cols-3">
         <button
           type="button"
@@ -335,6 +332,6 @@ export default function CustomerPage() {
         onSubmit={handleSendOrder}
         onFormChange={setForm}
       />
-    </WorkspaceShell>
+    </div>
   );
 }

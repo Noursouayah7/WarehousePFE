@@ -82,12 +82,13 @@ export interface ManagerShipment {
 }
 
 export interface RestockRequestPayload {
+  productId?: number;
+  productName: string;
+  currentStock: number;
+  requestedQuantity: number;
+  warehouseId: number;
   blocId: number;
-  quantity?: number;
-  productName?: string;
-  supplierName?: string;
-  trackingNumber?: string;
-  expectedAt?: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
   note?: string;
 }
 
@@ -331,9 +332,8 @@ export async function requestRestock(
   accessToken: string,
   orderId: number,
   payload: RestockRequestPayload,
-): Promise<ManagerShipment> {
-  const data = await requestJson(`/orders/${orderId}/restock-request`, 'POST', accessToken, payload);
-  return normalizeShipment(data);
+): Promise<unknown> {
+  return requestJson(`/orders/${orderId}/restock-request`, 'POST', accessToken, payload);
 }
 
 export async function markOrderDelivered(

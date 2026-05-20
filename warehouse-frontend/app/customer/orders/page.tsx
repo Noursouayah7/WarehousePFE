@@ -1,10 +1,13 @@
 import CustomerPage from '@/src/customer/CustomerDashboard/CustomerPage';
 import { AuthRedirect } from '@/src/auth/AuthRedirect';
+import CustomerSectionLayout from '@/src/customer/CustomerSectionLayout';
 
 export default function CustomerOrdersRoutePage() {
   return (
     <AuthRedirect mode="protected" allowedRoles={['CUSTOMER']}>
-      <CustomerPage />
+      <CustomerSectionLayout title="Customer Workspace" description="Browse products, place requests, and track order progress.">
+        <CustomerPage />
+      </CustomerSectionLayout>
     </AuthRedirect>
   );
 }

@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DeliveryStatus, InventoryOperationType, OrderStatus, ShipmentType } from '@prisma/client';
+import { DeliveryStatus, InventoryOperationType, OrderStatus, RestockAlertStatus, ShipmentType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderNoteDto } from './dto/order-note.dto';
@@ -31,14 +31,6 @@ export class OrderService {
         name: true,
         description: true,
         price: true,
-        quantity: true,
-        blocId: true,
-        bloc: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
       },
       orderBy: [{ name: 'asc' }, { createdAt: 'desc' }],
     });
@@ -48,9 +40,6 @@ export class OrderService {
       name: product.name,
       description: product.description,
       price: product.price,
-      quantity: product.quantity,
-      blocId: product.blocId,
-      blocName: product.bloc.name,
     }));
   }
 
@@ -147,9 +136,7 @@ export class OrderService {
       }
 
       if (product.quantity < item.quantity) {
-        throw new BadRequestException(
-          `Not enough stock for ${product.name}. Available: ${product.quantity}, required: ${item.quantity}`,
-        );
+        throw new BadRequestException(`Not enough stock for ${product.name}`);
       }
 
       const lineTotal = product.price * item.quantity;
@@ -356,17 +343,33 @@ export class OrderService {
     });
   }
 
-  async createRestockRequest(id: number, dto: CreateRestockRequestDto, technicianId?: number) {
+  async createRestockRequest(id: number, dto: CreateRestockRequestDto, managerId?: number) {
     const order = await this.findOne(id);
 
     if (order.status === OrderStatus.COMPLETED) {
       throw new BadRequestException('Cannot restock from a completed order');
     }
 
-    const requestedQuantity = dto.quantity ?? order.quantity;
-    const productName = dto.productName ?? order.productName;
+    const requestedQuantity = dto.requestedQuantity;
+    const productName = dto.productName;
 
-    await this.prisma.bloc.findUniqueOrThrow({ where: { id: dto.blocId } });
+    const warehouse = await this.prisma.warehouse.findUniqueOrThrow({ where: { id: dto.warehouseId } });
+    const bloc = await this.prisma.bloc.findUniqueOrThrow({ where: { id: dto.blocId } });
+
+    if (bloc.warehouseId !== warehouse.id) {
+      throw new BadRequestException('Selected bloc does not belong to the selected warehouse');
+    }
+
+    const product = dto.productId
+      ? await this.prisma.product.findUnique({ where: { id: dto.productId } })
+      : await this.prisma.product.findFirst({
+          where: {
+            blocId: dto.blocId,
+            name: { equals: productName, mode: 'insensitive' },
+          },
+        });
+
+    const currentStock = product?.quantity ?? dto.currentStock;
 
     return this.prisma.$transaction(async (tx) => {
       await tx.order.update({
@@ -378,34 +381,43 @@ export class OrderService {
         },
       });
 
-      const shipment = await tx.shipment.create({
+      const alert = await tx.restockAlert.create({
         data: {
-          orderId: id,
-          type: ShipmentType.RESTOCK,
+          productId: product?.id ?? dto.productId ?? null,
           productName,
-          quantity: requestedQuantity,
-          blocId: dto.blocId,
-          supplierName: dto.supplierName,
-          trackingNumber: dto.trackingNumber,
-          expectedAt: dto.expectedAt ? new Date(dto.expectedAt) : null,
-          note: dto.note,
+          currentStock,
+          requestedQuantity,
+          warehouseId: warehouse.id,
+          blocId: bloc.id,
+          priority: dto.priority,
+          managerNote: dto.note ?? null,
+          status: RestockAlertStatus.PENDING,
+          managerId: managerId ?? null,
+        },
+        include: {
+          product: true,
+          warehouse: true,
+          bloc: { include: { warehouse: true } },
+          manager: { select: { id: true, name: true, email: true } },
+          technician: { select: { id: true, name: true, email: true } },
         },
       });
 
       await tx.inventoryMovement.create({
         data: {
+          productId: product?.id ?? dto.productId ?? null,
           productName,
           quantity: requestedQuantity,
-          operationType: InventoryOperationType.SHIPMENT_CREATED,
-          destinationBlocId: dto.blocId,
+          operationType: InventoryOperationType.RESTOCK_ALERT,
+          destinationBlocId: bloc.id,
           orderId: id,
-          shipmentId: shipment.id,
-          technicianId: technicianId ?? null,
-          note: dto.note ?? 'Restock request created',
+          technicianId: managerId ?? null,
+          note: dto.note ?? 'Restock alert created',
+          restockAlertId: alert.id,
         },
       });
 
-      return shipment;
+      return alert;
     });
   }
 

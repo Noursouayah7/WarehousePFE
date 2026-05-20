@@ -13,6 +13,8 @@ import { AuthModule } from './auth/auth.module';
 import { SupportTicketModule } from './support-ticket/support-ticket.module';
 import { AssistantModule } from './assistant/assistant.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { RestockAlertsModule } from './restock-alerts/restock-alerts.module';
+import { ReclamationModule } from './reclamation/reclamation.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { InventoryModule } from './inventory/inventory.module';
     SupportTicketModule,
     AssistantModule,
     InventoryModule,
+    RestockAlertsModule,
+    ReclamationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

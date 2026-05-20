@@ -17,6 +17,7 @@ model Product {
   updatedAt   DateTime @updatedAt
   bloc        Bloc     @relation(fields: [blocId], references: [id], onDelete: Cascade)
   inventoryMovements InventoryMovement[]
+  restockAlerts RestockAlert[]
 
   @@map("products")
 }
@@ -30,6 +31,7 @@ model Warehouse {
   updatedAt   DateTime @updatedAt
 
   blocks      Bloc[]
+  restockAlerts RestockAlert[]
 
   @@map("warehouses")
 }
@@ -47,6 +49,7 @@ model Bloc {
   shipments    Shipment[]
   sourceInventoryMovements InventoryMovement[] @relation("InventoryMovementSourceBloc")
   destinationInventoryMovements InventoryMovement[] @relation("InventoryMovementDestinationBloc")
+  restockAlerts RestockAlert[]
 
   @@map("blocs")
 }
@@ -66,7 +69,10 @@ model User {
 
   orders           Order[]
   supportTickets   SupportTicket[]
+  reclamations     Reclamation[]
   inventoryMovements InventoryMovement[] @relation("InventoryMovementTechnician")
+  restockAlertsCreated RestockAlert[] @relation("RestockAlertManager")
+  restockAlertsHandled RestockAlert[] @relation("RestockAlertTechnician")
 }
 
 model Order {
@@ -92,6 +98,7 @@ model Order {
   customer         User?          @relation(fields: [customerId], references: [id], onDelete: SetNull)
   shipments        Shipment[]
   items            OrderItem[]
+  reclamations     Reclamation[]
   inventoryMovements InventoryMovement[]
 
   @@map("orders")
@@ -131,9 +138,37 @@ model Shipment {
 
   order          Order?         @relation(fields: [orderId], references: [id], onDelete: SetNull)
   bloc           Bloc           @relation(fields: [blocId], references: [id], onDelete: Restrict)
+  reclamations   Reclamation[]
   inventoryMovements InventoryMovement[]
 
   @@map("shipments")
+}
+
+model RestockAlert {
+  id                Int                  @id @default(autoincrement())
+  productId         Int?
+  productName       String
+  currentStock      Int
+  requestedQuantity  Int
+  warehouseId       Int
+  blocId            Int
+  priority          RestockPriority      @default(MEDIUM)
+  managerNote       String?
+  status            RestockAlertStatus    @default(PENDING)
+  managerId         Int?
+  technicianId      Int?
+  completedAt       DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  product           Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  warehouse         Warehouse            @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  bloc              Bloc                 @relation(fields: [blocId], references: [id], onDelete: Restrict)
+  manager           User?                @relation("RestockAlertManager", fields: [managerId], references: [id], onDelete: SetNull)
+  technician        User?                @relation("RestockAlertTechnician", fields: [technicianId], references: [id], onDelete: SetNull)
+  inventoryMovements InventoryMovement[]
+
+  @@map("restock_alerts")
 }
 
 model InventoryMovement {
@@ -146,6 +181,7 @@ model InventoryMovement {
   destinationBlocId Int?
   orderId           Int?
   shipmentId        Int?
+  restockAlertId    Int?
   technicianId      Int?
   note              String?
   createdAt         DateTime                @default(now())
@@ -155,6 +191,7 @@ model InventoryMovement {
   destinationBloc   Bloc?     @relation("InventoryMovementDestinationBloc", fields: [destinationBlocId], references: [id], onDelete: SetNull)
   order             Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
   shipment          Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  restockAlert      RestockAlert? @relation(fields: [restockAlertId], references: [id], onDelete: SetNull)
   technician        User?     @relation("InventoryMovementTechnician", fields: [technicianId], references: [id], onDelete: SetNull)
 
   @@map("inventory_movements")
@@ -175,6 +212,27 @@ model SupportTicket {
   createdBy   User                  @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   @@map("support_tickets")
+}
+
+model Reclamation {
+  id              Int                     @id @default(autoincrement())
+  customerId      Int
+  orderId         Int?
+  shipmentId      Int?
+  problemType     ReclamationProblemType
+  description     String
+  attachmentUrl   String?
+  status          ReclamationStatus       @default(PENDING)
+  managerNote     String?
+  resolvedAt      DateTime?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  customer        User                    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order           Order?                  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  shipment        Shipment?               @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+
+  @@map("reclamations")
 }
 
 enum UserRole {
@@ -209,6 +267,18 @@ enum ShipmentStatus {
   RECEIVED
 }
 
+enum RestockAlertStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum RestockPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 enum SupportTicketCategory {
   MACHINE_MALFUNCTION
   PRODUCT_ISSUE
@@ -236,6 +306,20 @@ enum InventoryOperationType {
   TRANSFER
   DAMAGE
   RESTOCK
+  RESTOCK_ALERT
   SHIPMENT_CREATED
   ORDER_APPROVED
+}
+
+enum ReclamationProblemType {
+  PRODUCT_ISSUE
+  SHIPMENT_ISSUE
+  ORDER_ISSUE
+}
+
+enum ReclamationStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
 }

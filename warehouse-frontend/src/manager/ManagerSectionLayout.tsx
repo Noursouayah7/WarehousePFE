@@ -24,6 +24,7 @@ export default function ManagerSectionLayout({ title, description, children }: M
         { label: 'Orders', href: '/manager/orders', icon: 'orders' as const },
         { label: 'Shipments', href: '/manager/shipments', icon: 'shipments' as const },
         { label: 'Support tickets', href: '/manager/support-tickets', icon: 'users' as const },
+        { label: 'Reclamations', href: '/manager/reclamations', icon: 'users' as const },
       ],
     },
     {

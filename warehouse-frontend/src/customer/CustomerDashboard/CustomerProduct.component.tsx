@@ -16,7 +16,7 @@ export function CustomerProduct({ products, isLoading, onSelectProduct }: Custom
 		const normalizedQuery = query.trim().toLowerCase();
 		if (!normalizedQuery) return products;
 		return products.filter((product) => {
-			return [product.name, String(product.quantity), String(product.price), product.blocName].some((value) =>
+			return [product.name, product.description ?? '', String(product.price)].some((value) =>
 				value.toLowerCase().includes(normalizedQuery),
 			);
 		});
@@ -39,9 +39,10 @@ export function CustomerProduct({ products, isLoading, onSelectProduct }: Custom
 							className="text-left rounded-xl bg-[var(--card)] p-4 shadow-sm transition-colors hover:bg-[#f4f3ef]"
 						>
 							<p className="text-[16px] font-semibold text-[var(--color-info)]">{product.name}</p>
-							<p className="mt-2 text-xs text-[var(--muted-foreground)]">Available: {product.quantity}</p>
+							{product.description && (
+								<p className="mt-2 text-xs text-[var(--muted-foreground)]">{product.description}</p>
+							)}
 							<p className="mt-1 text-xs text-[var(--muted-foreground)]">Price: ${product.price.toFixed(2)}</p>
-							<p className="mt-1 text-xs text-[var(--muted-foreground)]">Bloc: {product.blocName}</p>
 							<p className="mt-3 text-xs text-[#6b705c]">Click to order</p>
 						</button>
 					))}

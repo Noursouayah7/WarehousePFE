@@ -83,7 +83,18 @@ export class ProductService {
 
   findAll() {
     return this.prisma.product.findMany({
-      include: { bloc: true },
+      include: {
+        bloc: {
+          include: {
+            warehouse: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }

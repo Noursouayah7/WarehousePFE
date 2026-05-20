@@ -1,40 +1,42 @@
 import {
-  IsDateString,
+  IsEnum,
   IsInt,
   IsOptional,
   IsPositive,
   IsString,
+  Min,
   MaxLength,
 } from 'class-validator';
+import { RestockPriority } from '@prisma/client';
 
 export class CreateRestockRequestDto {
   @IsInt()
   @IsPositive()
-  blocId: number;
+  @IsOptional()
+  productId?: number;
+
+  @IsString()
+  @MaxLength(120)
+  productName: string;
+
+  @IsInt()
+  @Min(0)
+  currentStock: number;
 
   @IsInt()
   @IsPositive()
-  @IsOptional()
-  quantity?: number;
+  requestedQuantity: number;
 
-  @IsString()
-  @IsOptional()
-  @MaxLength(120)
-  productName?: string;
+  @IsInt()
+  @IsPositive()
+  warehouseId: number;
 
-  @IsString()
-  @IsOptional()
-  @MaxLength(120)
-  supplierName?: string;
+  @IsInt()
+  @IsPositive()
+  blocId: number;
 
-  @IsString()
-  @IsOptional()
-  @MaxLength(120)
-  trackingNumber?: string;
-
-  @IsDateString()
-  @IsOptional()
-  expectedAt?: string;
+  @IsEnum(RestockPriority)
+  priority: RestockPriority;
 
   @IsString()
   @IsOptional()

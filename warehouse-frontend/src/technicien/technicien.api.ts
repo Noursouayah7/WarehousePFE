@@ -20,7 +20,7 @@ export type TechnicianInventoryMovement = {
 	id: number;
 	productName: string;
 	quantity: number;
-	operationType: 'STOCK_IN' | 'STOCK_OUT' | 'TRANSFER' | 'DAMAGE' | 'RESTOCK' | 'SHIPMENT_CREATED' | 'ORDER_APPROVED';
+	operationType: 'STOCK_IN' | 'STOCK_OUT' | 'TRANSFER' | 'DAMAGE' | 'RESTOCK' | 'RESTOCK_ALERT' | 'SHIPMENT_CREATED' | 'ORDER_APPROVED';
 	createdAt: string;
 	note: string | null;
 	product: { id: number; name: string; blocId: number } | null;
@@ -132,6 +132,74 @@ function normalizeMovement(data: unknown): TechnicianInventoryMovement {
 	};
 }
 
+export type TechnicianProduct = {
+	id: number;
+	name: string;
+	description: string | null;
+	price: number;
+	quantity: number;
+	blocId: number;
+	blocName: string;
+	warehouseId: number;
+	warehouseName: string;
+};
+
+async function requestJson(path: string, method: string, accessToken: string, body?: unknown): Promise<unknown> {
+	const response = await fetch(`${API_URL}${path}`, {
+		method,
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${accessToken}`,
+		},
+		body: body ? JSON.stringify(body) : undefined,
+	});
+
+	const data: unknown = await response.json().catch(() => null);
+
+	if (!response.ok) {
+		throw new Error(parseErrorMessage(data, `Request failed: ${method} ${path}`));
+	}
+
+	return data;
+}
+
+function normalizeProduct(data: unknown): TechnicianProduct {
+	if (!data || typeof data !== 'object') {
+		throw new Error('Invalid product payload');
+	}
+
+	const raw = data as Record<string, unknown>;
+
+	if (
+		typeof raw.id !== 'number' ||
+		typeof raw.name !== 'string' ||
+		typeof raw.price !== 'number' ||
+		typeof raw.quantity !== 'number' ||
+		typeof raw.blocId !== 'number'
+	) {
+		throw new Error('Invalid product payload');
+	}
+
+	const bloc = raw.bloc as Record<string, unknown> | undefined;
+	const blocName = typeof bloc?.name === 'string' ? bloc.name : 'Unknown bloc';
+	
+	const warehouse = bloc?.warehouse as Record<string, unknown> | undefined;
+	const warehouseId = typeof warehouse?.id === 'number' ? warehouse.id : 0;
+	const warehouseName = typeof warehouse?.name === 'string' ? warehouse.name : 'Unknown warehouse';
+
+	return {
+		id: raw.id,
+		name: raw.name,
+		description: typeof raw.description === 'string' ? raw.description : null,
+		price: raw.price,
+		quantity: raw.quantity,
+		blocId: raw.blocId,
+		blocName,
+		warehouseId,
+		warehouseName,
+	};
+}
+
 export async function getTechnicianMovements(accessToken: string, limit = 30): Promise<TechnicianInventoryMovement[]> {
 	const response = await fetch(`${API_URL}/inventory/movements?limit=${limit}`, {
 		method: 'GET',
@@ -151,4 +219,31 @@ export async function getTechnicianMovements(accessToken: string, limit = 30): P
 	}
 
 	return data.map(normalizeMovement);
+}
+
+export async function getTechnicianProducts(accessToken: string): Promise<TechnicianProduct[]> {
+	const data = await requestJson('/product', 'GET', accessToken);
+
+	if (!Array.isArray(data)) {
+		throw new Error('Invalid products response');
+	}
+
+	return data.map(normalizeProduct);
+}
+
+export async function transferProduct(
+	accessToken: string,
+	productId: number,
+	destinationBlocId: number,
+	quantity: number,
+	note?: string,
+): Promise<TechnicianInventoryMovement> {
+	const data = await requestJson('/inventory/transfer', 'POST', accessToken, {
+		productId,
+		destinationBlocId,
+		quantity,
+		note,
+	});
+
+	return normalizeMovement(data);
 }

@@ -77,7 +77,7 @@ export function CustomerOrderFormModal({
                   <option value="">Select a product</option>
                   {products.map((product) => (
                     <option key={product.id} value={String(product.id)}>
-                      {product.name} - ${product.price.toFixed(2)} ({product.quantity} available)
+                      {product.name} - ${product.price.toFixed(2)}
                     </option>
                   ))}
                 </select>
@@ -171,6 +171,7 @@ export function CustomerOrderFormModal({
           >
             {isSending ? 'Sending order...' : deliveryWarning ? 'Fix delivery date first' : 'Send order'}
           </button>
+          <p className="text-xs text-[var(--muted-foreground)]">Availability is confirmed internally after submission.</p>
         </form>
       </div>
     </div>

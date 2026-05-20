@@ -189,14 +189,17 @@ export default function ManagerPage() {
       return;
     }
 
+    const selectedBloc = blocs.find((bloc) => bloc.id === blocId);
+    const warehouseId = selectedBloc?.warehouseId ?? 0;
+
     await runAction(`restock-${restockOrderId}`, async (activeToken) => {
       await requestRestock(activeToken, restockOrderId, {
-        blocId,
-        quantity,
         productName: order.productName,
-        supplierName: restockForm.supplierName.trim() || undefined,
-        trackingNumber: restockForm.trackingNumber.trim() || undefined,
-        expectedAt: restockForm.expectedAt || undefined,
+        currentStock: order.quantity,
+        requestedQuantity: quantity ?? order.quantity,
+        warehouseId,
+        blocId,
+        priority: 'MEDIUM',
         note: restockForm.note.trim() || undefined,
       });
       setRestockOrderId(null);
