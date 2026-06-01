@@ -1,7 +1,6 @@
 'use client';
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { useAuth } from '@/src/auth/AuthProvider';
 import {
   approveOrder,
@@ -53,6 +52,20 @@ function formatDate(value: string | null): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
   return date.toLocaleString();
+}
+
+function formatOrderStatus(status: ManagerOrder['status']): string {
+  if (status === 'PENDING') return 'Pending';
+  if (status === 'APPROVED') return 'Approved';
+  if (status === 'REJECTED') return 'Rejected';
+  if (status === 'RESTOCK_REQUESTED') return 'Restock requested';
+  return 'Completed';
+}
+
+function formatShipmentStatus(status: ManagerShipment['status']): string {
+  if (status === 'REQUESTED') return 'Requested';
+  if (status === 'IN_TRANSIT') return 'In transit';
+  return 'Received';
 }
 
 export default function ManagerPage() {
@@ -230,50 +243,15 @@ export default function ManagerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f1e8] text-[#344e41]">
-      <div className="flex items-center justify-between border-b border-[#a3b18a] px-10 py-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="h-6 w-6 bg-[var(--role-manager)]"
-            style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-          />
-          <span className="text-sm font-medium tracking-[0.04em]">Cerebro WMS</span>
-        </div>
-        <div className="flex items-center gap-6">
-          <span className="rounded-full bg-[var(--role-manager)] px-3 py-1 text-[11px] font-semibold tracking-[0.04em] text-black">Manager</span>
-          <Link
-            href="/assistant"
-            className="cursor-pointer rounded-lg border border-[#d6d3cc] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
-          >
-            AI Assistant
-          </Link>
-          <Link
-            href="/manager/profile"
-            className="cursor-pointer rounded-lg border border-[#d6d3cc] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
-          >
-            Profile
-          </Link>
-          <button
-            onClick={logout}
-            className="cursor-pointer rounded-lg border border-[#d6d3cc] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-[var(--muted)] text-[var(--foreground)]">
       <div className="px-[40px] py-[60px]">
-        <p className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">Dashboard</p>
-        <h1 className="mb-2 text-4xl font-semibold tracking-tight">Manager panel</h1>
-        <p className="text-sm text-[var(--muted-foreground)]">Orders and inbound shipments operations</p>
-
         <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {[
-            { label: 'Orders', value: String(orderCount), accent: '#4af0a0' },
-            { label: 'Shipments', value: String(shipmentCount), accent: '#4aa0f0' },
-            { label: 'Waiting receive', value: String(waitingShipmentCount), accent: '#f0c040' },
+            { label: 'Orders', value: String(orderCount), accent: 'var(--tint-success)' },
+            { label: 'Shipments', value: String(shipmentCount), accent: 'var(--tint-info)' },
+            { label: 'Waiting receive', value: String(waitingShipmentCount), accent: 'var(--tint-warning)' },
           ].map((card) => (
-            <div key={card.label} className="rounded-2xl border border-[#d6d3cc] bg-[var(--card)] p-6 shadow-sm">
+            <div key={card.label} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
               <div className="mb-4 h-6 w-[3px]" style={{ background: card.accent }} />
               <p className="mb-2 text-sm font-medium text-[var(--muted-foreground)]">{card.label}</p>
               <p className="text-[28px] font-bold">{card.value}</p>
@@ -282,22 +260,22 @@ export default function ManagerPage() {
         </div>
 
         {error && (
-          <div className="mt-6 rounded-lg border border-[var(--color-error)] bg-[#f8efe9] px-4 py-3 text-sm text-[var(--color-error)]">
+          <div className="mt-6 rounded-lg border border-[var(--color-error)] bg-[var(--tint-error)] px-4 py-3 text-sm text-[var(--color-error)]">
             {error}
           </div>
         )}
 
-        <section className="mt-10 rounded-2xl border border-[#a3b18a] bg-[#f5f1e8] p-6 shadow-sm">
+        <section className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-6 shadow-sm">
           <h2 className="text-xl font-semibold tracking-tight">Orders operations</h2>
-          <p className="mt-1 text-sm text-[#6b705c]">Approve, reject, and request restock</p>
+          <p className="mt-1 text-sm text-[var(--muted-foreground)]">Approve, reject, and request restock</p>
 
           {isLoading ? (
-            <div className="py-10 text-center text-sm text-[#6b705c]">Loading orders...</div>
+            <div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading orders...</div>
           ) : (
             <div className="mt-5 overflow-x-auto">
-              <table className="min-w-full border border-[#a3b18a] text-sm">
-                <thead>
-                  <tr className="border-b border-[#b7c2a0] text-left text-xs font-medium text-[#6b705c]">
+                <table className="min-w-full border border-[var(--border)] text-sm">
+                  <thead>
+                    <tr className="border-b border-[var(--border)] text-left text-xs font-medium text-[var(--muted-foreground)]">
                     <th className="px-3 py-2">ID</th>
                     <th className="px-3 py-2">PRODUCT</th>
                     <th className="px-3 py-2">QTY</th>
@@ -315,22 +293,22 @@ export default function ManagerPage() {
                     const isRejectOpen = rejectOrderId === order.id;
                     const isRestockOpen = restockOrderId === order.id;
 
-                    return (
-                      <tr key={order.id} className="border-b border-[#a3b18a] align-top">
-                        <td className="px-3 py-3 text-[#496553]">#{order.id}</td>
+                      return (
+                      <tr key={order.id} className="border-b border-[var(--border)] align-top">
+                        <td className="px-3 py-3 text-[var(--foreground)]">#{order.id}</td>
                         <td className="px-3 py-3">
                           <p className="font-semibold">{order.productName}</p>
-                          {order.managerNote && <p className="mt-1 text-xs text-[#6b705c]">Note: {order.managerNote}</p>}
+                          {order.managerNote && <p className="mt-1 text-xs text-[var(--muted-foreground)]">Note: {order.managerNote}</p>}
                           {order.rejectionReason && <p className="mt-1 text-xs text-[var(--color-error)]">Reason: {order.rejectionReason}</p>}
                         </td>
-                        <td className="px-3 py-3 text-[#496553]">{order.quantity}</td>
+                        <td className="px-3 py-3 text-[var(--foreground)]">{order.quantity}</td>
                         <td className="px-3 py-3">
-                          <span className="border border-[#b7c2a0] px-2 py-1 text-xs">{order.status}</span>
+                          <span className="border border-[var(--border)] px-2 py-1 text-xs">{formatOrderStatus(order.status)}</span>
                         </td>
-                        <td className="px-3 py-3 text-xs text-[#5f6f59]">{formatDate(order.deliveryDeadline)}</td>
-                        <td className="px-3 py-3 text-xs text-[#5f6f59]">
+                        <td className="px-3 py-3 text-xs text-[var(--muted-foreground)]">{formatDate(order.deliveryDeadline)}</td>
+                        <td className="px-3 py-3 text-xs text-[var(--muted-foreground)]">
                           <p>{order.customerName}</p>
-                          <p className="text-[#6b705c]">{order.customerPhone}</p>
+                          <p className="text-[var(--muted-foreground)]">{order.customerPhone}</p>
                         </td>
                         <td className="px-3 py-3">
                           <div className="flex flex-wrap gap-2">
@@ -363,14 +341,14 @@ export default function ManagerPage() {
                             </button>
                           </div>
 
-                          {isRejectOpen && (
-                            <form onSubmit={submitReject} className="mt-3 space-y-2 border border-[#b7c2a0] bg-[#f5f1e8] p-3">
+                            {isRejectOpen && (
+                            <form onSubmit={submitReject} className="mt-3 space-y-2 border border-[var(--border)] bg-[var(--muted)] p-3">
                               <input
                                 name="reason"
                                 placeholder="Reject reason"
                                 value={rejectForm.reason}
                                 onChange={onRejectInputChange}
-                                className="w-full border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="w-full border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                               <textarea
                                 name="managerNote"
@@ -378,7 +356,7 @@ export default function ManagerPage() {
                                 value={rejectForm.managerNote}
                                 onChange={onRejectInputChange}
                                 rows={2}
-                                className="w-full border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="w-full border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                               <div className="flex gap-2">
                                 <button
@@ -391,7 +369,7 @@ export default function ManagerPage() {
                                 <button
                                   type="button"
                                   onClick={() => setRejectOrderId(null)}
-                                  className="border border-[#b7c2a0] px-3 py-1 text-xs text-[#5f6f59]"
+                                  className="border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted-foreground)]"
                                 >
                                   CANCEL
                                 </button>
@@ -400,12 +378,12 @@ export default function ManagerPage() {
                           )}
 
                           {isRestockOpen && (
-                            <form onSubmit={(event) => submitRestock(event, order)} className="mt-3 grid gap-2 border border-[#b7c2a0] bg-[#f5f1e8] p-3">
+                            <form onSubmit={(event) => submitRestock(event, order)} className="mt-3 grid gap-2 border border-[var(--border)] bg-[var(--muted)] p-3">
                               <select
                                 name="blocId"
                                 value={restockForm.blocId}
                                 onChange={onRestockInputChange}
-                                className="border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               >
                                 <option value="">Select bloc</option>
                                 {blocs.map((bloc) => (
@@ -419,28 +397,28 @@ export default function ManagerPage() {
                                 placeholder="Restock quantity (optional)"
                                 value={restockForm.quantity}
                                 onChange={onRestockInputChange}
-                                className="border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                               <input
                                 name="supplierName"
                                 placeholder="Supplier name"
                                 value={restockForm.supplierName}
                                 onChange={onRestockInputChange}
-                                className="border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                               <input
                                 name="trackingNumber"
                                 placeholder="Tracking number"
                                 value={restockForm.trackingNumber}
                                 onChange={onRestockInputChange}
-                                className="border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                               <input
                                 type="datetime-local"
                                 name="expectedAt"
                                 value={restockForm.expectedAt}
                                 onChange={onRestockInputChange}
-                                className="border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                               <textarea
                                 name="note"
@@ -448,7 +426,7 @@ export default function ManagerPage() {
                                 value={restockForm.note}
                                 onChange={onRestockInputChange}
                                 rows={2}
-                                className="border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                               <div className="flex gap-2">
                                 <button
@@ -461,7 +439,7 @@ export default function ManagerPage() {
                                 <button
                                   type="button"
                                   onClick={() => setRestockOrderId(null)}
-                                  className="border border-[#b7c2a0] px-3 py-1 text-xs text-[#5f6f59]"
+                                  className="border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted-foreground)]"
                                 >
                                   CANCEL
                                 </button>
@@ -475,7 +453,7 @@ export default function ManagerPage() {
 
                   {orders.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-3 py-8 text-center text-[12px] tracking-[0.12em] text-[#6b705c]">
+                      <td colSpan={7} className="px-3 py-8 text-center text-[12px] tracking-[0.12em] text-[var(--muted-foreground)]">
                         NO ORDERS FOUND
                       </td>
                     </tr>
@@ -486,17 +464,17 @@ export default function ManagerPage() {
           )}
         </section>
 
-        <section className="mt-10 rounded border border-[#a3b18a] bg-[#f5f1e8] p-6">
+        <section className="mt-10 rounded border border-[var(--border)] bg-[var(--muted)] p-6">
           <h2 className="text-xl font-bold tracking-[0.08em]">SHIPMENTS OPERATIONS</h2>
-          <p className="mt-1 text-[12px] tracking-[0.1em] text-[#6b705c]">Move shipment to transit and receive inbound stock</p>
+          <p className="mt-1 text-[12px] tracking-[0.1em] text-[var(--muted-foreground)]">Move shipment to transit and receive inbound stock</p>
 
           {isLoading ? (
-            <div className="py-10 text-center text-[12px] tracking-[0.12em] text-[#6b705c]">LOADING SHIPMENTS...</div>
+            <div className="py-10 text-center text-[12px] tracking-[0.12em] text-[var(--muted-foreground)]">LOADING SHIPMENTS...</div>
           ) : (
             <div className="mt-5 overflow-x-auto">
-              <table className="min-w-full border border-[#a3b18a] text-sm">
+              <table className="min-w-full border border-[var(--border)] text-sm">
                 <thead>
-                  <tr className="border-b border-[#b7c2a0] text-left text-[11px] tracking-[0.18em] text-[#6b705c]">
+                  <tr className="border-b border-[var(--border)] text-left text-[11px] tracking-[0.18em] text-[var(--muted-foreground)]">
                     <th className="px-3 py-2">ID</th>
                     <th className="px-3 py-2">PRODUCT</th>
                     <th className="px-3 py-2">ORDER</th>
@@ -513,24 +491,24 @@ export default function ManagerPage() {
                     const isReceiveOpen = receiveShipmentId === shipment.id;
 
                     return (
-                      <tr key={shipment.id} className="border-b border-[#a3b18a] align-top">
-                        <td className="px-3 py-3 text-[#496553]">#{shipment.id}</td>
+                      <tr key={shipment.id} className="border-b border-[var(--border)] align-top">
+                        <td className="px-3 py-3 text-[var(--foreground)]">#{shipment.id}</td>
                         <td className="px-3 py-3">
                           <p className="font-semibold">{shipment.productName}</p>
-                          <p className="mt-1 text-xs text-[#6b705c]">Qty: {shipment.quantity}</p>
-                          {shipment.note && <p className="mt-1 text-xs text-[#6b705c]">{shipment.note}</p>}
+                          <p className="mt-1 text-xs text-[var(--muted-foreground)]">Qty: {shipment.quantity}</p>
+                          {shipment.note && <p className="mt-1 text-xs text-[var(--muted-foreground)]">{shipment.note}</p>}
                         </td>
-                        <td className="px-3 py-3 text-xs text-[#5f6f59]">
+                        <td className="px-3 py-3 text-xs text-[var(--muted-foreground)]">
                           {shipment.order ? `#${shipment.order.id} (${shipment.order.status})` : '—'}
                         </td>
-                        <td className="px-3 py-3 text-xs text-[#5f6f59]">
+                        <td className="px-3 py-3 text-xs text-[var(--muted-foreground)]">
                           <p>{shipment.bloc.name}</p>
-                          <p className="text-[#6b705c]">usage {shipment.bloc.currentUsage}/{shipment.bloc.capacity}</p>
+                          <p className="text-[var(--muted-foreground)]">usage {shipment.bloc.currentUsage}/{shipment.bloc.capacity}</p>
                         </td>
                         <td className="px-3 py-3">
-                          <span className="border border-[#b7c2a0] px-2 py-1 text-xs">{shipment.status}</span>
+                          <span className="border border-[var(--border)] px-2 py-1 text-xs">{formatShipmentStatus(shipment.status)}</span>
                         </td>
-                        <td className="px-3 py-3 text-xs text-[#5f6f59]">
+                        <td className="px-3 py-3 text-xs text-[var(--muted-foreground)]">
                           <p>ETA: {formatDate(shipment.expectedAt)}</p>
                           <p>Received: {formatDate(shipment.receivedAt)}</p>
                         </td>
@@ -564,20 +542,20 @@ export default function ManagerPage() {
                           </div>
 
                           {isReceiveOpen && (
-                            <form onSubmit={submitReceive} className="mt-3 space-y-2 border border-[#b7c2a0] bg-[#f5f1e8] p-3">
+                            <form onSubmit={submitReceive} className="mt-3 space-y-2 border border-[var(--border)] bg-[var(--muted)] p-3">
                               <input
                                 name="receivedQuantity"
                                 placeholder="Received quantity"
                                 value={receiveForm.receivedQuantity}
                                 onChange={onReceiveInputChange}
-                                className="w-full border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="w-full border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                               <input
                                 name="trackingNumber"
                                 placeholder="Tracking number"
                                 value={receiveForm.trackingNumber}
                                 onChange={onReceiveInputChange}
-                                className="w-full border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="w-full border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                               <textarea
                                 name="note"
@@ -585,7 +563,7 @@ export default function ManagerPage() {
                                 value={receiveForm.note}
                                 onChange={onReceiveInputChange}
                                 rows={2}
-                                className="w-full border border-[#b7c2a0] bg-[#f5f1e8] px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                                className="w-full border border-[var(--border)] bg-[var(--muted)] px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                               <div className="flex gap-2">
                                 <button
@@ -598,7 +576,7 @@ export default function ManagerPage() {
                                 <button
                                   type="button"
                                   onClick={() => setReceiveShipmentId(null)}
-                                  className="border border-[#b7c2a0] px-3 py-1 text-xs text-[#5f6f59]"
+                                  className="border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted-foreground)]"
                                 >
                                   CANCEL
                                 </button>
@@ -612,7 +590,7 @@ export default function ManagerPage() {
 
                   {shipments.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-3 py-8 text-center text-[12px] tracking-[0.12em] text-[#6b705c]">
+                      <td colSpan={7} className="px-3 py-8 text-center text-[12px] tracking-[0.12em] text-[var(--muted-foreground)]">
                         NO SHIPMENTS FOUND
                       </td>
                     </tr>

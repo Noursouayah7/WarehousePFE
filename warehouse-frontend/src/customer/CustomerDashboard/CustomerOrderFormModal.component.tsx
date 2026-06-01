@@ -39,7 +39,7 @@ export function CustomerOrderFormModal({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--popover-foreground)]/30 p-4 backdrop-blur-sm">
       <div className="w-full max-w-xl rounded-2xl border border-[var(--border)] bg-white p-6 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
           <h3 className="text-lg font-semibold tracking-tight">New order</h3>
@@ -53,7 +53,7 @@ export function CustomerOrderFormModal({
         </div>
 
         {formError && (
-          <div className="mb-4 rounded-lg border border-[var(--color-error)] bg-[#f8efe9] px-4 py-3 text-sm text-[var(--color-error)]">
+          <div className="mb-4 rounded-lg border border-[var(--color-error)] bg-[var(--tint-error)] px-4 py-3 text-sm text-[var(--color-error)]">
             {formError}
           </div>
         )}
@@ -61,7 +61,7 @@ export function CustomerOrderFormModal({
         <form onSubmit={onSubmit} className="grid gap-3">
           <div className="space-y-2">
             {form.items.map((item, index) => (
-              <div key={index} className="grid gap-2 rounded-lg border border-[var(--input)] bg-[#faf9f7] p-3 md:grid-cols-[1fr_120px_auto]">
+              <div key={index} className="grid gap-2 rounded-lg border border-[var(--input)] bg-[var(--muted)] p-3 md:grid-cols-[1fr_120px_auto]">
                 <select
                   value={item.productId}
                   onChange={(event) => {
@@ -72,7 +72,7 @@ export function CustomerOrderFormModal({
                       return { ...current, items: nextItems };
                     });
                   }}
-                  className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+                  className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
                 >
                   <option value="">Select a product</option>
                   {products.map((product) => (
@@ -95,7 +95,7 @@ export function CustomerOrderFormModal({
                   placeholder="Qty"
                   type="number"
                   min={1}
-                  className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+                  className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
                 />
 
                 <button
@@ -134,7 +134,7 @@ export function CustomerOrderFormModal({
             placeholder="Delivery date"
             type="datetime-local"
             aria-label="Delivery date"
-            className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+            className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
           />
           {deliveryWarning && (
             <p className="-mt-1 rounded-lg bg-[var(--tint-warning)] px-3 py-2 text-xs text-[var(--color-warning)]">
@@ -145,13 +145,13 @@ export function CustomerOrderFormModal({
             value={form.deliveryAddress}
             onChange={(event) => onFormChange((current) => ({ ...current, deliveryAddress: event.target.value }))}
             placeholder="Delivery address"
-            className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+            className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
           />
           <input
             value={form.customerName}
             onChange={(event) => onFormChange((current) => ({ ...current, customerName: event.target.value }))}
             placeholder="Your name"
-            className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+            className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
           />
           <input
             value={form.customerPhone}
@@ -161,13 +161,13 @@ export function CustomerOrderFormModal({
             inputMode="numeric"
             maxLength={8}
             pattern="[0-9]{8}"
-            className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+            className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
           />
 
           <button
             type="submit"
             disabled={isSending || !!deliveryWarning}
-            className="mt-2 rounded-lg border border-[var(--color-info)] bg-[#edf2ee] px-4 py-2 text-sm font-medium text-[var(--color-info)] transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="mt-2 rounded-lg border border-[var(--color-info)] bg-[var(--tint-info)] px-4 py-2 text-sm font-medium text-[var(--color-info)] transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {isSending ? 'Sending order...' : deliveryWarning ? 'Fix delivery date first' : 'Send order'}
           </button>

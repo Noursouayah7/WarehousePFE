@@ -1,5 +1,20 @@
 # Warehouse Pfe Project Documentary
 
+## Mapping to the report (RAPPORT_CHAPTERS.md)
+
+This documentary is aligned with the LaTeX report found in `RAPPORT_CHAPTERS.md`. The following table maps major documentary sections to the corresponding report chapters and locations to ensure consistency:
+
+- Executive story & context: Chapter 1 — General Introduction ([RAPPORT_CHAPTERS.md](RAPPORT_CHAPTERS.md#L1))
+- Sprint 0, requirements and architecture: Chapter 2 — Sprint 0: Specification and Planning ([RAPPORT_CHAPTERS.md](RAPPORT_CHAPTERS.md#L200))
+- Release 1 (Auth, Onboarding, RBAC): Chapter 3 — Release 1: Foundation and Access Control ([RAPPORT_CHAPTERS.md](RAPPORT_CHAPTERS.md#L900))
+- Product backlog, sprints and Gantt: Chapter 2 product backlog and Gantt sections ([RAPPORT_CHAPTERS.md](RAPPORT_CHAPTERS.md#L300))
+- Diagrams (class/ER/sequence): referenced under `chapters/assets/` and embedded figures in the report (see respective chapter figures).
+- Database schema: `warehouse-backend/prisma/schema.prisma` and the Prisma excerpt included in this documentary. Report references the same file path.
+
+Action items to finalise sync:
+- Export mermaid and UML diagrams to PNG and place them in `chapters/assets/` so both documents embed the same images.
+- Insert Prisma schema excerpts into the report Chapter 3 Database Model section (if you want them shown inline in the LaTeX file).
+
 ## 1. Executive Story
 
 This project is a full-stack Warehouse Management System built as two coordinated applications:
@@ -65,14 +80,6 @@ This gives each actor a focused workspace while reusing shared shell/navigation 
 
 ### 3.2 Key Enums (Business States)
 
-- `UserRole`: `ADMIN`, `MANAGER`, `TECHNICIEN`, `CUSTOMER`, `PENDING`.
-- `OrderStatus`: `PENDING`, `APPROVED`, `REJECTED`, `RESTOCK_REQUESTED`, `COMPLETED`.
-- `DeliveryStatus`: `PENDING`, `IN_DELIVERY`, `DELIVERED`.
-- `ShipmentStatus`: `REQUESTED`, `IN_TRANSIT`, `RECEIVED`.
-
-### 3.3 Data Integrity Logic
-
-Operational integrity is encoded directly in service logic:
 
 - Bloc usage cannot exceed bloc capacity.
 - Product create/update/delete updates bloc usage atomically.
@@ -87,7 +94,6 @@ The project heavily uses transactions for consistency in stock movements.
 ## 4. Actors and User Roles (Detailed)
 
 This section describes each actor as implemented by backend guards and frontend routing.
-
 ### 4.1 Actor: Administrator (`ADMIN`)
 
 Mission:
@@ -192,53 +198,29 @@ Frontend behavior:
 Narrative importance:
 - This role is a deliberate quarantine state to protect business operations from unvetted access.
 
----
 
 ## 5. End-to-End Workflow Documentary
 
 ### 5.1 Onboarding and Access Control Flow
 
-1. User registers through public registration.
 2. Backend stores hashed password and marks role `PENDING`.
 3. User can authenticate but is redirected to pending workspace.
-4. Admin reviews user and updates role.
 5. On next login, role-based redirect lands the user in the assigned domain workspace.
 
 This creates a secure two-step onboarding: account creation then authorization.
-
 ### 5.2 Customer Order Lifecycle
-
 1. Customer browses available product aggregates (`/orders/products`).
 2. Customer submits order (`/orders/create`).
-3. Order starts `PENDING` and waits manager/admin decision.
-4. Decision branch:
    - Approve: stock is decremented, delivery goes in-progress.
-   - Reject: rejection reason is persisted.
-   - Restock request: order enters restock waiting path.
 5. Delivered marking closes lifecycle into `COMPLETED` + `DELIVERED`.
 
-### 5.3 Restock and Shipment Lifecycle
-
-1. Restock request creates shipment tied to order and bloc.
-2. Shipment transitions:
    - `REQUESTED` -> `IN_TRANSIT` -> `RECEIVED`.
-3. On receive:
-   - capacity validation runs,
-   - product quantity increments,
-   - bloc usage increments,
    - linked order may be reset to pending review.
 
-This loop couples replenishment with order readiness.
 
-### 5.4 Capacity and Inventory Control
 
-Capacity is not decorative metadata; it actively constrains operations:
-
-- Product creation/update enforces bloc capacity margins.
 - Shipment reception cannot overfill a bloc.
 - Order approval consumes stock and reduces bloc usage accordingly.
-
-The system models physical limits as first-class domain rules.
 
 ---
 
@@ -317,3 +299,235 @@ The heart of the system is not just CRUD over warehouses and products; it is the
 - pending users are held until explicitly trusted.
 
 In short, this project behaves like an operational control system with layered access, physical constraints, and traceable business state changes, rather than a simple inventory listing tool.
+
+---
+
+## 10. Project Plan — Sprint 0 + 6 Sprints (7 total)
+
+Overview: plan assumes 2-week sprints (14 weeks total after Sprint 0). Each sprint includes a concise goal, scope, and clear acceptance criteria you can use in your PFE evaluation.
+
+Sprint 0 — Project Setup & Research (Weeks 1-2)
++Goal: Prepare the environment, research architecture, finalize tech stack, and create initial project artifacts.
++Scope: Initialise repo, create `README`, configure development Postgres, create Prisma baseline, scaffold NestJS and Next.js apps, set CI linting and prettier, create initial `PROJECT_DOCUMENTARY.md` and sprint backlog.
++Acceptance: Developers can run backend and frontend locally; `prisma migrate dev` and `prisma generate` succeed; README contains run instructions and basic architecture diagrams.
+
+Sprint 1 — Auth & Onboarding (Weeks 3-4)
++Goal: Implement secure authentication and onboarding UX (register → pending → role assignment).
++Scope: Registration, login, JWT issuance, `PENDING` onboarding behavior, profile update, and basic auth guards on backend; frontend login/register and pending page.
++Acceptance: Users can register and appear as `PENDING`; admins can list and change roles; protected endpoints return 401 for unauthenticated requests; demo script for onboarding works end-to-end.
+
+Sprint 2 — User Management & RBAC (Weeks 5-6)
++Goal: Admin-grade user governance and UI for role assignment.
++Scope: Admin user CRUD endpoints, role assignment endpoint, frontend admin users dashboard, server-side guards enforcement, unit tests for role-protected endpoints.
++Acceptance: Admin can create/update/delete users and change roles via API/UI; role-protected endpoints deny access for unauthorized roles and tests cover those cases.
+
+Sprint 3 — Warehouse & Bloc Management (Weeks 7-8)
++Goal: Model physical storage and enforce capacity constraints.
++Scope: Warehouse and Bloc CRUD APIs, bloc capacity enforcement in services, frontend admin pages to manage warehouses and blocs, tests for capacity rules.
++Acceptance: Creating/updating blocs and warehouses works; attempts to create/receive stock that would overfill a bloc are rejected with clear error codes; automated tests verify constraints.
+
+Sprint 4 — Product Catalog & Dynamic Pricing (Weeks 9-10)
++Goal: Complete product catalog and integrate dynamic pricing basics.
++Scope: Product CRUD, assign products to blocs, price and quantity fields, implement server-side totalAmount calculation for orders (unitPrice × quantity), simple quantity-based discount rules (optional), frontend product pages for customers and admin.
++Acceptance: Products can be created/updated with bloc assignment; order creation payload includes server-validated `totalAmount`; pricing rules applied and documented in tests/examples.
+
+Sprint 5 — Orders & Shipments (Weeks 11-12)
++Goal: Implement multi-item order lifecycle and shipment/restock flows.
++Scope: `OrderItem` model, `POST /orders/create` supporting multiple items, manager approval/rejection endpoints, shipment create/in-transit/receive workflow, order tracking endpoint, frontend order modal and manager workflows.
++Acceptance: Customer can place multi-item orders; manager can approve/reject; approving an order decrements stock in a transaction; shipment receive increments stock and may change order state; end-to-end demo available.
+
+Sprint 6 — Inventory Ops, Support Tickets, Data & Chatbot, Real-time & Hardening (Weeks 13-16)
++Goal: Combine remaining operational features, analytics prep, chatbot and real-time hardening for PFE delivery.
++Scope: Technician UI for product placement, support-ticket lifecycle, operational events table and ETL scripts, lightweight chatbot integration, SSE/WebSocket real-time updates, tests, and deployment packaging.
++Acceptance: Technician can open tickets; admins/managers can update tickets; operational events are recorded; ETL produces a CSV sample; chatbot creates tickets; connected clients receive real-time updates; README contains demo script.
+
+---
+
+## 11. Product Backlog (Prioritized — user stories)
+
+The backlog below is prioritized for an academic PFE. Each item is expressed as a user story in the format: "As a <role>, I want <capability> so that <benefit>." Story points (Est) remain for relative sizing.
+
+- PB-01 — Authentication & RBAC (Priority: High, Est: 5)
+  - As a **user**, I want to register and login securely so that my account and data are protected.
+  - As an **admin**, I want to assign roles to users so that only authorized personnel access operational features.
+
+- PB-02 — Warehouse / Bloc CRUD + capacity checks (Priority: High, Est: 8)
+  - As an **admin**, I want to create and configure warehouses and blocs so that physical storage is modelled accurately.
+  - As a **manager**, I want the system to prevent operations that would overfill a bloc so that inventory reflects physical constraints.
+
+- PB-03 — Product Catalog CRUD & bloc assignment (Priority: High, Est: 8)
+  - As an **admin/manager**, I want to create and edit products (specs, price, quantity) and assign them to blocs so that inventory is trackable by location.
+  - As a **technician**, I want to change a product's `blocId` when moving stock so that location data stays accurate.
+
+- PB-04 — Multi-item Orders + Order Items model (Priority: High, Est: 8)
+  - As a **customer**, I want to place an order containing multiple products in one transaction so that I can buy different items together.
+  - As a **manager**, I want orders to include itemized lines so that approvals and stock adjustments are precise.
+
+- PB-05 — Order approval/rejection workflow (Priority: High, Est: 5)
+  - As a **manager**, I want to approve or reject customer orders with notes so that business decisions are documented and stock is reserved only on approval.
+
+- PB-06 — Shipment lifecycle + receive logic (Priority: High, Est: 8)
+  - As a **manager**, I want to create and progress shipments through `REQUESTED` → `IN_TRANSIT` → `RECEIVED` so that restocking is traceable.
+  - As a **technician**, I want receiving a shipment to update product quantities and bloc usage atomically so that inventory remains consistent.
+
+- PB-07 — Support tickets (technician → admin/manager) (Priority: Medium, Est: 5)
+  - As a **technician**, I want to open a support ticket describing an issue so that admins/managers can triage and resolve operational problems.
+  - As an **admin/manager**, I want to view and update tickets so that issues are tracked and closed.
+
+- PB-08 — Technician product placement UI (Priority: Medium, Est: 5)
+  - As a **technician**, I want a focused UI to assign products to specific blocs and record stock movements so that daily operations are efficient.
+
+- PB-09 — Operational events & movement history (Priority: Medium, Est: 8)
+  - As a **manager/admin**, I want an event log of receipts, movements, and adjustments so that I can audit changes and build datasets for analytics.
+
+- PB-10 — Reporting (orders/inventory) and CSV export (Priority: Medium, Est: 5)
+  - As a **manager**, I want reports and CSV export of orders and inventory snapshots so that I can analyze trends and include data in reports.
+
+- PB-11 — Real-time updates (SSE/WebSockets) (Priority: Medium, Est: 8)
+  - As a **manager/technician/customer**, I want to receive real-time updates about order/shipment status so that dashboards reflect the latest state without manual refresh.
+
+- PB-12 — Notifications (email/push) for delivered orders (Priority: Low, Est: 8)
+  - As a **customer**, I want to receive a notification when my order is delivered so that I know the delivery event occurred.
+
+- PB-13 — Chatbot for support ticket creation and order queries (Priority: Low, Est: 8)
+  - As a **technician/customer**, I want a chatbot to create tickets or query order status so that I can get help or file issues quickly.
+
+Notes: Est = story points (relative). Convert to hours in your project plan (e.g., 1 point ≈ 4 hours) as needed for PFE scheduling.
+
+---
+
+## 12. Class Diagram & Core Server Classes
+
+Below is a succinct class-level description for use in your PFE UML diagrams. Implementations live in `warehouse-backend/src`.
+
+- `UserService` — responsibilities: create/update users, find by email, list users, hash passwords.
+- `AuthService` — validate credentials, generate JWTs.
+- `AdminService` — wrappers around `UserService` for admin operations (role change, create user).
+- `WarehouseService` — create/read/update/delete warehouses and compute aggregate bloc usage.
+- `BlocService` — manage blocs, capacity checks and relationships to `Warehouse`.
+- `ProductService` — CRUD products; when moving or adjusting quantity, update `Bloc` usage and write operational events.
+- `OrderService` — create orders (items), find orders, approve/reject orders, decrement stock on approve, create restock requests.
+- `ShipmentService` — create shipments, mark in-transit, receive shipments (increment stock, validate capacity).
+- `SupportTicketService` — create tickets, find mine, list, update status/manager notes.
+
+Mermaid class overview (use in report):
+
+```mermaid
+classDiagram
+  class UserService{+create(dto)+findOne(id)+findAll()+update(id,dto)}
+  class AuthService{+validateUser()+login()+verifyToken()}
+  class ProductService{+create()+update()+remove()+findByBloc()}
+  class OrderService{+create(userId,dto)+approve()+reject()+findMine(userId)}
+  class ShipmentService{+create()+markInTransit()+receive()}
+  class SupportTicketService{+create()+findMine()+findAll()+update()}
+
+  AuthService --> UserService
+  OrderService --> ProductService
+  ShipmentService --> ProductService
+  ProductService --> BlocService
+  BlocService --> WarehouseService
+```
+
+---
+
+## 13. Database Tables (Prisma mapping)
+
+Use these model summaries in diagrams and tables. They map to `prisma/schema.prisma`.
+
+- `User` (id, email, name, password, address, phone, cin, profilePicture, roles, createdAt, updatedAt)
+- `Warehouse` (id, name, description, surface, createdAt, updatedAt)
+- `Bloc` (id, name, capacity, currentUsage, warehouseId, createdAt, updatedAt)
+- `Product` (id, name, blocId, description, price, quantity, createdAt, updatedAt)
+- `Order` (id, customerId, productName (legacy), quantity (legacy), totalAmount, deliveryDeadline, deliveryAddress, customerName, customerPhone, status, deliveryStatus, managerNote, rejectionReason, createdAt, updatedAt)
+- `OrderItem` (id, orderId, productId, productName, unitPrice, quantity, lineTotal, createdAt, updatedAt)
+- `Shipment` (id, orderId?, type, productName, quantity, blocId, supplierName, trackingNumber, expectedAt, receivedAt, status, note)
+- `SupportTicket` (id, title, category, description, priority, status, managerNote, createdById, createdAt, updatedAt)
+
+ER diagram (mermaid):
+
+```mermaid
+erDiagram
+  USER ||--o{ ORDER : places
+  USER ||--o{ SUPPORT_TICKET : creates
+  WAREHOUSE ||--o{ BLOC : contains
+  BLOC ||--o{ PRODUCT : stores
+  ORDER ||--o{ ORDER_ITEM : contains
+  ORDER ||--o{ SHIPMENT : may_have
+  BLOC ||--o{ SHIPMENT : receives
+```
+
+---
+
+## 14. Chatbot Architecture (for PFE)
+
+Goal: a lightweight conversational assistant that helps technicians/customers create support tickets and ask simple order/product queries.
+
+Core components:
+- NLU / Intent Recognition: Use a hosted service (Dialogflow, Rasa, or LLM + prompt templates). Recognize intents: `create_ticket`, `query_order_status`, `query_product_availability`, `greeting`, `fallback`.
+- Dialogue Manager: Stateless or minimal state machine to collect required slots (e.g., ticket title, description, product/quantity, bloc if relevant).
+- Integration Layer: securely call backend APIs:
+  - `POST /support-tickets` to create a ticket (requires JWT of technician)
+  - `GET /orders/:id/tracking` for order queries (requires user token or manager/admin token with appropriate scope)
+  - `GET /product` or `GET /product/bloc/:blocId` for availability queries
+- Authentication: token-forwarding approach: chatbot UI (embedded in workspace) uses current user's JWT; backend enforces RBAC.
+- Fallback/Error handling: if the bot cannot satisfy an intent, escalate to a ticket creation flow or show contact details.
+
+Recommended minimal flow for `create_ticket`:
+1. User invokes bot (in `/technicien` workspace -> bot already has JWT via browser session).
+2. Bot asks: "Brief title?" -> user replies.
+3. Bot asks: "Describe the issue and which product/bloc if applicable." -> user replies.
+4. Bot calls `POST /support-tickets` with `title`, `description`, `category` (inferred), `priority`.
+5. Bot responds with ticket ID and link to technician ticket list.
+
+Security considerations:
+- Ensure the frontend injects the JWT into the bot requests or the bot uses the browser session to authorize.
+- Rate-limit bot actions and validate all inputs on server.
+
+Implementation options (from simplest to robust):
+- Option A (fast, low-code): Use a prompt-based LLM with simple slot-filling logic in the browser and call backend endpoints directly.
+- Option B (moderate): Use a managed NLU (Dialogflow) for slot-filling and small webhook service for backend calls.
+- Option C (advanced): Host Rasa or build a small Node.js microservice that manages dialogues and secure backend calls.
+
+---
+
+## 15. Testing Strategy
+
+- Unit tests for services (Prisma operations mocked) — validate business rules (capacity checks, stock decrement on approve).
+- Integration tests for critical flows: registration → admin role assignment → customer order → manager approve → stock update.
+- E2E smoke tests using playwright or Cypress for main role flows (customer order creation and admin approval).
+- Load test for shipment/receive endpoints is optional for PFE but valuable if you claim performance properties.
+
+---
+
+## 16. Deployment & DevOps Notes
+
+- Dev: `nest start --watch` for backend (port 3001 expected), Next.js dev server for frontend.
+- Database: Postgres (local or containerized). Run `prisma migrate dev` and `prisma generate` after schema changes.
+- Recommended for PFE demo: Docker Compose with `postgres`, `backend`, and `frontend` services — simplifies demo reproducibility.
+
+Example Docker Compose advice (high level):
+1. Postgres service with mounted volume.
+2. Backend built image that runs `prisma migrate deploy` on start and binds to 3001.
+3. Frontend served using Next.js production server or `next start` after build.
+
+---
+
+## 17. Deliverables for PFE Report (Checklist)
+
+- Project overview and architecture diagrams (class and ER diagrams)
+- Sprint log with objectives and completed tasks for each sprint (use Sprints 1–8 above)
+- Product backlog with priorities and estimates
+- API reference summary (routes, expected payloads, roles)
+- Test plan and major test results (unit + integration + E2E smoke)
+- Deployment instructions and demo scripts
+- Chatbot design and sequence diagrams
+- Source code link and commit history summary
+
+---
+
+If you want, I can:
+- generate UML images or export the mermaid diagrams to PNG for insertion into your report;
+- create a printable sprint-by-sprint activity log (`SPRINT_LOG.md`) that you can paste into your PFE appendix;
+- or convert the backlog into a CSV/Excel for PM chapters.
+
+Tell me which of those you want next and I'll prepare it.

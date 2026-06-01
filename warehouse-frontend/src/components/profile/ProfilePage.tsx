@@ -64,7 +64,7 @@ export function ProfilePage({ backLink, roleLabel, roleBgColor }: ProfilePagePro
             <p className="mb-4 text-sm text-[var(--color-error)]">{error || 'Failed to load profile'}</p>
             <Link
               href={backLink}
-              className="inline-flex rounded-md border border-[var(--input)] bg-white px-4 py-2 text-xs font-medium text-[#6b705c] transition-colors hover:border-[var(--border)] hover:text-[#344e41]"
+              className="inline-flex rounded-md border border-[var(--input)] bg-white px-4 py-2 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
             >
               Back
             </Link>
@@ -121,7 +121,7 @@ export function ProfilePage({ backLink, roleLabel, roleBgColor }: ProfilePagePro
                 ['CIN', profile.cin],
                 ['Phone', profile.phone || '—'],
               ].map(([label, value]) => (
-                <div key={label} className="flex items-center justify-between rounded-lg bg-[#f7f7f5] px-4 py-3">
+                <div key={label} className="flex items-center justify-between rounded-lg bg-[var(--muted)] px-4 py-3">
                   <span className="text-[var(--muted-foreground)]">{label}</span>
                   <span className="font-medium">{value}</span>
                 </div>
@@ -132,11 +132,11 @@ export function ProfilePage({ backLink, roleLabel, roleBgColor }: ProfilePagePro
           <div className="rounded-2xl border border-[var(--border)] bg-white p-8 shadow-sm">
             <h2 className="text-sm font-semibold">Timeline</h2>
             <div className="mt-4 space-y-3 text-sm">
-              <div className="flex items-center justify-between rounded-lg bg-[#f7f7f5] px-4 py-3">
+              <div className="flex items-center justify-between rounded-lg bg-[var(--muted)] px-4 py-3">
                 <span className="text-[var(--muted-foreground)]">Member since</span>
                 <span className="font-medium">{new Date(profile.createdAt).toLocaleDateString()}</span>
               </div>
-              <div className="flex items-center justify-between rounded-lg bg-[#f7f7f5] px-4 py-3">
+              <div className="flex items-center justify-between rounded-lg bg-[var(--muted)] px-4 py-3">
                 <span className="text-[var(--muted-foreground)]">Last updated</span>
                 <span className="font-medium">{new Date(profile.updatedAt).toLocaleDateString()}</span>
               </div>

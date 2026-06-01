@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InventoryOperationType, RestockAlertStatus } from '@prisma/client';
+import { InventoryOperationType, RestockAlertStatus, RestockPriority } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateRestockAlertDto } from './dto/create-restock-alert.dto';
 import { ExecuteRestockAlertDto } from './dto/execute-restock-alert.dto';
 import { UpdateRestockAlertLocationDto } from './dto/update-restock-alert-location.dto';
 
@@ -29,6 +30,64 @@ export class RestockAlertsService {
     return this.prisma.restockAlert.findMany({
       include: this.alertInclude,
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async create(dto: CreateRestockAlertDto, managerId?: number) {
+    const warehouse = await this.prisma.warehouse.findUniqueOrThrow({ where: { id: dto.warehouseId } });
+    const bloc = await this.prisma.bloc.findUnique({ where: { id: dto.blocId }, include: { warehouse: true } });
+
+    if (!bloc) {
+      throw new NotFoundException(`Bloc #${dto.blocId} not found`);
+    }
+
+    if (bloc.warehouseId !== warehouse.id) {
+      throw new BadRequestException('Selected bloc does not belong to the selected warehouse');
+    }
+
+    const product = dto.productId
+      ? await this.prisma.product.findUnique({ where: { id: dto.productId } })
+      : await this.prisma.product.findFirst({
+          where: {
+            blocId: dto.blocId,
+            name: { equals: dto.productName, mode: 'insensitive' },
+          },
+        });
+
+    const currentStock = product?.quantity ?? dto.currentStock;
+    const priority = dto.priority ?? RestockPriority.MEDIUM;
+
+    return this.prisma.$transaction(async (tx) => {
+      const alert = await tx.restockAlert.create({
+        data: {
+          productId: product?.id ?? dto.productId ?? null,
+          productName: product?.name ?? dto.productName,
+          currentStock,
+          requestedQuantity: dto.requestedQuantity,
+          warehouseId: warehouse.id,
+          blocId: bloc.id,
+          priority,
+          managerNote: dto.note ?? null,
+          status: RestockAlertStatus.PENDING,
+          managerId: managerId ?? null,
+        },
+        include: this.alertInclude,
+      });
+
+      await tx.inventoryMovement.create({
+        data: {
+          productId: product?.id ?? dto.productId ?? null,
+          productName: product?.name ?? dto.productName,
+          quantity: dto.requestedQuantity,
+          operationType: InventoryOperationType.RESTOCK_ALERT,
+          destinationBlocId: bloc.id,
+          technicianId: managerId ?? null,
+          note: dto.note ?? 'Restock alert created',
+          restockAlertId: alert.id,
+        },
+      });
+
+      return alert;
     });
   }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import WorkspaceShell from '@/src/common/WorkspaceShell';
 import { useAuth } from '@/src/auth/AuthProvider';
@@ -60,6 +61,10 @@ function restockStatusMeta(status: RestockAlert['status']): { label: string; cla
 
 export default function TechnicienPage() {
   const { token } = useAuth();
+  const pathname = usePathname();
+  const isMovementsPage = pathname.endsWith('/technicien/mouvements');
+  const isRestockAlertsPage = pathname.endsWith('/technicien/restock-alerts');
+  const isDashboardPage = pathname === '/technicien';
   const [warehouses, setWarehouses] = useState<AdminDashboardWarehouse[]>([]);
   const [restockAlerts, setRestockAlerts] = useState<RestockAlert[]>([]);
   const [movements, setMovements] = useState<TechnicianInventoryMovement[]>([]);
@@ -82,12 +87,22 @@ export default function TechnicienPage() {
 
     const refresh = async () => {
       try {
-        const [warehouseData, movementData, alertData, productData] = await Promise.all([
-          getAdminWarehouses(token),
-          getTechnicianMovements(token, 40),
-          getRestockAlerts(token),
-          getTechnicianProducts(token),
-        ]);
+        let warehouseData: AdminDashboardWarehouse[] = [];
+        let movementData: TechnicianInventoryMovement[] = [];
+        let alertData: RestockAlert[] = [];
+        let productData: TechnicianProduct[] = [];
+
+        if (isMovementsPage) {
+          [warehouseData, movementData, productData] = await Promise.all([
+            getAdminWarehouses(token),
+            getTechnicianMovements(token, 40),
+            getTechnicianProducts(token),
+          ]);
+        } else if (isRestockAlertsPage) {
+          [warehouseData, alertData] = await Promise.all([getAdminWarehouses(token), getRestockAlerts(token)]);
+        } else {
+          [warehouseData, movementData] = await Promise.all([getAdminWarehouses(token), getTechnicianMovements(token, 40)]);
+        }
 
         if (!active) return;
 
@@ -95,20 +110,22 @@ export default function TechnicienPage() {
         setMovements(movementData);
         setRestockAlerts(alertData);
         setProducts(productData);
-        setAlertLocationDrafts((current) => {
-          const next = { ...current };
+        if (isRestockAlertsPage) {
+          setAlertLocationDrafts((current) => {
+            const next = { ...current };
 
-          for (const alert of alertData) {
-            if (!next[alert.id]) {
-              next[alert.id] = {
-                warehouseId: String(alert.warehouseId),
-                blocId: String(alert.blocId),
-              };
+            for (const alert of alertData) {
+              if (!next[alert.id]) {
+                next[alert.id] = {
+                  warehouseId: String(alert.warehouseId),
+                  blocId: String(alert.blocId),
+                };
+              }
             }
-          }
 
-          return next;
-        });
+            return next;
+          });
+        }
         setError(null);
         setHasLoaded(true);
         setLastUpdated(new Date().toISOString());
@@ -128,7 +145,7 @@ export default function TechnicienPage() {
       active = false;
       window.clearInterval(interval);
     };
-  }, [token]);
+  }, [token, isMovementsPage, isRestockAlertsPage]);
 
   const navGroups = [
     {
@@ -136,6 +153,13 @@ export default function TechnicienPage() {
       items: [
         { label: 'Dashboard', href: '/technicien', icon: 'dashboard' as const },
         { label: 'Support tickets', href: '/technicien/tickets', icon: 'users' as const },
+      ],
+    },
+    {
+      label: 'Warehouse inventory',
+      items: [
+        { label: 'Movements', href: '/technicien/mouvements', icon: 'movements' as const },
+        { label: 'Restock alerts', href: '/technicien/restock-alerts', icon: 'alerts' as const },
       ],
     },
   ];
@@ -236,13 +260,20 @@ export default function TechnicienPage() {
 
   return (
     <WorkspaceShell
-      title="Technician"
-      description="Track warehouse levels and real inventory movements in a live operational view."
+      title={isMovementsPage ? 'Movements' : isRestockAlertsPage ? 'Restock alerts' : 'Technician'}
+      description={
+        isMovementsPage
+          ? 'Review product stock and move inventory between blocs.'
+          : isRestockAlertsPage
+            ? 'Track and process restock alerts in one focused queue.'
+          : 'Track warehouse levels and real inventory movements in a live operational view.'
+      }
       roleLabel="Technicien"
       roleColor="var(--role-technicien)"
       profileHref="/technicien/profile"
       navGroups={navGroups}
     >
+      {isDashboardPage && (
       <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <div className="rounded-xl bg-[var(--card)] p-5 shadow-sm">
           <p className="text-sm font-medium text-[var(--muted-foreground)]">Warehouses</p>
@@ -260,11 +291,14 @@ export default function TechnicienPage() {
           <p className="text-sm font-medium text-[var(--muted-foreground)]">Occupancy</p>
           <p className="mt-2 text-3xl font-semibold">{occupancyRate}%</p>
         </div>
-        <div className="rounded-xl bg-[var(--card)] p-5 shadow-sm">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Movements</p>
-          <p className="mt-2 text-3xl font-semibold">{movements.length}</p>
-        </div>
+        {isMovementsPage && (
+          <div className="rounded-xl bg-[var(--card)] p-5 shadow-sm">
+            <p className="text-sm font-medium text-[var(--muted-foreground)]">Movements</p>
+            <p className="mt-2 text-3xl font-semibold">{movements.length}</p>
+          </div>
+        )}
       </section>
+      )}
 
       {!token ? (
         <div className="mb-4 flex items-start gap-2 rounded-md bg-[var(--tint-error)] px-3 py-2 text-sm text-[var(--color-error)]">
@@ -284,6 +318,7 @@ export default function TechnicienPage() {
         </div>
       )}
 
+      {isDashboardPage && (
       <section className="mb-8 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="rounded-2xl bg-[var(--card)] p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -327,23 +362,23 @@ export default function TechnicienPage() {
 
                           return (
                             <tr key={bloc.id}>
-                              <td className="rounded-l-lg bg-[#f7f7f5] px-3 py-2">{bloc.name}</td>
-                              <td className="bg-[#f7f7f5] px-3 py-2">{bloc.capacity}</td>
-                              <td className="bg-[#f7f7f5] px-3 py-2">
+                                <td className="rounded-l-lg bg-[var(--muted)] px-3 py-2">{bloc.name}</td>
+                                  <td className="bg-[var(--muted)] px-3 py-2">{bloc.capacity}</td>
+                                  <td className="bg-[var(--muted)] px-3 py-2">
                                 <div className="flex items-center gap-2">
                                   <span>{bloc.currentUsage}</span>
-                                  <div className="h-2 w-32 overflow-hidden rounded-full bg-[#ebeae6]">
+                                  <div className="h-2 w-32 overflow-hidden rounded-full bg-[var(--muted)]">
                                     <div
                                       className="h-full"
                                       style={{
                                         width: `${usagePercent}%`,
-                                        background: usagePercent > 90 ? '#d64545' : usagePercent > 70 ? '#b26b00' : '#2f8f5b',
+                                        background: usagePercent > 90 ? 'var(--color-error)' : usagePercent > 70 ? 'var(--color-warning)' : 'var(--color-success)',
                                       }}
                                     />
                                   </div>
                                 </div>
                               </td>
-                              <td className="rounded-r-lg bg-[#f7f7f5] px-3 py-2">{available}</td>
+                              <td className="rounded-r-lg bg-[var(--muted)] px-3 py-2">{available}</td>
                             </tr>
                           );
                         })}
@@ -367,9 +402,9 @@ export default function TechnicienPage() {
             </div>
 
             {latestMovement ? (
-              <div className="mt-5 rounded-[22px] border border-[var(--border)] bg-[#fbfbf8] p-4">
+              <div className="mt-5 rounded-[22px] border border-[var(--border)] bg-[var(--card)] p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted-foreground)]">{movementLabel(latestMovement.operationType)}</p>
-                <p className="mt-2 text-lg font-semibold text-[#22311b]">{latestMovement.productName}</p>
+                <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">{latestMovement.productName}</p>
                 <p className="mt-1 text-sm text-[var(--muted-foreground)]">
                   Qty {latestMovement.quantity} · {latestMovement.sourceBloc?.name ?? '—'} → {latestMovement.destinationBloc?.name ?? (latestMovement.order ? `Order #${latestMovement.order.id}` : latestMovement.shipment ? `Shipment #${latestMovement.shipment.id}` : '—')}
                 </p>
@@ -382,16 +417,16 @@ export default function TechnicienPage() {
               </div>
             )}
 
-            <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
-              <div className="rounded-xl bg-[#f3f7ee] px-4 py-3 text-[#4b5f31]">
+              <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
+              <div className="rounded-xl bg-[var(--tint-success)] px-4 py-3 text-[var(--color-success)]">
                 <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">Stock in</p>
                 <p className="mt-1 text-2xl font-semibold">{stockInCount}</p>
               </div>
-              <div className="rounded-xl bg-[#f7f3ea] px-4 py-3 text-[#7e6a32]">
+              <div className="rounded-xl bg-[var(--tint-warning)] px-4 py-3 text-[var(--color-warning)]">
                 <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">Stock out</p>
                 <p className="mt-1 text-2xl font-semibold">{stockOutCount}</p>
               </div>
-              <div className="rounded-xl bg-[#eef6f2] px-4 py-3 text-[#30533f]">
+              <div className="rounded-xl bg-[var(--tint-info)] px-4 py-3 text-[var(--color-info)]">
                 <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">Transfers</p>
                 <p className="mt-1 text-2xl font-semibold">{transferCount}</p>
               </div>
@@ -408,14 +443,14 @@ export default function TechnicienPage() {
                 const warehouse = warehouses.find((item) => item.id === bloc.warehouseId);
                 const usagePercent = percent(bloc.currentUsage, bloc.capacity);
                 return (
-                  <div key={bloc.id} className="rounded-xl border border-[var(--border)] bg-[#fbfbf8] p-4">
+                  <div key={bloc.id} className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-medium text-[#22311b]">{bloc.name}</p>
+                      <p className="font-medium text-[var(--foreground)]">{bloc.name}</p>
                       <span className="text-xs text-[var(--muted-foreground)]">{usagePercent}%</span>
                     </div>
                     <p className="mt-1 text-sm text-[var(--muted-foreground)]">{warehouse?.name || 'Unknown warehouse'}</p>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#ece9e1]">
-                      <div className="h-full rounded-full bg-[linear-gradient(90deg,_#c7923f_0%,_#6c3f1a_100%)]" style={{ width: `${usagePercent}%` }} />
+                            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--muted)]">
+                            <div className="h-full rounded-full bg-[linear-gradient(90deg,_var(--color-warning)_0%,_var(--role-admin)_100%)]" style={{ width: `${usagePercent}%` }} />
                     </div>
                   </div>
                 );
@@ -427,8 +462,10 @@ export default function TechnicienPage() {
           </div>
         </div>
       </section>
+      )}
 
-      <section className="mb-8 rounded-2xl bg-[var(--card)] p-6 shadow-sm">
+      {isMovementsPage && (
+      <section id="warehouse-inventory" className="mb-8 rounded-2xl bg-[var(--card)] p-6 shadow-sm scroll-mt-24">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-[0.3em] text-[var(--muted-foreground)]">Warehouse inventory</p>
@@ -437,7 +474,7 @@ export default function TechnicienPage() {
           <button
             type="button"
             onClick={() => setIsMoveModalOpen(true)}
-            className="rounded-md bg-[#edf2ee] px-3 py-2 text-xs font-semibold text-[var(--color-info)]"
+            className="rounded-md bg-[var(--tint-info)] px-3 py-2 text-xs font-semibold text-[var(--color-info)]"
           >
             Move product
           </button>
@@ -457,16 +494,16 @@ export default function TechnicienPage() {
             <tbody>
               {products.map((product) => (
                 <tr key={product.id}>
-                  <td className="rounded-l-lg bg-[#f7f7f5] px-3 py-2 font-medium text-[#22311b]">{product.name}</td>
-                  <td className="bg-[#f7f7f5] px-3 py-2">{product.quantity}</td>
-                  <td className="bg-[#f7f7f5] px-3 py-2">${product.price.toFixed(2)}</td>
-                  <td className="bg-[#f7f7f5] px-3 py-2">{product.warehouseName}</td>
-                  <td className="rounded-r-lg bg-[#f7f7f5] px-3 py-2">{product.blocName}</td>
+                  <td className="rounded-l-lg bg-[var(--muted)] px-3 py-2 font-medium text-[var(--foreground)]">{product.name}</td>
+                  <td className="bg-[var(--muted)] px-3 py-2">{product.quantity}</td>
+                  <td className="bg-[var(--muted)] px-3 py-2">${product.price.toFixed(2)}</td>
+                  <td className="bg-[var(--muted)] px-3 py-2">{product.warehouseName}</td>
+                  <td className="rounded-r-lg bg-[var(--muted)] px-3 py-2">{product.blocName}</td>
                 </tr>
               ))}
               {products.length === 0 && (
                 <tr>
-                  <td className="rounded-lg bg-[#f7f7f5] px-3 py-4 text-sm text-[var(--muted-foreground)]" colSpan={5}>
+                  <td className="rounded-lg bg-[var(--muted)] px-3 py-4 text-sm text-[var(--muted-foreground)]" colSpan={5}>
                     No products in warehouse.
                   </td>
                 </tr>
@@ -475,7 +512,9 @@ export default function TechnicienPage() {
           </table>
         </div>
       </section>
+      )}
 
+      {isRestockAlertsPage && (
       <section className="mb-8 rounded-2xl bg-[var(--card)] p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -495,10 +534,10 @@ export default function TechnicienPage() {
             const warehouseBlocs = warehouses.filter((warehouse) => warehouse.id === Number(draft.warehouseId)).flatMap((warehouse) => warehouse.blocks);
 
             return (
-              <div key={alert.id} className="rounded-2xl border border-[var(--border)] bg-[#fbfbf8] p-4 shadow-sm">
+              <div key={alert.id} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
-                    <p className="text-sm font-semibold text-[#22311b]">{alert.productName}</p>
+                    <p className="text-sm font-semibold text-[var(--foreground)]">{alert.productName}</p>
                     <p className="mt-1 text-xs text-[var(--muted-foreground)]">Warehouse: {alert.warehouse.name}</p>
                     <p className="text-xs text-[var(--muted-foreground)]">Bloc: {alert.bloc.name}</p>
                   </div>
@@ -517,7 +556,7 @@ export default function TechnicienPage() {
                 </div>
 
                 <div className="mt-4 rounded-xl bg-white px-4 py-3 text-sm text-[var(--muted-foreground)]">
-                  <p className="font-medium text-[#22311b]">Manager note</p>
+                  <p className="font-medium text-[var(--foreground)]">Manager note</p>
                   <p className="mt-1">{alert.managerNote ?? 'No note provided.'}</p>
                 </div>
 
@@ -616,8 +655,10 @@ export default function TechnicienPage() {
           )}
         </div>
       </section>
+      )}
 
-      <section className="rounded-2xl bg-[var(--card)] p-6 shadow-sm">
+      {isDashboardPage && (
+      <section id="movements" className="rounded-2xl bg-[var(--card)] p-6 shadow-sm scroll-mt-24">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-[0.3em] text-[var(--muted-foreground)]">Movement history</p>
@@ -652,19 +693,19 @@ export default function TechnicienPage() {
 
                 return (
                   <tr key={movement.id}>
-                    <td className="rounded-l-lg bg-[#f7f7f5] px-3 py-2 font-medium text-[#22311b]">{movement.productName}</td>
-                    <td className="bg-[#f7f7f5] px-3 py-2">{sourceBloc}</td>
-                    <td className="bg-[#f7f7f5] px-3 py-2">{destination}</td>
-                    <td className="bg-[#f7f7f5] px-3 py-2">{movement.quantity}</td>
-                    <td className="bg-[#f7f7f5] px-3 py-2">{movementLabel(movement.operationType)}</td>
-                    <td className="bg-[#f7f7f5] px-3 py-2">{formatDate(movement.createdAt)}</td>
-                    <td className="rounded-r-lg bg-[#f7f7f5] px-3 py-2">{movement.technician?.name || movement.technician?.email || 'Unknown'}</td>
-                  </tr>
+                        <td className="rounded-l-lg bg-[var(--card)] px-3 py-2 font-medium text-[var(--foreground)]">{movement.productName}</td>
+                        <td className="bg-[var(--card)] px-3 py-2">{sourceBloc}</td>
+                        <td className="bg-[var(--card)] px-3 py-2">{destination}</td>
+                        <td className="bg-[var(--card)] px-3 py-2">{movement.quantity}</td>
+                        <td className="bg-[var(--card)] px-3 py-2">{movementLabel(movement.operationType)}</td>
+                        <td className="bg-[var(--card)] px-3 py-2">{formatDate(movement.createdAt)}</td>
+                        <td className="rounded-r-lg bg-[var(--card)] px-3 py-2">{movement.technician?.name || movement.technician?.email || 'Unknown'}</td>
+                      </tr>
                 );
               })}
               {movements.length === 0 && (
                 <tr>
-                  <td className="rounded-lg bg-[#f7f7f5] px-3 py-4 text-sm text-[var(--muted-foreground)]" colSpan={7}>
+                  <td className="rounded-lg bg-[var(--card)] px-3 py-4 text-sm text-[var(--muted-foreground)]" colSpan={7}>
                     No operations recorded yet.
                   </td>
                 </tr>
@@ -673,10 +714,11 @@ export default function TechnicienPage() {
           </table>
         </div>
       </section>
+      )}
 
       {/* Move Product Modal */}
-      {isMoveModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#37352f]/30 p-4 backdrop-blur-sm">
+      {isMovementsPage && isMoveModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--popover-foreground)]/30 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold tracking-tight">Move product between blocs</h3>
@@ -693,7 +735,7 @@ export default function TechnicienPage() {
               <select
                 value={moveForm.productId}
                 onChange={(event) => setMoveForm((current) => ({ ...current, productId: event.target.value }))}
-                className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+                className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
               >
                 <option value="">Select product</option>
                 {products.map((product) => (
@@ -709,13 +751,13 @@ export default function TechnicienPage() {
                 onChange={(event) => setMoveForm((current) => ({ ...current, quantity: event.target.value }))}
                 placeholder="Quantity"
                 min={1}
-                className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+                className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
               />
 
               <select
                 value={moveForm.destinationBlocId}
                 onChange={(event) => setMoveForm((current) => ({ ...current, destinationBlocId: event.target.value }))}
-                className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+                className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
               >
                 <option value="">Select destination bloc</option>
                 {warehouses.flatMap((warehouse) =>
@@ -731,7 +773,7 @@ export default function TechnicienPage() {
                 value={moveForm.note}
                 onChange={(event) => setMoveForm((current) => ({ ...current, note: event.target.value }))}
                 placeholder="Optional note"
-                className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--color-info)]"
+                className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
                 rows={3}
               />
 
@@ -739,7 +781,7 @@ export default function TechnicienPage() {
                 type="button"
                 onClick={() => void handleMoveProduct()}
                 disabled={isMoveLoading}
-                className="mt-2 rounded-lg border border-[var(--color-info)] bg-[#edf2ee] px-4 py-2 text-sm font-medium text-[var(--color-info)] transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="mt-2 rounded-lg border border-[var(--color-info)] bg-[var(--secondary)] px-4 py-2 text-sm font-medium text-[var(--color-info)] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {isMoveLoading ? 'Moving product...' : 'Execute move'}
               </button>

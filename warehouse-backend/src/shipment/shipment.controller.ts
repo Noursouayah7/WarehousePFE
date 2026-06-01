@@ -21,7 +21,7 @@ import { UpdateShipmentDto } from './dto/update-shipment.dto';
 import { ShipmentService } from './shipment.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('shipment')
+@Controller(['shipment', 'shipments'])
 export class ShipmentController {
   constructor(private readonly shipmentService: ShipmentService) {}
 

@@ -279,12 +279,12 @@ export default function AdminProductsDashbord() {
 
 								return (
 									<tr key={product.id}>
-										<td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{product.id}</td>
-										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{product.name}</td>
-										<td className="max-w-[260px] bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{product.description ?? '-'}</td>
-										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{product.blocId}</td>
-										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{product.price}</td>
-										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{product.quantity}</td>
+										<td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">{product.id}</td>
+										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">{product.name}</td>
+										<td className="max-w-[260px] bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">{product.description ?? '-'}</td>
+										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">{product.blocId}</td>
+										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">{product.price}</td>
+										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">{product.quantity}</td>
 										<td className="bg-[var(--card)] px-3 py-3">
 											<button
 												type="button"
@@ -310,7 +310,7 @@ export default function AdminProductsDashbord() {
 
 							{visibleProducts.length === 0 && (
 								<tr>
-									<td colSpan={8} className="px-3 py-8 text-center text-sm text-[#6b705c]">
+									<td colSpan={8} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
 										{query.trim() ? 'No products match your search' : 'No products found'}
 									</td>
 								</tr>
@@ -321,18 +321,18 @@ export default function AdminProductsDashbord() {
 			)}
 
 			{isFormOpen && (
-				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 px-4 backdrop-blur-sm">
+				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--popover-foreground)]/30 px-4 backdrop-blur-sm">
 					<div className="w-full max-w-2xl rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
-						<p className="mb-2 text-[11px] tracking-[0.22em] text-[#6b705c]">
+						<p className="mb-2 text-[11px] tracking-[0.22em] text-[var(--muted-foreground)]">
 							{editingProduct ? 'UPDATE PRODUCT' : 'ADD PRODUCT'}
 						</p>
-						<h3 className="mb-6 text-xl font-bold tracking-[0.04em] text-[#344e41]">
+						<h3 className="mb-6 text-xl font-bold tracking-[0.04em] text-[var(--foreground)]">
 							{editingProduct ? `Edit ${editingProduct.name}` : 'Create a new product'}
 						</h3>
 
 						<form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">NAME</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">NAME</label>
 							<input
 								value={form.name}
 								onChange={(event) => {
@@ -340,15 +340,15 @@ export default function AdminProductsDashbord() {
 									setForm((current) => ({ ...current, name: event.target.value }));
 								}}
 								required
-							className={`border bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)] ${formError && formError.includes('already exists') ? 'border-[var(--color-error)]' : 'border-[#b7c2a0]'}`}
+							className={`border bg-[var(--secondary)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)] ${formError && formError.includes('already exists') ? 'border-[var(--color-error)]' : 'border-[var(--border)]'}`}
 						/>
 						{formError && formError.includes('already exists') && (
 								<p className="text-[11px] tracking-[0.06em] text-[var(--color-error)]">{formError}</p>
 							)}
 						</div>
 
-						<div className="flex flex-col gap-2">
-							<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">WAREHOUSE</label>
+							<div className="flex flex-col gap-2">
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">WAREHOUSE</label>
 							<select
 								value={selectedWarehouseId}
 								onChange={(event) => {
@@ -356,7 +356,7 @@ export default function AdminProductsDashbord() {
 									setForm((current) => ({ ...current, blocId: '' }));
 								}}
 								required
-								className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
+								className="border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)]"
 							>
 								<option value="" disabled>Select a warehouse</option>
 								{warehouses.map((w) => (
@@ -367,7 +367,7 @@ export default function AdminProductsDashbord() {
 
 						{selectedWarehouseId && (
 							<div className="flex flex-col gap-2 md:col-span-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">BLOC</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">BLOC</label>
 								<select
 									value={form.blocId}
 								onChange={(event) => {
@@ -375,7 +375,7 @@ export default function AdminProductsDashbord() {
 									setForm((current) => ({ ...current, blocId: event.target.value }));
 								}}
 								required
-								className={`border bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)] ${formError && !formError.includes('already exists') ? 'border-[var(--color-error)]' : 'border-[#b7c2a0]'}`}
+								className={`border bg-[var(--secondary)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)] ${formError && !formError.includes('already exists') ? 'border-[var(--color-error)]' : 'border-[var(--border)]'}`}
 							>
 								<option value="" disabled>Select a bloc</option>
 								{warehouses
@@ -390,17 +390,17 @@ export default function AdminProductsDashbord() {
 							</div>
 						)}
 							<div className="flex flex-col gap-2 md:col-span-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">DESCRIPTION</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">DESCRIPTION</label>
 								<textarea
 									value={form.description}
 									onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
 									rows={3}
-									className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
+									className="border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)]"
 								/>
 							</div>
 
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">PRICE</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">PRICE</label>
 								<input
 									type="number"
 									min="0"
@@ -408,19 +408,19 @@ export default function AdminProductsDashbord() {
 									value={form.price}
 									onChange={(event) => setForm((current) => ({ ...current, price: event.target.value }))}
 									required
-									className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
+									className="border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)]"
 								/>
 							</div>
 
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">QUANTITY</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">QUANTITY</label>
 								<input
 									type="number"
 									min="0"
 									value={form.quantity}
 									onChange={(event) => setForm((current) => ({ ...current, quantity: event.target.value }))}
 									required
-									className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
+									className="border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)]"
 								/>
 							</div>
 
@@ -428,7 +428,7 @@ export default function AdminProductsDashbord() {
 								<button
 									type="button"
 									onClick={closeFormModal}
-									className="border border-[#b7c2a0] px-4 py-2 text-[11px] tracking-[0.14em] text-[#5f6f59] transition-colors hover:border-[#8fa07a] hover:text-[#344e41]"
+									className="border border-[var(--border)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
 								>
 									CANCEL
 								</button>
@@ -446,20 +446,20 @@ export default function AdminProductsDashbord() {
 			)}
 
 			{confirmDeleteProduct && (
-				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 px-4 backdrop-blur-sm">
+				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--popover-foreground)]/30 px-4 backdrop-blur-sm">
 					<div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
-						<p className="mb-2 text-[11px] tracking-[0.22em] text-[#6b705c]">DELETE PRODUCT</p>
-						<h3 className="mb-3 text-xl font-bold tracking-[0.04em] text-[#344e41]">
+						<p className="mb-2 text-[11px] tracking-[0.22em] text-[var(--muted-foreground)]">DELETE PRODUCT</p>
+						<h3 className="mb-3 text-xl font-bold tracking-[0.04em] text-[var(--foreground)]">
 							Are you sure you want to delete this product?
 						</h3>
-						<p className="mb-6 text-[13px] tracking-[0.04em] text-[#6b705c]">
+						<p className="mb-6 text-[13px] tracking-[0.04em] text-[var(--muted-foreground)]">
 							{confirmDeleteProduct.name}
 						</p>
 						<div className="flex justify-end gap-3">
 							<button
 								type="button"
 								onClick={() => setConfirmDeleteProductId(null)}
-								className="border border-[#b7c2a0] px-4 py-2 text-[11px] tracking-[0.14em] text-[#5f6f59] transition-colors hover:border-[#8fa07a] hover:text-[#344e41]"
+								className="border border-[var(--border)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
 							>
 								CANCEL
 							</button>

@@ -239,8 +239,8 @@ export default function AdminWarehousesDashbord() {
 
 								return (
 									<tr key={warehouse.id}>
-										<td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{warehouse.id}</td>
-										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">
+										<td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">{warehouse.id}</td>
+										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">
 											<Link
 												href={`/admin/warehouses/${warehouse.id}`}
 												className="border-b border-transparent text-[var(--color-info)] transition-colors hover:border-[var(--color-info)] hover:text-[var(--color-info)]"
@@ -248,9 +248,9 @@ export default function AdminWarehousesDashbord() {
 												{warehouse.name}
 											</Link>
 										</td>
-										<td className="max-w-[260px] bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{warehouse.description ?? '-'}</td>
-										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{warehouse.surface}</td>
-										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[#496553]">{warehouse.blocks.length}</td>
+										<td className="max-w-[260px] bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">{warehouse.description ?? '-'}</td>
+										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">{warehouse.surface}</td>
+										<td className="bg-[var(--card)] px-3 py-3 text-[12px] text-[var(--foreground)]">{warehouse.blocks.length}</td>
 										<td className="bg-[var(--card)] px-3 py-3">
 											<button
 												type="button"
@@ -276,7 +276,7 @@ export default function AdminWarehousesDashbord() {
 
 							{visibleWarehouses.length === 0 && (
 								<tr>
-									<td colSpan={7} className="px-3 py-8 text-center text-sm text-[#6b705c]">
+									<td colSpan={7} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
 										{query.trim() ? 'No warehouses match your search' : 'No warehouses found'}
 									</td>
 								</tr>
@@ -287,28 +287,28 @@ export default function AdminWarehousesDashbord() {
 			)}
 
 			{isFormOpen && (
-				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 px-4 backdrop-blur-sm">
-					<div className="w-full max-w-2xl rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
-						<p className="mb-2 text-[11px] tracking-[0.22em] text-[#6b705c]">
-							{editingWarehouse ? 'UPDATE WAREHOUSE' : 'ADD WAREHOUSE'}
-						</p>
-						<h3 className="mb-6 text-xl font-bold tracking-[0.04em] text-[#344e41]">
-							{editingWarehouse ? `Edit ${editingWarehouse.name}` : 'Create a new warehouse'}
-						</h3>
+						<div className="fixed inset-0 z-40 flex items-center justify-center bg-black/20 px-4 backdrop-blur-sm">
+							<div className="w-full max-w-2xl rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
+								<p className="mb-2 text-[11px] tracking-[0.22em] text-[var(--muted-foreground)]">
+									{editingWarehouse ? 'UPDATE WAREHOUSE' : 'ADD WAREHOUSE'}
+								</p>
+								<h3 className="mb-6 text-xl font-bold tracking-[0.04em] text-[var(--foreground)]">
+									{editingWarehouse ? `Edit ${editingWarehouse.name}` : 'Create a new warehouse'}
+								</h3>
 
 						<form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">NAME</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">NAME</label>
 								<input
 									value={form.name}
 									onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
 									required
-									className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
+									className="border border-[var(--border)] bg-[var(--tint-success)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)]"
 								/>
 							</div>
 
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">SURFACE</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">SURFACE</label>
 								<input
 									type="number"
 									min="0.01"
@@ -316,17 +316,17 @@ export default function AdminWarehousesDashbord() {
 									value={form.surface}
 									onChange={(event) => setForm((current) => ({ ...current, surface: event.target.value }))}
 									required
-									className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
+									className="border border-[var(--border)] bg-[var(--tint-success)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)]"
 								/>
 							</div>
 
 							<div className="flex flex-col gap-2 md:col-span-2">
-								<label className="text-[11px] tracking-[0.16em] text-[#6b705c]">DESCRIPTION</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">DESCRIPTION</label>
 								<textarea
 									value={form.description}
 									onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
 									rows={3}
-									className="border border-[#b7c2a0] bg-[#f5f1e8] px-3 py-2 text-sm text-[#344e41] outline-none focus:border-[var(--role-admin)]"
+									className="border border-[var(--border)] bg-[var(--tint-success)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)]"
 								/>
 							</div>
 
@@ -334,7 +334,7 @@ export default function AdminWarehousesDashbord() {
 								<button
 									type="button"
 									onClick={closeFormModal}
-									className="border border-[#b7c2a0] px-4 py-2 text-[11px] tracking-[0.14em] text-[#5f6f59] transition-colors hover:border-[#8fa07a] hover:text-[#344e41]"
+									className="border border-[var(--border)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--muted-foreground)] transition-colors hover:border-[var(--role-admin)] hover:text-[var(--foreground)]"
 								>
 									CANCEL
 								</button>
@@ -352,20 +352,20 @@ export default function AdminWarehousesDashbord() {
 			)}
 
 			{confirmDeleteWarehouse && (
-				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 px-4 backdrop-blur-sm">
+				<div className="fixed inset-0 z-40 flex items-center justify-center bg-black/20 px-4 backdrop-blur-sm">
 					<div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
-						<p className="mb-2 text-[11px] tracking-[0.22em] text-[#6b705c]">DELETE WAREHOUSE</p>
-						<h3 className="mb-3 text-xl font-bold tracking-[0.04em] text-[#344e41]">
+						<p className="mb-2 text-[11px] tracking-[0.22em] text-[var(--muted-foreground)]">DELETE WAREHOUSE</p>
+						<h3 className="mb-3 text-xl font-bold tracking-[0.04em] text-[var(--foreground)]">
 							Are you sure you want to delete this warehouse?
 						</h3>
-						<p className="mb-6 text-[13px] tracking-[0.04em] text-[#6b705c]">
+						<p className="mb-6 text-[13px] tracking-[0.04em] text-[var(--muted-foreground)]">
 							{confirmDeleteWarehouse.name}
 						</p>
 						<div className="flex justify-end gap-3">
 							<button
 								type="button"
 								onClick={() => setConfirmDeleteWarehouseId(null)}
-								className="border border-[#b7c2a0] px-4 py-2 text-[11px] tracking-[0.14em] text-[#5f6f59] transition-colors hover:border-[#8fa07a] hover:text-[#344e41]"
+								className="border border-[var(--border)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--muted-foreground)] transition-colors hover:border-[var(--role-admin)] hover:text-[var(--foreground)]"
 							>
 								CANCEL
 							</button>

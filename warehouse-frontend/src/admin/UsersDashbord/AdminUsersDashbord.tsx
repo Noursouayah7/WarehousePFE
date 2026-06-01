@@ -189,9 +189,9 @@ export default function AdminUsersDashbord() {
 										key={user.id}
 										className={isPending ? 'rounded-lg bg-[var(--tint-warning)]' : 'rounded-lg bg-[var(--card)]'}
 									>
-										<td className="px-3 py-3 text-[12px] text-[#496553]">{user.id}</td>
-										<td className="px-3 py-3 text-[12px] text-[#496553]">{user.email}</td>
-										<td className="px-3 py-3 text-[12px] text-[#496553]">{user.name ?? '-'}</td>
+										<td className="px-3 py-3 text-[12px] text-[var(--foreground)]">{user.id}</td>
+										<td className="px-3 py-3 text-[12px] text-[var(--foreground)]">{user.email}</td>
+										<td className="px-3 py-3 text-[12px] text-[var(--foreground)]">{user.name ?? '-'}</td>
 										<td className="px-3 py-3">
 											<select
 												value={isPending ? '' : user.roles}
@@ -202,7 +202,7 @@ export default function AdminUsersDashbord() {
 													}
 												}}
 												disabled={isRoleUpdating || isDeleting}
-												className="w-[170px] rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[#344e41] outline-none disabled:cursor-not-allowed disabled:opacity-50"
+												className="w-[170px] rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[var(--foreground)] outline-none disabled:cursor-not-allowed disabled:opacity-50"
 											>
 												<option value="">No role / pending</option>
 												{ROLE_OPTIONS.map((roleOption) => (
@@ -216,18 +216,18 @@ export default function AdminUsersDashbord() {
 											<button
 												type="button"
 												onClick={() => setDetailsUserId((current) => (current === user.id ? null : user.id))}
-												className="h-8 w-8 rounded-md border border-[var(--input)] text-[16px] leading-none text-[#5f6f59] transition-colors hover:border-[var(--border)] hover:text-[#344e41]"
+																						className="h-8 w-8 rounded-md border border-[var(--input)] text-[16px] leading-none text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
 												aria-label={`Toggle details for user ${user.id}`}
 											>
 												...
 											</button>
 
 											{isDetailsOpen && (
-												<div className="absolute right-3 top-12 z-20 w-[240px] rounded-md border border-[var(--border)] bg-white p-3 text-[12px] text-[#496553] shadow-lg">
-													<p className="mb-2 text-xs font-medium text-[#6b705c]">User details</p>
-													<p className="mb-1"><span className="text-[#6b705c]">Address:</span> {user.address ?? '-'}</p>
-													<p className="mb-1"><span className="text-[#6b705c]">Phone:</span> {user.phone ?? '-'}</p>
-													<p><span className="text-[#6b705c]">CIN:</span> {user.cin}</p>
+												<div className="absolute right-3 top-12 z-20 w-[240px] rounded-md border border-[var(--border)] bg-white p-3 text-[12px] text-[var(--foreground)] shadow-lg">
+													<p className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">User details</p>
+													<p className="mb-1"><span className="text-[var(--muted-foreground)]">Address:</span> {user.address ?? '-'}</p>
+													<p className="mb-1"><span className="text-[var(--muted-foreground)]">Phone:</span> {user.phone ?? '-'}</p>
+													<p><span className="text-[var(--muted-foreground)]">CIN:</span> {user.cin}</p>
 												</div>
 											)}
 										</td>
@@ -247,7 +247,7 @@ export default function AdminUsersDashbord() {
 
 							{visibleUsers.length === 0 && (
 								<tr>
-									<td colSpan={6} className="px-3 py-8 text-center text-sm text-[#6b705c]">
+									<td colSpan={6} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
 										{query.trim() ? 'No users match your search' : 'No users found'}
 									</td>
 								</tr>
@@ -258,20 +258,20 @@ export default function AdminUsersDashbord() {
 			)}
 
 			{confirmDeleteUser && (
-				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[#37352f]/30 px-4 backdrop-blur-sm">
+				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--popover-foreground)]/30 px-4 backdrop-blur-sm">
 					<div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
-						<p className="mb-2 text-xs font-medium text-[#6b705c]">Delete user</p>
-						<h3 className="mb-3 text-xl font-semibold tracking-tight text-[#344e41]">
+						<p className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">Delete user</p>
+						<h3 className="mb-3 text-xl font-semibold tracking-tight text-[var(--foreground)]">
 							Are you sure you want to delete this user?
 						</h3>
-						<p className="mb-6 text-sm text-[#6b705c]">
+						<p className="mb-6 text-sm text-[var(--muted-foreground)]">
 							{confirmDeleteUser.email}
 						</p>
 						<div className="flex justify-end gap-3">
 							<button
 								type="button"
 								onClick={() => setConfirmDeleteUserId(null)}
-								className="rounded-md border border-[var(--input)] bg-white px-4 py-2 text-xs font-medium text-[#5f6f59] transition-colors hover:border-[var(--border)] hover:text-[#344e41]"
+								className="rounded-md border border-[var(--input)] bg-white px-4 py-2 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
 							>
 								Cancel
 							</button>

@@ -19,6 +19,13 @@ export default function TechnicienTicketsRoutePage() {
               { label: 'Support tickets', href: '/technicien/tickets', icon: 'users' as const },
             ],
           },
+          {
+            label: 'Warehouse inventory',
+            items: [
+              { label: 'Movements', href: '/technicien/mouvements', icon: 'movements' as const },
+              { label: 'Restock alerts', href: '/technicien/restock-alerts', icon: 'alerts' as const },
+            ],
+          },
         ]}
       >
         <SupportTicketsBoard canCreate canUpdate={false} />

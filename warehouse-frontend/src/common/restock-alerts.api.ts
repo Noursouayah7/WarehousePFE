@@ -74,6 +74,17 @@ export interface ExecuteRestockAlertPayload {
   note?: string;
 }
 
+export interface CreateRestockAlertPayload {
+  productId?: number;
+  productName: string;
+  currentStock: number;
+  requestedQuantity: number;
+  warehouseId: number;
+  blocId: number;
+  priority?: RestockPriority;
+  note?: string;
+}
+
 function parseErrorMessage(data: unknown, fallback: string): string {
   if (!data || typeof data !== 'object') {
     return fallback;
@@ -262,6 +273,14 @@ export async function getRestockAlerts(accessToken: string): Promise<RestockAler
   }
 
   return data.map(normalizeRestockAlert);
+}
+
+export async function createRestockAlert(
+  accessToken: string,
+  payload: CreateRestockAlertPayload,
+): Promise<RestockAlert> {
+  const data = await requestJson('/restock-alerts', 'POST', accessToken, payload);
+  return normalizeRestockAlert(data);
 }
 
 export async function updateRestockAlertLocation(

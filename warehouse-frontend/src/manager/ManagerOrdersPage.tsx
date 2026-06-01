@@ -366,6 +366,7 @@ export default function ManagerOrdersPage() {
     <ManagerSectionLayout
       title="Orders"
       description="Track customer orders and send restock alerts when stock is low."
+      showHero={false}
     >
       <section className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -390,7 +391,7 @@ export default function ManagerOrdersPage() {
           </select>
         </div>
 
-        <div className="inline-flex rounded-md bg-[#f3f3f1] p-1">
+        <div className="inline-flex rounded-md bg-[var(--muted)] p-1">
           {(['table', 'kanban', 'calendar'] as const).map((mode) => (
             <button
               key={mode}
@@ -454,9 +455,9 @@ export default function ManagerOrdersPage() {
             <form onSubmit={submitRestock} className="grid gap-4 overflow-y-auto px-6 py-5 lg:grid-cols-[0.95fr_1.05fr]">
               <div className="space-y-4">
                 {stockReviewLines.map((entry) => (
-                  <div key={entry.line.id || entry.line.productName} className="rounded-2xl border border-[var(--border)] bg-[#fbfbf8] p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-semibold text-[#22311b]">{entry.line.productName}</p>
+                  <div key={entry.line.id || entry.line.productName} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="font-semibold text-[var(--foreground)]">{entry.line.productName}</p>
                       <span className={`rounded-full px-3 py-1 text-xs font-medium ${entry.availableQuantity <= 0 ? 'bg-[var(--tint-error)] text-[var(--color-error)]' : entry.availableQuantity < entry.line.quantity ? 'bg-[var(--tint-warning)] text-[var(--color-warning)]' : 'bg-[var(--tint-success)] text-[var(--color-success)]'}`}>
                         {entry.availableQuantity <= 0 ? 'Low stock' : entry.availableQuantity < entry.line.quantity ? 'Limited stock' : 'Healthy'}
                       </span>
@@ -481,20 +482,20 @@ export default function ManagerOrdersPage() {
                 ))}
               </div>
 
-              <div className="rounded-2xl border border-[var(--border)] bg-[#f8f5ea] p-4">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--tint-warning)] p-4">
                 <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted-foreground)]">Restock alert form</p>
                 <div className="mt-4 grid gap-3">
                   <input
                     name="productName"
                     value={restockForm.productName}
                     readOnly
-                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
+                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none placeholder:text-[var(--muted-foreground)]"
                   />
                   <input
                     name="currentStock"
                     value={restockForm.currentStock}
                     readOnly
-                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
+                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none placeholder:text-[var(--muted-foreground)]"
                   />
                   <input
                     name="requestedQuantity"
@@ -502,7 +503,7 @@ export default function ManagerOrdersPage() {
                     min="1"
                     value={restockForm.requestedQuantity}
                     onChange={onRestockInputChange}
-                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
+                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none placeholder:text-[var(--muted-foreground)]"
                   />
                   <select
                     name="warehouseId"
@@ -511,7 +512,7 @@ export default function ManagerOrdersPage() {
                       const value = event.target.value;
                       setRestockForm((current) => ({ ...current, warehouseId: value, blocId: '' }));
                     }}
-                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
+                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none placeholder:text-[var(--muted-foreground)]"
                   >
                     <option value="">Target warehouse</option>
                     {warehouses.map((warehouse) => (
@@ -551,7 +552,7 @@ export default function ManagerOrdersPage() {
                     value={restockForm.note}
                     onChange={onRestockInputChange}
                     rows={4}
-                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
+                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none placeholder:text-[var(--muted-foreground)]"
                   />
                   <div className="mt-2 flex gap-2">
                     <button
@@ -613,22 +614,22 @@ export default function ManagerOrdersPage() {
                       key={order.id}
                       className="align-top"
                     >
-                      <td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[#496553]">#{order.id}</td>
+                      <td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[var(--foreground)]">#{order.id}</td>
                       <td className="bg-[var(--card)] px-3 py-3">
                         <p className="font-semibold">{order.productName}</p>
-                        {order.managerNote && <p className="mt-1 text-xs text-[#6b705c]">Note: {order.managerNote}</p>}
+                        {order.managerNote && <p className="mt-1 text-xs text-[var(--muted-foreground)]">Note: {order.managerNote}</p>}
                         {order.rejectionReason && <p className="mt-1 text-xs text-[var(--color-error)]">Reason: {order.rejectionReason}</p>}
                       </td>
-                      <td className="bg-[var(--card)] px-3 py-3 text-[#496553]">{order.quantity}</td>
+                      <td className="bg-[var(--card)] px-3 py-3 text-[var(--foreground)]">{order.quantity}</td>
                       <td className="bg-[var(--card)] px-3 py-3">
                         <span className={[ 'inline-flex rounded-full px-2.5 py-1 text-xs font-medium', badge.className ].join(' ')}>
                           {badge.label}
                         </span>
                       </td>
-                      <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">{formatDate(order.deliveryDeadline)}</td>
-                      <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">
+                      <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{formatDate(order.deliveryDeadline)}</td>
+                      <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
                         <p>{order.customerName}</p>
-                        <p className="text-[#6b705c]">{order.customerPhone}</p>
+                        <p className="text-[var(--muted-foreground)]">{order.customerPhone}</p>
                       </td>
                       <td className="rounded-r-lg bg-[var(--card)] px-3 py-3">
                         <div className="flex flex-wrap gap-2">
@@ -682,13 +683,13 @@ export default function ManagerOrdersPage() {
                         </div>
 
                         {isRejectOpen && (
-                          <form onSubmit={submitReject} className="mt-3 space-y-2 rounded-md bg-[#f4f3ef] p-3">
+                            <form onSubmit={submitReject} className="mt-3 space-y-2 rounded-md bg-[var(--muted)] p-3">
                             <input
                               name="reason"
                               placeholder="Reject reason"
                               value={rejectForm.reason}
                               onChange={onRejectInputChange}
-                              className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                              className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                             />
                             <textarea
                               name="managerNote"
@@ -696,7 +697,7 @@ export default function ManagerOrdersPage() {
                               value={rejectForm.managerNote}
                               onChange={onRejectInputChange}
                               rows={2}
-                              className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                              className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                             />
                             <div className="flex gap-2">
                               <button
@@ -709,7 +710,7 @@ export default function ManagerOrdersPage() {
                               <button
                                 type="button"
                                 onClick={() => setRejectOrderId(null)}
-                                className="rounded-md border border-[var(--input)] bg-white px-3 py-1 text-xs text-[#5f6f59]"
+                                className="rounded-md border border-[var(--input)] bg-white px-3 py-1 text-xs text-[var(--muted-foreground)]"
                               >
                                 Cancel
                               </button>
@@ -724,7 +725,7 @@ export default function ManagerOrdersPage() {
 
                     {visibleOrders.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-3 py-8 text-center text-sm text-[#6b705c]">
+                    <td colSpan={7} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
                       No orders found
                     </td>
                   </tr>
@@ -743,7 +744,7 @@ export default function ManagerOrdersPage() {
                 ].map((lane) => {
                   const laneOrders = visibleOrders.filter(lane.matcher);
                   return (
-                    <div key={lane.key} className="rounded-xl bg-[#f3f3f1] p-3">
+                    <div key={lane.key} className="rounded-xl bg-[var(--muted)] p-3">
                       <p className="mb-2 text-sm font-semibold">{lane.key}</p>
                       <div className="space-y-2">
                         {laneOrders.map((order) => (
@@ -768,7 +769,7 @@ export default function ManagerOrdersPage() {
                     <p className="text-sm font-semibold">{day}</p>
                     <div className="mt-2 space-y-2">
                       {dayOrders.map((order) => (
-                        <div key={order.id} className="flex items-center justify-between rounded-md bg-[#f7f7f5] px-3 py-2 text-sm">
+                        <div key={order.id} className="flex items-center justify-between rounded-md bg-[var(--muted)] px-3 py-2 text-sm">
                           <p>#{order.id} {order.productName} • Qty {order.quantity}</p>
                           <span className={[ 'rounded-full px-2 py-1 text-xs font-medium', getOrderBadge(order).className ].join(' ')}>
                             {getOrderBadge(order).label}

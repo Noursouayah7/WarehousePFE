@@ -73,6 +73,7 @@ export default function ManagerWarehousesPage() {
     <ManagerSectionLayout
       title="Warehouses"
       description="Review capacity and bloc allocation in a clean operational view."
+      showHero={false}
     >
       <section className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <select
@@ -109,26 +110,26 @@ export default function ManagerWarehousesPage() {
                 <div key={warehouse.id} className="rounded-xl bg-[var(--card)] p-6 shadow-sm">
                   <div className="mb-4 h-6 w-[3px] bg-[var(--role-admin)]" />
                   <h3 className="mb-2 text-lg font-semibold">{warehouse.name}</h3>
-                  <p className="mb-4 text-sm text-[#6b705c]">{warehouse.description || 'No description'}</p>
+                  <p className="mb-4 text-sm text-[var(--muted-foreground)]">{warehouse.description || 'No description'}</p>
 
                   <div className="mb-4 grid gap-4 md:grid-cols-2">
-                    <div className="rounded-md bg-[#f4f3ef] p-3">
-                      <p className="text-xs text-[#6b705c]">Surface</p>
+                    <div className="rounded-md bg-[var(--muted)] p-3">
+                      <p className="text-xs text-[var(--muted-foreground)]">Surface</p>
                       <p className="text-2xl font-bold">{warehouse.surface} m²</p>
                     </div>
-                    <div className="rounded-md bg-[#f4f3ef] p-3">
-                      <p className="text-xs text-[#6b705c]">Bloc count</p>
+                    <div className="rounded-md bg-[var(--muted)] p-3">
+                      <p className="text-xs text-[var(--muted-foreground)]">Bloc count</p>
                       <p className="text-2xl font-bold">{blocks.length}</p>
                     </div>
                   </div>
 
                   {blocks.length > 0 && (
                     <div>
-                      <h4 className="mb-3 text-sm font-semibold text-[#5f6f59]">Blocs</h4>
+                      <h4 className="mb-3 text-sm font-semibold text-[var(--muted-foreground)]">Blocs</h4>
                       <div className="overflow-x-auto">
                         <table className="min-w-full border-separate border-spacing-y-2 text-sm">
                           <thead>
-                            <tr className="text-left text-xs font-medium text-[#6b705c]">
+                            <tr className="text-left text-xs font-medium text-[var(--muted-foreground)]">
                               <th className="px-3 py-2">ID</th>
                               <th className="px-3 py-2">NAME</th>
                               <th className="px-3 py-2">CAPACITY</th>
@@ -143,24 +144,24 @@ export default function ManagerWarehousesPage() {
 
                               return (
                                 <tr key={bloc.id}>
-                                  <td className="rounded-l-lg bg-[#f7f7f5] px-3 py-3 text-[#496553]">#{bloc.id}</td>
-                                  <td className="bg-[#f7f7f5] px-3 py-3 font-semibold">{bloc.name}</td>
-                                  <td className="bg-[#f7f7f5] px-3 py-3 text-[#5f6f59]">{bloc.capacity}</td>
-                                  <td className="bg-[#f7f7f5] px-3 py-3">
+                                  <td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[var(--foreground)]">#{bloc.id}</td>
+                                  <td className="bg-[var(--card)] px-3 py-3 font-semibold">{bloc.name}</td>
+                                  <td className="bg-[var(--card)] px-3 py-3 text-[var(--muted-foreground)]">{bloc.capacity}</td>
+                                  <td className="bg-[var(--card)] px-3 py-3">
                                     <div className="flex items-center gap-2">
                                       <span>{bloc.currentUsage}</span>
-                                      <div className="h-2 w-32 overflow-hidden rounded-full bg-[#ebeae6]">
+                                      <div className="h-2 w-32 overflow-hidden rounded-full bg-[var(--muted)]">
                                         <div
                                           className="h-full transition-all"
                                           style={{
                                             width: `${usagePercent}%`,
-                                            background: usagePercent > 90 ? '#d64545' : usagePercent > 70 ? '#b26b00' : '#2f8f5b',
+                                            background: usagePercent > 90 ? 'var(--color-error)' : usagePercent > 70 ? 'var(--color-warning)' : 'var(--color-success)',
                                           }}
                                         />
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="rounded-r-lg bg-[#f7f7f5] px-3 py-3 text-[#5f6f59]">{available}</td>
+                                  <td className="rounded-r-lg bg-[var(--card)] px-3 py-3 text-[var(--muted-foreground)]">{available}</td>
                                 </tr>
                               );
                             })}
@@ -174,7 +175,7 @@ export default function ManagerWarehousesPage() {
             })}
 
             {visibleWarehouses.length === 0 && (
-              <div className="rounded-lg bg-[#f4f3ef] p-6 text-center text-sm text-[#6b705c]">
+              <div className="rounded-lg bg-[var(--muted)] p-6 text-center text-sm text-[var(--muted-foreground)]">
                 No warehouses found
               </div>
             )}

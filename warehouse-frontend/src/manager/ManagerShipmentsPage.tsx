@@ -35,7 +35,7 @@ function getShipmentBadge(status: ManagerShipment['status']): { label: string; c
   }
 
   return {
-    label: 'Sent',
+    label: 'Requested',
     className: 'bg-[var(--tint-warning)] text-[var(--color-warning)]',
   };
 }
@@ -159,6 +159,7 @@ export default function ManagerShipmentsPage() {
     <ManagerSectionLayout
       title="Shipments"
       description="Track inbound flow and receive inventory with minimal friction."
+      showHero={false}
     >
       <section className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -168,7 +169,7 @@ export default function ManagerShipmentsPage() {
             className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
           >
             <option value="ALL">Filter: All statuses</option>
-            <option value="REQUESTED">Filter: Sent</option>
+            <option value="REQUESTED">Filter: Requested</option>
             <option value="IN_TRANSIT">Filter: In Transit</option>
             <option value="RECEIVED">Filter: Delivered</option>
           </select>
@@ -185,7 +186,7 @@ export default function ManagerShipmentsPage() {
 
       <section className="rounded-2xl bg-transparent">
         <h2 className="text-lg font-semibold tracking-tight">Shipment workflow</h2>
-        <p className="mt-1 text-sm text-[var(--muted-foreground)]">Move shipments from Sent to In Transit and close them as Delivered.</p>
+        <p className="mt-1 text-sm text-[var(--muted-foreground)]">Move shipments from Requested to In Transit and close them as Delivered.</p>
 
         {isLoading ? (
           <div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading shipments...</div>
@@ -212,23 +213,23 @@ export default function ManagerShipmentsPage() {
 
                   return (
                     <tr key={shipment.id} className="align-top">
-                      <td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[#496553]">#{shipment.id}</td>
+                      <td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[var(--foreground)]">#{shipment.id}</td>
                       <td className="bg-[var(--card)] px-3 py-3">
                         <p className="font-semibold">{shipment.productName}</p>
-                        <p className="mt-1 text-xs text-[#6b705c]">Qty: {shipment.quantity}</p>
-                        {shipment.note && <p className="mt-1 text-xs text-[#6b705c]">{shipment.note}</p>}
+                        <p className="mt-1 text-xs text-[var(--muted-foreground)]">Qty: {shipment.quantity}</p>
+                        {shipment.note && <p className="mt-1 text-xs text-[var(--muted-foreground)]">{shipment.note}</p>}
                       </td>
-                      <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">
+                      <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
                         {shipment.order ? `#${shipment.order.id} (${shipment.order.status})` : '—'}
                       </td>
-                      <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">
+                      <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
                         <p>{shipment.bloc.name}</p>
-                        <p className="text-[#6b705c]">usage {shipment.bloc.currentUsage}/{shipment.bloc.capacity}</p>
+                        <p className="text-[var(--muted-foreground)]">usage {shipment.bloc.currentUsage}/{shipment.bloc.capacity}</p>
                       </td>
                       <td className="bg-[var(--card)] px-3 py-3">
                         <span className={[ 'inline-flex rounded-full px-2.5 py-1 text-xs font-medium', badge.className ].join(' ')}>{badge.label}</span>
                       </td>
-                      <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">
+                      <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
                         <p>ETA: {formatDate(shipment.expectedAt)}</p>
                         <p>Delivered: {formatDate(shipment.receivedAt)}</p>
                       </td>
@@ -262,20 +263,20 @@ export default function ManagerShipmentsPage() {
                         </div>
 
                         {isReceiveOpen && (
-                          <form onSubmit={submitReceive} className="mt-3 space-y-2 rounded-md bg-[#f4f3ef] p-3">
+                          <form onSubmit={submitReceive} className="mt-3 space-y-2 rounded-md bg-[var(--muted)] p-3">
                             <input
                               name="receivedQuantity"
                               placeholder="Delivered quantity"
                               value={receiveForm.receivedQuantity}
                               onChange={onReceiveInputChange}
-                              className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                              className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                             />
                             <input
                               name="trackingNumber"
                               placeholder="Tracking number"
                               value={receiveForm.trackingNumber}
                               onChange={onReceiveInputChange}
-                              className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                              className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                             />
                             <textarea
                               name="note"
@@ -283,7 +284,7 @@ export default function ManagerShipmentsPage() {
                               value={receiveForm.note}
                               onChange={onReceiveInputChange}
                               rows={2}
-                              className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[#344e41] outline-none"
+                              className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                             />
                             <div className="flex gap-2">
                               <button
@@ -296,7 +297,7 @@ export default function ManagerShipmentsPage() {
                               <button
                                 type="button"
                                 onClick={() => setReceiveShipmentId(null)}
-                                className="rounded-md border border-[var(--input)] bg-white px-3 py-1 text-xs text-[#5f6f59]"
+                                className="rounded-md border border-[var(--input)] bg-white px-3 py-1 text-xs text-[var(--muted-foreground)]"
                               >
                                 Cancel
                               </button>
@@ -310,7 +311,7 @@ export default function ManagerShipmentsPage() {
 
                 {visibleShipments.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-3 py-8 text-center text-sm text-[#6b705c]">
+                    <td colSpan={7} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
                       No shipments found
                     </td>
                   </tr>

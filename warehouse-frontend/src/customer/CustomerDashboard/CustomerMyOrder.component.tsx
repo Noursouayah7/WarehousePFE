@@ -17,19 +17,19 @@ function formatDate(value: string | null): string {
 }
 
 function statusClasses(status: CustomerOrderStatus): string {
-	if (status === 'APPROVED' || status === 'COMPLETED') {
-		return 'border-[var(--color-success)] bg-[#edf3ea] text-[var(--color-success)]';
+	 if (status === 'APPROVED' || status === 'COMPLETED') {
+			return 'border-[var(--color-success)] bg-[var(--tint-success)] text-[var(--color-success)]';
 	}
 
 	if (status === 'REJECTED') {
-		return 'border-[var(--color-error)] bg-[#f8efe9] text-[var(--color-error)]';
+			return 'border-[var(--color-error)] bg-[var(--tint-error)] text-[var(--color-error)]';
 	}
 
 	if (status === 'RESTOCK_REQUESTED') {
-		return 'border-[var(--color-warning)] bg-[#f6eddc] text-[var(--color-warning)]';
+			return 'border-[var(--color-warning)] bg-[var(--tint-warning)] text-[var(--color-warning)]';
 	}
 
-	return 'border-[var(--color-info)] bg-[#edf2ee] text-[var(--color-info)]';
+		return 'border-[var(--color-info)] bg-[var(--tint-info)] text-[var(--color-info)]';
 }
 
 export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
@@ -55,7 +55,7 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 			<p className="mt-1 text-sm text-[var(--muted-foreground)]">Track your order status in real time</p>
 
 			{isLoading ? (
-				<div className="py-10 text-center text-sm text-[#6b705c]">Loading orders...</div>
+				<div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading orders...</div>
 			) : (
 				<div className="mt-5 overflow-x-auto">
 					<table className="min-w-full border-separate border-spacing-y-2 text-sm">
@@ -72,20 +72,20 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 						<tbody>
 							{visibleOrders.map((order) => (
 								<tr key={order.id} className="align-top">
-									<td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[#496553]">#{order.id}</td>
+									<td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[var(--foreground)]">#{order.id}</td>
 									<td className="bg-[var(--card)] px-3 py-3 font-semibold">{order.productName}</td>
-									<td className="bg-[var(--card)] px-3 py-3 text-[#5f6f59]">
+									<td className="bg-[var(--card)] px-3 py-3 text-[var(--muted-foreground)]">
 										<p>{order.quantity}</p>
-										<p className="text-xs text-[#6b705c]">${order.totalAmount.toFixed(2)}</p>
+										<p className="text-xs text-[var(--muted-foreground)]">${order.totalAmount.toFixed(2)}</p>
 									</td>
-									<td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">{formatDate(order.deliveryDeadline)}</td>
+									<td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{formatDate(order.deliveryDeadline)}</td>
 									<td className="bg-[var(--card)] px-3 py-3">
 										<span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusClasses(order.status)}`}>
 											{order.status}
 										</span>
-										<p className="mt-2 text-xs text-[#6b705c]">{order.deliveryStatus}</p>
+										<p className="mt-2 text-xs text-[var(--muted-foreground)]">{order.deliveryStatus}</p>
 									</td>
-									<td className="rounded-r-lg bg-[var(--card)] px-3 py-3 text-xs text-[#6b705c]">
+									<td className="rounded-r-lg bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
 										{order.items.length > 0 ? (
 											<div className="space-y-1">
 												{order.items.map((item) => (
@@ -103,7 +103,7 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 
 							{visibleOrders.length === 0 && (
 								<tr>
-									<td colSpan={6} className="px-3 py-8 text-center text-sm text-[#6b705c]">
+									<td colSpan={6} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
 										{query.trim() ? 'No orders match your search' : 'No orders yet'}
 									</td>
 								</tr>

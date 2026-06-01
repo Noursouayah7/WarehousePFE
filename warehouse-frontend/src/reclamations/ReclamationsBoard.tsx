@@ -249,7 +249,7 @@ export function ReclamationsBoard() {
 											type="button"
 											onClick={() => void handleSave(reclamation.id)}
 											disabled={savingId === reclamation.id}
-											className="w-full rounded-xl bg-[var(--role-admin)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#e6ddd1] disabled:text-[#8b857a]"
+											className="w-full rounded-xl bg-[var(--role-admin)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
 										>
 											{savingId === reclamation.id ? 'Saving...' : 'Save changes'}
 										</button>

@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, Logger } from '@ne
 import { PrismaService } from '../prisma/prisma.service';
 import { AssistantQueryDto } from './dto/assistant-query.dto';
 import { IntentEngine, type AssistantIntent } from './intent.engine';
+import { GrokNormalizerService } from './grok-normalizer.service';
 import { SynonymEngine } from './synonym.engine';
 import { ContextManager } from './context.manager';
 import { MetricsService } from './metrics.service';
@@ -120,6 +121,7 @@ export class AssistantService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly intentEngine: IntentEngine,
+    private readonly grokNormalizer: GrokNormalizerService,
     private readonly synonymEngine: SynonymEngine,
     private readonly contextManager: ContextManager,
     private readonly metricsService: MetricsService,
@@ -137,12 +139,15 @@ export class AssistantService {
       throw new ForbiddenException('Your account is not allowed to use the assistant yet');
     }
 
+    const grokNormalizedMessage = await this.grokNormalizer.normalizeMessage(message);
+    const messageForParsing = grokNormalizedMessage ?? message;
+
     // Detect intent
-    const intentDetection = this.intentEngine.detectIntent(message);
+    const intentDetection = this.intentEngine.detectIntent(messageForParsing);
     const intent = intentDetection.intent;
 
     // Normalize synonyms
-    const normalizedMessage = this.synonymEngine.normalizeSynonyms(message);
+    const normalizedMessage = this.synonymEngine.normalizeSynonyms(messageForParsing);
 
     // Parse the message
     const parsed = this.parseMessage(normalizedMessage);

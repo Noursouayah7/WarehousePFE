@@ -23,7 +23,7 @@ export function LoginForm() {
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <div className="grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="relative flex items-center overflow-hidden border-b border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#f7f6f3_100%)] px-6 py-12 lg:border-b-0 lg:border-r lg:px-12">
+        <div className="relative flex items-center overflow-hidden border-b border-[var(--border)] bg-[linear-gradient(180deg,var(--card)_0%,var(--secondary)_100%)] px-6 py-12 lg:border-b-0 lg:border-r lg:px-12">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(58,90,64,0.10),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(47,118,246,0.10),transparent_30%)]" />
           <div className="relative max-w-xl">
             <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-white px-3 py-2 shadow-sm">
@@ -57,7 +57,7 @@ export function LoginForm() {
         </div>
 
         <div className="flex items-center justify-center px-6 py-12 lg:px-12">
-          <div className="w-full max-w-[460px] rounded-2xl border border-[var(--border)] bg-white p-8 shadow-sm md:p-10">
+          <div className="w-full max-w-[520px] rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-10">
             <div className="mb-8 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-medium text-[var(--muted-foreground)]">Welcome back</p>
@@ -85,7 +85,7 @@ export function LoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="user@warehouse.com"
-                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
                 />
               </div>
 
@@ -97,7 +97,7 @@ export function LoginForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
                 />
               </div>
 
@@ -110,7 +110,7 @@ export function LoginForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-2 rounded-xl bg-[var(--role-admin)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#e6ddd1] disabled:text-[#8b857a]"
+                className="mt-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(47,118,246,0.28)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? 'Authenticating...' : 'Login'}
               </button>

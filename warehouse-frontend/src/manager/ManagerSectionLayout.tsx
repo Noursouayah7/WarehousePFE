@@ -7,9 +7,10 @@ type ManagerSectionLayoutProps = {
   title: string;
   description: string;
   children: ReactNode;
+  showHero?: boolean;
 };
 
-export default function ManagerSectionLayout({ title, description, children }: ManagerSectionLayoutProps) {
+export default function ManagerSectionLayout({ title, description, children, showHero }: ManagerSectionLayoutProps) {
   const navGroups = [
     {
       label: 'General',
@@ -44,6 +45,7 @@ export default function ManagerSectionLayout({ title, description, children }: M
       roleColor="var(--role-manager)"
       profileHref="/manager/profile"
       navGroups={navGroups}
+      showHero={showHero}
     >
       {children}
     </WorkspaceShell>

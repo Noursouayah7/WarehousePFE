@@ -251,7 +251,7 @@ export default function CustomerPage() {
       </section>
 
       <section className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-md bg-[#f3f3f1] p-1">
+        <div className="inline-flex rounded-md bg-[var(--secondary)] p-1">
           {([
             { key: 'overview', label: 'Overview' },
             { key: 'products', label: 'Products' },
@@ -277,7 +277,7 @@ export default function CustomerPage() {
           <button
             type="button"
             onClick={() => openOrderForm()}
-            className="rounded-md bg-[#eef3ef] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[#e5eee6]"
+            className="rounded-md bg-[var(--secondary)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--secondary)]"
           >
             New order
           </button>

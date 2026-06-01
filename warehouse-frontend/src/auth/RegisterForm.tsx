@@ -38,7 +38,7 @@ export function RegisterForm() {
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <div className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="relative flex items-center overflow-hidden border-b border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#f7f6f3_100%)] px-6 py-12 lg:border-b-0 lg:border-r lg:px-12">
+        <div className="relative flex items-center overflow-hidden border-b border-[var(--border)] bg-[linear-gradient(180deg,var(--card)_0%,var(--secondary)_100%)] px-6 py-12 lg:border-b-0 lg:border-r lg:px-12">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(88,129,87,0.11),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(188,108,37,0.08),transparent_28%)]" />
           <div className="relative max-w-xl">
             <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-white px-3 py-2 shadow-sm">
@@ -68,7 +68,7 @@ export function RegisterForm() {
         </div>
 
         <div className="flex items-center justify-center px-6 py-12 lg:px-12">
-          <div className="w-full max-w-[560px] rounded-2xl border border-[var(--border)] bg-white p-8 shadow-sm md:p-10">
+          <div className="w-full max-w-[680px] rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-10">
             <div className="mb-8 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-medium text-[var(--muted-foreground)]">Join the workspace</p>
@@ -86,7 +86,7 @@ export function RegisterForm() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="John Doe"
-                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
                 />
               </div>
 
@@ -101,7 +101,7 @@ export function RegisterForm() {
                   }}
                   required
                   placeholder="user@warehouse.com"
-                  className={`rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)] ${fieldErrors.email ? 'border-[var(--color-error)]' : 'border-[var(--input)]'}`}
+                  className={`rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)] ${fieldErrors.email ? 'border-[var(--color-error)]' : 'border-[var(--input)]'}`}
                 />
                 {fieldErrors.email && <p className="text-[11px] text-[var(--color-error)]">{fieldErrors.email}</p>}
               </div>
@@ -115,7 +115,7 @@ export function RegisterForm() {
                   required
                   minLength={8}
                   placeholder="Minimum 8 characters"
-                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
                 />
               </div>
 
@@ -133,7 +133,7 @@ export function RegisterForm() {
                   maxLength={8}
                   pattern="[0-9]{8}"
                   placeholder="12345678"
-                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
                 />
                 {phoneError && <p className="text-[11px] text-[var(--color-error)]">{phoneError}</p>}
               </div>
@@ -145,7 +145,7 @@ export function RegisterForm() {
                   onChange={(e) => setAddress(e.target.value)}
                   required
                   placeholder="City, street, number"
-                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+                  className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
                 />
               </div>
 
@@ -162,7 +162,7 @@ export function RegisterForm() {
                   maxLength={8}
                   pattern="[0-9]{8}"
                   placeholder="12345678"
-                  className={`rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)] ${fieldErrors.cin ? 'border-[var(--color-error)]' : 'border-[var(--input)]'}`}
+                  className={`rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)] ${fieldErrors.cin ? 'border-[var(--color-error)]' : 'border-[var(--input)]'}`}
                 />
                 {fieldErrors.cin && <p className="text-[11px] text-[var(--color-error)]">{fieldErrors.cin}</p>}
               </div>
@@ -176,7 +176,7 @@ export function RegisterForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="md:col-span-2 mt-2 rounded-xl bg-[var(--role-customer)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#e4ecd8] disabled:text-[#8b857a]"
+                className="md:col-span-2 mt-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(47,118,246,0.28)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? 'Creating account...' : 'Register'}
               </button>

@@ -8,9 +8,9 @@ export default function AdminPage() {
   const { logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[#f5f1e8] text-[#344e41]">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       {/* Top bar */}
-      <div className="flex items-center justify-between border-b border-[#a3b18a] px-10 py-4">
+      <div className="flex items-center justify-between border-b border-[var(--border)] px-10 py-4">
         <div className="flex items-center gap-3">
           <div
             className="h-6 w-6 bg-[var(--role-admin)]"
@@ -24,13 +24,13 @@ export default function AdminPage() {
           </span>
           <Link
             href="/admin/profile"
-            className="cursor-pointer rounded-lg border border-[#d6d3cc] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
+            className="cursor-pointer rounded-lg border border-[var(--border)] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
           >
             Profile
           </Link>
           <button
             onClick={logout}
-            className="cursor-pointer rounded-lg border border-[#d6d3cc] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
+            className="cursor-pointer rounded-lg border border-[var(--border)] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
           >
             Logout
           </button>
@@ -48,12 +48,12 @@ export default function AdminPage() {
         {/* Stat cards */}
         <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            { label: 'Users', value: '—', accent: '#f0c040' },
-            { label: 'Warehouses', value: '—', accent: '#4af0a0' },
-            { label: 'Blocs', value: '—', accent: '#4aa0f0' },
-            { label: 'Products', value: '—', accent: '#f04a4a' },
+            { label: 'Users', value: '—', accent: 'var(--color-warning)' },
+            { label: 'Warehouses', value: '—', accent: 'var(--color-success)' },
+            { label: 'Blocs', value: '—', accent: 'var(--color-info)' },
+            { label: 'Products', value: '—', accent: 'var(--color-error)' },
           ].map(card => (
-            <div key={card.label} className="rounded-2xl border border-[#d6d3cc] bg-[var(--card)] p-6 shadow-sm">
+            <div key={card.label} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
               <div className="mb-4 h-6 w-[3px]" style={{ background: card.accent }} />
               <p className="mb-2 text-sm font-medium text-[var(--muted-foreground)]">{card.label}</p>
               <p className="text-[28px] font-bold">{card.value}</p>

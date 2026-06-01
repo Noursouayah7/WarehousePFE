@@ -144,10 +144,10 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_10%_20%,_rgba(18,82,132,0.18),_transparent_35%),radial-gradient(circle_at_95%_10%,_rgba(11,122,96,0.12),_transparent_32%),linear-gradient(165deg,_#edf3f7_0%,_#f8faf9_55%,_#f2f6f4_100%)] text-[var(--foreground)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_10%_20%,rgba(47,118,246,0.12),transparent_35%),radial-gradient(circle_at_95%_10%,rgba(47,143,91,0.10),transparent_32%),linear-gradient(165deg,var(--background)_0%,var(--secondary)_55%,var(--muted)_100%)] text-[var(--foreground)]">
       <div className="mx-auto grid min-h-screen w-full max-w-[1440px] gap-5 px-3 py-4 md:grid-cols-[320px_1fr] md:px-6 md:py-6">
-        <aside className="rounded-[28px] border border-[rgba(19,54,79,0.14)] bg-white/80 p-5 shadow-[0_20px_45px_rgba(8,30,49,0.12)] backdrop-blur-xl">
-          <div className="rounded-2xl bg-[linear-gradient(130deg,_#114b7a_0%,_#0a6f63_100%)] p-4 text-white">
+        <aside className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_20px_45px_rgba(8,30,49,0.12)] backdrop-blur-xl">
+          <div className="rounded-2xl bg-[linear-gradient(130deg,var(--color-info)_0%,var(--color-success)_100%)] p-4 text-white">
             <p className="text-[11px] uppercase tracking-[0.22em] text-white/80">Assistant</p>
             <h1 className="mt-2 text-2xl font-semibold leading-tight">Warehouse Copilot</h1>
             <p className="mt-2 text-sm text-white/85">Ask in plain language. Get instant operations answers.</p>
@@ -173,7 +173,7 @@ export default function AssistantPage() {
                     key={`${item.timestamp}_${index}`}
                     type="button"
                     onClick={() => setInput(item.message)}
-                    className="w-full rounded-xl border border-[rgba(17,75,122,0.14)] bg-white/90 px-3 py-2 text-left transition hover:border-[rgba(10,111,99,0.45)] hover:bg-white"
+                    className="w-full rounded-xl border border-[var(--border)] bg-white/90 px-3 py-2 text-left transition hover:border-[var(--color-success)] hover:bg-white"
                   >
                     <p className="line-clamp-2 text-sm text-[var(--foreground)]">{item.message}</p>
                     <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">{new Date(item.timestamp).toLocaleString()}</p>
@@ -197,8 +197,8 @@ export default function AssistantPage() {
           </section>
         </aside>
 
-        <section className="flex min-h-[80vh] flex-col rounded-[30px] border border-[rgba(19,54,79,0.12)] bg-white/86 shadow-[0_22px_55px_rgba(8,30,49,0.1)] backdrop-blur-xl">
-          <div className="flex items-center justify-between border-b border-[rgba(19,54,79,0.1)] px-5 py-4 md:px-7">
+        <section className="flex min-h-[80vh] flex-col rounded-[30px] border border-[var(--border)] bg-[var(--card)] shadow-[0_22px_55px_rgba(8,30,49,0.1)] backdrop-blur-xl">
+          <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4 md:px-7">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--muted-foreground)]">Live chat</p>
               <h2 className="mt-1 text-2xl font-semibold tracking-tight">Conversation</h2>
@@ -217,16 +217,16 @@ export default function AssistantPage() {
                   className={[
                     'max-w-[88%] rounded-3xl px-4 py-3 text-sm leading-6 shadow-[0_10px_28px_rgba(15,55,83,0.08)]',
                     entry.role === 'user'
-                      ? 'bg-[linear-gradient(135deg,_#114b7a_0%,_#0a6f63_100%)] text-white'
+                      ? 'bg-[linear-gradient(135deg,var(--color-info)_0%,var(--color-success)_100%)] text-white'
                       : entry.role === 'error'
                         ? 'bg-[var(--tint-error)] text-[var(--color-error)]'
-                        : 'border border-[var(--border)] bg-[linear-gradient(180deg,_#fbfdfd_0%,_#f4f8f7_100%)] text-[var(--foreground)]',
+                        : 'border border-[var(--border)] bg-[linear-gradient(180deg,var(--card)_0%,var(--secondary)_100%)] text-[var(--foreground)]',
                   ].join(' ')}
                 >
                   <p>{entry.text}</p>
 
                   {entry.response?.matches && entry.response.matches.length > 0 && (
-                    <div className="mt-3 overflow-hidden rounded-2xl border border-[rgba(18,82,132,0.18)] bg-white/80 text-[13px] text-[var(--foreground)]">
+                    <div className="mt-3 overflow-hidden rounded-2xl border border-[var(--border)] bg-white/80 text-[13px] text-[var(--foreground)]">
                       <div className="grid grid-cols-[1.3fr_1.2fr_0.6fr] border-b border-[var(--border)] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                         <span>Product</span>
                         <span>Location</span>
@@ -268,7 +268,7 @@ export default function AssistantPage() {
               <button
                 type="submit"
                 disabled={isSending}
-                className="rounded-2xl bg-[linear-gradient(135deg,_#114b7a_0%,_#0a6f63_100%)] px-6 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+                className="rounded-2xl bg-[linear-gradient(135deg,var(--color-info)_0%,var(--color-success)_100%)] px-6 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSending ? 'Sending...' : 'Send'}
               </button>

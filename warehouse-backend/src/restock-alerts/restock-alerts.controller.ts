@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Request, UseGuards } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth_old/guards/Jwt.auth.guard';
 import { Roles } from '../auth_old/guards/roles.decorator';
 import { RolesGuard } from '../auth_old/guards/roles.guard';
 import { RequestUser } from '../auth/strategies/Jwt.strategy';
+import { CreateRestockAlertDto } from './dto/create-restock-alert.dto';
 import { ExecuteRestockAlertDto } from './dto/execute-restock-alert.dto';
 import { UpdateRestockAlertLocationDto } from './dto/update-restock-alert-location.dto';
 import { RestockAlertsService } from './restock-alerts.service';
@@ -13,6 +14,12 @@ import { RestockAlertsService } from './restock-alerts.service';
 @Controller('restock-alerts')
 export class RestockAlertsController {
   constructor(private readonly restockAlertsService: RestockAlertsService) {}
+
+  @Post()
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  create(@Request() req: { user: RequestUser }, @Body() dto: CreateRestockAlertDto) {
+    return this.restockAlertsService.create(dto, req.user.id);
+  }
 
   @Get()
   findAll() {

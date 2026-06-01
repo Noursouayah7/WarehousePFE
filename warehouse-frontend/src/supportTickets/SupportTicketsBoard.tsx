@@ -246,7 +246,7 @@ export function SupportTicketsBoard({ canCreate, canUpdate }: { canCreate: boole
           <button
             type="submit"
             disabled={saving}
-            className="md:col-span-2 rounded-xl bg-[var(--role-technicien)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#e4ecd8] disabled:text-[#8b857a]"
+            className="md:col-span-2 rounded-xl bg-[var(--role-technicien)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[var(--muted)] disabled:text-[var(--muted-foreground)]"
           >
             {saving ? 'Creating ticket...' : 'Submit ticket'}
           </button>
@@ -273,19 +273,19 @@ export function SupportTicketsBoard({ canCreate, canUpdate }: { canCreate: boole
             <tbody>
               {visibleTickets.map((ticket) => (
                 <tr key={ticket.id} className="align-top">
-                  <td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[#496553]">#{ticket.id}</td>
+                  <td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[var(--foreground)]">#{ticket.id}</td>
                   <td className="bg-[var(--card)] px-3 py-3">
                     <p className="font-semibold">{ticket.title}</p>
-                    <p className="mt-1 text-xs text-[#6b705c]">{ticket.description}</p>
+                    <p className="mt-1 text-xs text-[var(--muted-foreground)]">{ticket.description}</p>
                   </td>
-                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">{CATEGORY_LABELS[ticket.category]}</td>
-                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">{PRIORITY_LABELS[ticket.priority]}</td>
-                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">{ticket.status}</td>
-                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#5f6f59]">
+                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{CATEGORY_LABELS[ticket.category]}</td>
+                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{PRIORITY_LABELS[ticket.priority]}</td>
+                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{ticket.status}</td>
+                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
                     <p>{ticket.createdBy.name ?? ticket.createdBy.email}</p>
-                    <p className="text-[#6b705c]">{ticket.createdBy.roles}</p>
+                    <p className="text-[var(--muted-foreground)]">{ticket.createdBy.roles}</p>
                   </td>
-                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[#6b705c]">{ticket.managerNote || '—'}</td>
+                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{ticket.managerNote || '—'}</td>
                   {canUpdate && (
                     <td className="rounded-r-lg bg-[var(--card)] px-3 py-3">
                       <div className="flex flex-wrap gap-2">
@@ -308,7 +308,7 @@ export function SupportTicketsBoard({ canCreate, canUpdate }: { canCreate: boole
 
               {visibleTickets.length === 0 && (
                 <tr>
-                  <td colSpan={canUpdate ? 8 : 7} className="px-3 py-8 text-center text-sm text-[#6b705c]">
+                  <td colSpan={canUpdate ? 8 : 7} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
                     No tickets found
                   </td>
                 </tr>

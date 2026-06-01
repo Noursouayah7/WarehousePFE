@@ -28,7 +28,7 @@ export function CustomerProduct({ products, isLoading, onSelectProduct }: Custom
 			<p className="mt-1 text-sm text-[var(--muted-foreground)]">Click on a product to place an order</p>
 
 			{isLoading ? (
-				<div className="py-10 text-center text-sm text-[#6b705c]">Loading products...</div>
+				<div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading products...</div>
 			) : (
 				<div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 					{visibleProducts.map((product) => (
@@ -36,19 +36,19 @@ export function CustomerProduct({ products, isLoading, onSelectProduct }: Custom
 							key={product.id}
 							type="button"
 							onClick={() => onSelectProduct(product)}
-							className="text-left rounded-xl bg-[var(--card)] p-4 shadow-sm transition-colors hover:bg-[#f4f3ef]"
+							className="text-left rounded-xl bg-[var(--card)] p-4 shadow-sm transition-colors hover:bg-[var(--secondary)]"
 						>
 							<p className="text-[16px] font-semibold text-[var(--color-info)]">{product.name}</p>
 							{product.description && (
 								<p className="mt-2 text-xs text-[var(--muted-foreground)]">{product.description}</p>
 							)}
 							<p className="mt-1 text-xs text-[var(--muted-foreground)]">Price: ${product.price.toFixed(2)}</p>
-							<p className="mt-3 text-xs text-[#6b705c]">Click to order</p>
+							<p className="mt-3 text-xs text-[var(--muted-foreground)]">Click to order</p>
 						</button>
 					))}
 
 					{visibleProducts.length === 0 && (
-						<div className="col-span-full rounded-lg bg-[#f4f3ef] p-8 text-center text-sm text-[#6b705c]">
+						<div className="col-span-full rounded-lg bg-[var(--secondary)] p-8 text-center text-sm text-[var(--muted-foreground)]">
 							{query.trim() ? 'No products match your search' : 'No products available right now'}
 						</div>
 					)}

@@ -114,7 +114,7 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           value={formData.name || ''}
           onChange={handleChange}
           placeholder="John Doe"
-          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
         />
       </div>
 
@@ -127,7 +127,7 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           value={formData.email || ''}
           onChange={handleChange}
           placeholder="user@warehouse.com"
-          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
         />
       </div>
 
@@ -140,7 +140,7 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           value={formData.phone || ''}
           onChange={handleChange}
           placeholder="+1 (555) 000-0000"
-          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
         />
       </div>
 
@@ -153,14 +153,14 @@ export function ProfileForm({ profile, token, onSuccess, onError }: ProfileFormP
           onChange={handleChange}
           placeholder="123 Warehouse St, City, Country"
           rows={3}
-          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#94938d] focus:border-[var(--ring)]"
+          className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="mt-4 rounded-xl bg-[var(--role-admin)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#e6ddd1] disabled:text-[#8b857a]"
+        className="mt-4 rounded-xl bg-[var(--role-admin)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[var(--muted)] disabled:text-[var(--muted-foreground)]"
       >
         {loading ? 'Updating...' : 'Update profile'}
       </button>

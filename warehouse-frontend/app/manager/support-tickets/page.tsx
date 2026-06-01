@@ -5,7 +5,7 @@ import { SupportTicketsBoard } from '@/src/supportTickets/SupportTicketsBoard';
 export default function ManagerSupportTicketsRoutePage() {
   return (
     <AuthRedirect mode="protected" allowedRoles={['MANAGER']}>
-      <ManagerSectionLayout title="Support tickets" description="Track technician incidents and operational alerts.">
+      <ManagerSectionLayout title="Support tickets" description="Track technician incidents and operational alerts." showHero={false}>
         <SupportTicketsBoard canCreate={false} canUpdate />
       </ManagerSectionLayout>
     </AuthRedirect>

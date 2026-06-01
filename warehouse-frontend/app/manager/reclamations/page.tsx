@@ -5,7 +5,7 @@ import { ReclamationsBoard } from '@/src/reclamations/ReclamationsBoard';
 export default function ManagerReclamationsRoutePage() {
 	return (
 		<AuthRedirect mode="protected" allowedRoles={['MANAGER']}>
-			<ManagerSectionLayout title="Reclamations" description="Track customer complaints and manage resolutions from the manager dashboard.">
+			<ManagerSectionLayout title="Reclamations" description="Track customer complaints and manage resolutions from the manager dashboard." showHero={false}>
 				<ReclamationsBoard />
 			</ManagerSectionLayout>
 		</AuthRedirect>
