@@ -1,0 +1,484 @@
+# Google Colab starter for olive dataset AI project
+# Cell 1: install required libraries
+!pip install -q pandas numpy scikit-learn matplotlib seaborn openpyxl xlrd statsmodels xgboost prophet
+
+# Cell 2: import libraries
+import os
+import glob
+import json
+import warnings
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from IPython.display import display
+
+from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score, classification_report, confusion_matrix
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.pipeline import Pipeline
+
+warnings.filterwarnings('ignore')
+sns.set_theme(style='whitegrid')
+
+# Cell 3: define dataset location in Colab
+DATA_ROOT_CANDIDATES = ['/content/content', '/content']
+
+def resolve_data_root():
+    for candidate in DATA_ROOT_CANDIDATES:
+        if os.path.isdir(candidate):
+            return candidate
+    return '/content'
+
+DATA_DIR = resolve_data_root()
+print(f'Using data directory: {DATA_DIR}')
+print('Current files in Colab space:')
+for path in sorted(glob.glob(os.path.join(DATA_DIR, '*'))):
+    print(os.path.basename(path))
+
+# Optional: if you want to upload files manually from your machine, uncomment this cell.
+# from google.colab import files
+# uploaded = files.upload()
+
+# Cell 4: helper loaders
+
+def load_csv_file(filename):
+    matches = glob.glob(os.path.join(DATA_DIR, '**', filename), recursive=True)
+    if not matches:
+        print(f'Missing CSV file: {filename}')
+        return None
+    path = matches[0]
+    df = pd.read_csv(path)
+    print(f'Loaded {filename}: shape={df.shape}')
+    return df
+
+
+def load_excel_file(filename, sheet_name=0, load_all_sheets=False):
+    matches = glob.glob(os.path.join(DATA_DIR, '**', filename), recursive=True)
+    if not matches:
+        print(f'Missing Excel file: {filename}')
+        return None
+    path = matches[0]
+    if load_all_sheets:
+        sheets = pd.read_excel(path, sheet_name=None)
+        print(f'Loaded {filename}: sheets={list(sheets.keys())}')
+        return sheets
+    df = pd.read_excel(path, sheet_name=sheet_name)
+    print(f'Loaded {filename} (sheet={sheet_name}): shape={df.shape}')
+    return df
+
+
+def load_xml_file(filename):
+    matches = glob.glob(os.path.join(DATA_DIR, '**', filename), recursive=True)
+    if not matches:
+        print(f'Missing XML file: {filename}')
+        return None
+    path = matches[0]
+    try:
+        df = pd.read_xml(path, xpath='.//record')
+        print(f'Loaded {filename}: shape={df.shape}')
+        return df
+    except Exception as exc:
+        print(f'Could not read {filename} with pandas.read_xml: {exc}')
+        return None
+
+# Cell 5: load the uploaded datasets
+olive_sales_df = load_csv_file('olive_oil_dataset.csv')
+faostat_2026_04_20_df = load_csv_file('FAOSTAT_data_en_4-20-2026.csv')
+faostat_2026_04_09_df = load_csv_file('FAOSTAT_data_en_4-9-2026.csv')
+gi_df = load_csv_file('World_OliveOil_GI.csv')
+gi_df_alt = load_csv_file('World_OliveOil_GI (1).csv')
+market_prices_sheets = load_excel_file('olive-oil-market-prices_en.xlsx', load_all_sheets=True)
+statistics_sheets = load_excel_file('statistics.xlsx', load_all_sheets=True)
+losses_xml_df_1 = load_xml_file('UNdata_Export_20260518_113022018.xml')
+losses_xml_df_2 = load_xml_file('UNdata_Export_20260518_113204216.xml')
+
+# Cell 6: quick preview utility
+
+def preview_dataframe(df, name, n=5):
+    if df is None:
+        print(f'{name}: not loaded')
+        return
+    print(f'\n{name}: shape={df.shape}')
+    print('Columns:', list(df.columns))
+    display(df.head(n))
+    print('Dtypes:')
+    print(df.dtypes)
+
+# Preview the main datasets
+preview_dataframe(olive_sales_df, 'olive_sales_df')
+preview_dataframe(faostat_2026_04_20_df, 'faostat_2026_04_20_df')
+preview_dataframe(gi_df, 'gi_df')
+if isinstance(market_prices_sheets, dict) and market_prices_sheets:
+    first_market_sheet_name = next(iter(market_prices_sheets))
+    preview_dataframe(market_prices_sheets[first_market_sheet_name], f'market_prices_first_sheet: {first_market_sheet_name}')
+else:
+    print('market_prices_sheets: not loaded or empty')
+
+# Cell 7: optional normalization for the main monthly sales dataset
+if olive_sales_df is not None:
+    if 'date' in olive_sales_df.columns:
+        olive_sales_df['date'] = pd.to_datetime(olive_sales_df['date'], errors='coerce')
+    if 'year' in olive_sales_df.columns:
+        olive_sales_df['year'] = pd.to_numeric(olive_sales_df['year'], errors='coerce')
+    if 'month' in olive_sales_df.columns:
+        olive_sales_df['month'] = pd.to_numeric(olive_sales_df['month'], errors='coerce')
+
+# Cell 8: basic feature/target templates
+# Main forecasting targets you can experiment with:
+# - quantity_sold
+# - price
+# - revenue
+# - stock
+
+# Example placeholder for a time-series regression setup:
+# X = olive_sales_df[['year', 'month', 'price', 'cost', 'stock']]
+# y = olive_sales_df['quantity_sold']
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
+
+# Cell 9: standardization helpers for the unified dataset
+def snake_case(text):
+    text = str(text).strip().lower()
+    text = text.replace('%', ' pct ')
+    text = text.replace('[', ' ').replace(']', ' ')
+    text = text.replace('(', ' ').replace(')', ' ')
+    text = text.replace('/', ' ')
+    text = text.replace('-', ' ')
+    text = text.replace(',', ' ')
+    text = text.replace(':', ' ')
+    text = text.replace('.', ' ')
+    text = '_'.join(text.split())
+    while '__' in text:
+        text = text.replace('__', '_')
+    return text.strip('_')
+
+
+def standardize_frame(df):
+    if df is None:
+        return None
+    out = df.copy()
+    out.columns = [snake_case(col) for col in out.columns]
+    out = out.loc[:, ~out.columns.duplicated()]
+    out = out.dropna(axis=0, how='all')
+    out = out.dropna(axis=1, how='all')
+    unnamed_cols = [col for col in out.columns if col.startswith('unnamed')]
+    if unnamed_cols:
+        out = out.drop(columns=unnamed_cols)
+    return out
+
+
+def add_source_fields(df, source_dataset, record_type):
+    if df is None:
+        return None
+    out = standardize_frame(df)
+    out.insert(0, 'source_dataset', source_dataset)
+    out.insert(1, 'record_type', record_type)
+    return out
+
+
+def coerce_numeric_columns(df, columns):
+    if df is None:
+        return None
+    out = df.copy()
+    for col in columns:
+        if col in out.columns:
+            out[col] = (
+                out[col]
+                .astype(str)
+                .str.replace(',', '.', regex=False)
+                .str.replace(' ', '', regex=False)
+                .replace({'nan': np.nan, 'None': np.nan, '': np.nan})
+            )
+            out[col] = pd.to_numeric(out[col], errors='coerce')
+    return out
+
+
+def normalize_market_prices_sheet(sheets_dict):
+    if not isinstance(sheets_dict, dict) or not sheets_dict:
+        return None
+    first_sheet_name = next(iter(sheets_dict))
+    df = sheets_dict[first_sheet_name].copy()
+    df = standardize_frame(df)
+    df = add_source_fields(df, 'olive_oil_market_prices', 'market_prices')
+    return df
+
+# Cell 10: build a single master dataset from all sources
+olive_sales_clean = add_source_fields(olive_sales_df, 'olive_oil_dataset', 'sales')
+faostat_2026_04_20_clean = add_source_fields(faostat_2026_04_20_df, 'faostat_2026_04_20', 'production')
+faostat_2026_04_09_clean = add_source_fields(faostat_2026_04_09_df, 'faostat_2026_04_09', 'production')
+gi_clean = add_source_fields(gi_df, 'world_olive_oil_gi', 'quality')
+gi_alt_clean = add_source_fields(gi_df_alt, 'world_olive_oil_gi_alt', 'quality')
+market_prices_clean = normalize_market_prices_sheet(market_prices_sheets)
+statistics_clean = add_source_fields(statistics_sheets[next(iter(statistics_sheets))], 'statistics', 'summary') if isinstance(statistics_sheets, dict) and statistics_sheets else None
+losses_1_clean = add_source_fields(losses_xml_df_1, 'undata_losses_1', 'losses')
+losses_2_clean = add_source_fields(losses_xml_df_2, 'undata_losses_2', 'losses')
+
+frames_to_merge = [
+    olive_sales_clean,
+    faostat_2026_04_20_clean,
+    faostat_2026_04_09_clean,
+    gi_clean,
+    gi_alt_clean,
+    market_prices_clean,
+    statistics_clean,
+    losses_1_clean,
+    losses_2_clean,
+]
+
+master_olive_df = pd.concat([frame for frame in frames_to_merge if frame is not None], ignore_index=True, sort=False)
+
+# Cell 11: cleaning pass for the unified dataset
+master_olive_df = standardize_frame(master_olive_df)
+
+for date_col in ['date', 'date_of_application', 'date_of_publication', 'date_of_registration']:
+    if date_col in master_olive_df.columns:
+        master_olive_df[date_col] = pd.to_datetime(master_olive_df[date_col], errors='coerce')
+
+numeric_candidates = [
+    'year', 'month', 'quantity_sold', 'price', 'cost', 'revenue', 'stock',
+    'value', 'metric_value', 'maximum_yield_kg_ha', 'maximum_planting_density_n_ha',
+    'yield_in_oil_pct', 'maximum_acidity_g_100g', 'maximum_peroxide_value_meq_02_kg',
+    'k232_max', 'k268_max', 'k270_max', 'delta_k_max', 'losses_value'
+]
+master_olive_df = coerce_numeric_columns(master_olive_df, numeric_candidates)
+
+if 'year' in master_olive_df.columns:
+    master_olive_df['year'] = master_olive_df['year'].round().astype('Int64')
+if 'month' in master_olive_df.columns:
+    master_olive_df['month'] = master_olive_df['month'].round().astype('Int64')
+
+string_columns = master_olive_df.select_dtypes(include='object').columns
+for col in string_columns:
+    master_olive_df[col] = master_olive_df[col].astype(str).str.strip()
+    master_olive_df[col] = master_olive_df[col].replace({'nan': np.nan, 'None': np.nan, '': np.nan})
+
+master_olive_df = master_olive_df.drop_duplicates().reset_index(drop=True)
+
+# Cell 12: quick data science checks on the master dataset
+print('Master dataset shape:', master_olive_df.shape)
+print('Master dataset columns:', list(master_olive_df.columns))
+print('\nMissing values per column (top 20):')
+print(master_olive_df.isna().sum().sort_values(ascending=False).head(20))
+
+print('\nSample rows from the unified dataset:')
+display(master_olive_df.head(10))
+
+# Optional export for later Colab work
+# master_olive_df.to_csv('/content/master_olive_dataset_clean.csv', index=False)
+
+# Cell 13: build a price-prediction working dataset
+# Keep only rows that can support a price prediction task.
+price_candidate_columns = [
+    'source_dataset', 'record_type', 'date', 'year', 'month', 'product',
+    'price', 'cost', 'revenue', 'stock', 'quantity_sold',
+    'unit', 'value', 'area', 'country', 'item'
+]
+
+price_columns = [col for col in price_candidate_columns if col in master_olive_df.columns]
+price_df = master_olive_df[price_columns].copy()
+
+if 'price' in price_df.columns:
+    price_df = price_df.dropna(subset=['price'])
+
+price_df = price_df.drop_duplicates().reset_index(drop=True)
+
+if 'date' in price_df.columns:
+    price_df['date'] = pd.to_datetime(price_df['date'], errors='coerce')
+
+numeric_price_cols = [col for col in ['year', 'month', 'price', 'cost', 'revenue', 'stock', 'quantity_sold', 'value'] if col in price_df.columns]
+price_df = coerce_numeric_columns(price_df, numeric_price_cols)
+
+if 'year' in price_df.columns:
+    price_df['year'] = price_df['year'].round().astype('Int64')
+if 'month' in price_df.columns:
+    price_df['month'] = price_df['month'].round().astype('Int64')
+
+print('Price working dataset shape:', price_df.shape)
+display(price_df.head(10))
+
+# Cell 14: cleaning checks for the price dataset
+missing_summary = price_df.isna().sum().sort_values(ascending=False)
+print('Missing values summary:')
+print(missing_summary)
+
+if 'price' in price_df.columns:
+    price_df = price_df[price_df['price'].notna()]
+
+price_df = price_df.dropna(axis=0, how='all')
+price_df = price_df.dropna(axis=1, how='all')
+
+object_cols = price_df.select_dtypes(include='object').columns
+for col in object_cols:
+    price_df[col] = price_df[col].astype(str).str.strip()
+    price_df[col] = price_df[col].replace({'nan': np.nan, 'None': np.nan, '': np.nan})
+
+print('Cleaned price dataset shape:', price_df.shape)
+display(price_df.head(10))
+
+# Cell 15: distribution and variance analysis
+numeric_cols = price_df.select_dtypes(include=[np.number]).columns.tolist()
+
+if numeric_cols:
+    print('Numeric columns:', numeric_cols)
+    variance_table = price_df[numeric_cols].var(numeric_only=True).sort_values(ascending=False)
+    print('Variance table:')
+    print(variance_table)
+
+    n_plots = min(6, len(numeric_cols))
+    cols_to_plot = numeric_cols[:n_plots]
+
+    fig, axes = plt.subplots(n_plots, 2, figsize=(14, 4 * n_plots))
+    if n_plots == 1:
+        axes = np.array([axes])
+    for idx, col in enumerate(cols_to_plot):
+        sns.histplot(price_df[col].dropna(), kde=True, ax=axes[idx, 0], color='steelblue')
+        axes[idx, 0].set_title(f'Distribution of {col}')
+        sns.boxplot(x=price_df[col], ax=axes[idx, 1], color='lightcoral')
+        axes[idx, 1].set_title(f'Boxplot of {col}')
+    plt.tight_layout()
+    plt.show()
+
+    plt.figure(figsize=(12, 8))
+    corr = price_df[numeric_cols].corr(numeric_only=True)
+    sns.heatmap(corr, annot=False, cmap='coolwarm', center=0)
+    plt.title('Correlation Heatmap for Price Dataset')
+    plt.show()
+else:
+    print('No numeric columns available for distribution or variance plots.')
+
+# Cell 16: drop irrelevant columns for price modeling
+price_model_df = price_df.copy()
+
+columns_to_remove = [
+    'source_dataset',
+    'record_type',
+    'unit',
+    'value',
+    'area',
+    'item',
+]
+
+columns_to_remove = [col for col in columns_to_remove if col in price_model_df.columns]
+if columns_to_remove:
+    price_model_df = price_model_df.drop(columns=columns_to_remove)
+
+if 'date' in price_model_df.columns and ('year' in price_model_df.columns or 'month' in price_model_df.columns):
+    price_model_df['date'] = pd.to_datetime(price_model_df['date'], errors='coerce')
+
+print('Model-ready price dataset shape:', price_model_df.shape)
+print('Model-ready columns:', list(price_model_df.columns))
+display(price_model_df.head(10))
+
+# Optional export for the price modeling phase
+# price_model_df.to_csv('/content/price_model_dataset_clean.csv', index=False)
+
+# Cell 17: prepare features for price prediction
+price_model_work_df = price_model_df.copy()
+
+if 'date' in price_model_work_df.columns:
+    price_model_work_df['date'] = pd.to_datetime(price_model_work_df['date'], errors='coerce')
+    price_model_work_df['date_ordinal'] = price_model_work_df['date'].map(lambda x: x.toordinal() if pd.notna(x) else np.nan)
+
+price_model_work_df = price_model_work_df.replace([np.inf, -np.inf], np.nan)
+price_model_work_df = price_model_work_df.dropna(subset=['price'])
+
+target_column = 'price'
+candidate_feature_columns = [
+    'date_ordinal', 'year', 'month', 'cost', 'revenue', 'stock',
+    'quantity_sold', 'product', 'country', 'source_dataset', 'record_type'
+]
+feature_columns = [col for col in candidate_feature_columns if col in price_model_work_df.columns]
+
+model_df = price_model_work_df[feature_columns + [target_column]].copy()
+
+for col in model_df.select_dtypes(include='object').columns:
+    model_df[col] = model_df[col].astype('category').cat.codes
+
+for col in model_df.columns:
+    if col != target_column:
+        if pd.api.types.is_numeric_dtype(model_df[col]):
+            model_df[col] = model_df[col].fillna(model_df[col].median())
+
+model_df = model_df.dropna(subset=[target_column]).reset_index(drop=True)
+
+print('Model dataframe shape:', model_df.shape)
+display(model_df.head(10))
+
+# Cell 18: define train/test sets for the price model
+X = model_df.drop(columns=[target_column])
+y = model_df[target_column]
+
+if 'date_ordinal' in X.columns:
+    X = X.sort_values(by='date_ordinal')
+    y = y.loc[X.index]
+
+split_index = int(len(X) * 0.8)
+X_train = X.iloc[:split_index].copy()
+X_test = X.iloc[split_index:].copy()
+y_train = y.iloc[:split_index].copy()
+y_test = y.iloc[split_index:].copy()
+
+print('Train shape:', X_train.shape, y_train.shape)
+print('Test shape:', X_test.shape, y_test.shape)
+
+# Cell 19: baseline AI models for price prediction
+linear_model = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model', LinearRegression())
+])
+
+random_forest_model = RandomForestRegressor(
+    n_estimators=300,
+    random_state=42,
+    max_depth=None,
+    min_samples_split=2,
+    min_samples_leaf=1,
+    n_jobs=-1
+)
+
+linear_model.fit(X_train, y_train)
+random_forest_model.fit(X_train, y_train)
+
+linear_predictions = linear_model.predict(X_test)
+rf_predictions = random_forest_model.predict(X_test)
+
+def regression_metrics(y_true, y_pred, model_name):
+    mae = mean_absolute_error(y_true, y_pred)
+    rmse = mean_squared_error(y_true, y_pred, squared=False)
+    r2 = r2_score(y_true, y_pred)
+    print(f'{model_name} -> MAE: {mae:.4f} | RMSE: {rmse:.4f} | R2: {r2:.4f}')
+
+regression_metrics(y_test, linear_predictions, 'Linear Regression')
+regression_metrics(y_test, rf_predictions, 'Random Forest Regressor')
+
+# Cell 20: visual comparison of actual vs predicted price
+comparison_df = pd.DataFrame({
+    'actual_price': y_test.values,
+    'linear_regression_pred': linear_predictions,
+    'random_forest_pred': rf_predictions,
+})
+
+display(comparison_df.head(10))
+
+plt.figure(figsize=(14, 6))
+plt.plot(comparison_df['actual_price'].values, label='Actual Price', marker='o')
+plt.plot(comparison_df['linear_regression_pred'].values, label='Linear Regression', marker='x')
+plt.plot(comparison_df['random_forest_pred'].values, label='Random Forest', marker='s')
+plt.title('Actual vs Predicted Price')
+plt.xlabel('Test Sample Index')
+plt.ylabel('Price')
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+residuals = y_test.values - rf_predictions
+plt.figure(figsize=(12, 5))
+sns.histplot(residuals, kde=True, color='darkorange')
+plt.title('Random Forest Residual Distribution')
+plt.xlabel('Residual')
+plt.tight_layout()
+plt.show()
+
+print('Starter notebook cells loaded successfully.')
