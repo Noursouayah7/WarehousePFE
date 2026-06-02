@@ -165,7 +165,7 @@ export default function WorkspaceShell({
       <div className="relative flex min-h-screen">
         <aside
           className={[
-            'sticky top-0 h-screen border-r border-[var(--border)] bg-[var(--sidebar)]/95 p-3 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all duration-200',
+            'self-stretch border-r border-[var(--border)] bg-[var(--sidebar)]/95 p-3 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all duration-200',
             collapsed ? 'w-20' : 'w-64',
           ].join(' ')}
         >

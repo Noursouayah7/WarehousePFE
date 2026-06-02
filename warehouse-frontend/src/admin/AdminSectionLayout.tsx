@@ -15,6 +15,7 @@ export default function AdminSectionLayout({ title, description, children }: Adm
       label: 'General',
       items: [
         { label: 'Dashboard', href: '/admin', icon: 'dashboard' as const },
+        { label: 'Prediction dashboard', href: '/admin/pred-dashboard', icon: 'dashboard' as const },
         { label: 'Assistant', href: '/assistant', icon: 'assistant' as const },
       ],
     },

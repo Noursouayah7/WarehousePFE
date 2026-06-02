@@ -15,6 +15,7 @@ import { AssistantModule } from './assistant/assistant.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { RestockAlertsModule } from './restock-alerts/restock-alerts.module';
 import { ReclamationModule } from './reclamation/reclamation.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ReclamationModule } from './reclamation/reclamation.module';
     InventoryModule,
     RestockAlertsModule,
     ReclamationModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

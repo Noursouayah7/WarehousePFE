@@ -16,6 +16,7 @@ export default function ManagerSectionLayout({ title, description, children, sho
       label: 'General',
       items: [
         { label: 'Dashboard', href: '/manager', icon: 'dashboard' as const },
+        { label: 'Prediction dashboard', href: '/manager/pred-dashboard', icon: 'dashboard' as const },
         { label: 'Assistant', href: '/assistant', icon: 'assistant' as const },
       ],
     },

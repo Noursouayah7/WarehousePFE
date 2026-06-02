@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
 import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
 import {
@@ -42,7 +42,30 @@ const PRIORITY_LABELS: Record<SupportTicketPriority, string> = {
   CRITICAL: 'Critical',
 };
 
-const STATUS_OPTIONS: SupportTicketStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+const STATUS_OPTIONS: SupportTicketStatus[] = ['RESOLVED', 'CLOSED'];
+
+const STATUS_LABELS: Record<SupportTicketStatus, string> = {
+  OPEN: 'Open',
+  IN_PROGRESS: 'In progress',
+  RESOLVED: 'Resolved',
+  CLOSED: 'Closed',
+};
+
+const STATUS_CLASSES: Record<SupportTicketStatus, string> = {
+  OPEN: 'bg-[var(--tint-warning)] text-[var(--color-warning)]',
+  IN_PROGRESS: 'bg-[var(--tint-info)] text-[var(--color-info)]',
+  RESOLVED: 'bg-[var(--tint-success)] text-[var(--color-success)]',
+  CLOSED: 'bg-slate-100 text-slate-600',
+};
+
+const POLL_INTERVAL_MS = 5000;
+const STATUS_TOAST_TIMEOUT_MS = 4000;
+
+type StatusNotice = {
+  ticketId: number;
+  title: string;
+  status: SupportTicketStatus;
+};
 
 function formatDate(value: string): string {
   const date = new Date(value);
@@ -53,6 +76,8 @@ function formatDate(value: string): string {
 export function SupportTicketsBoard({ canCreate, canUpdate }: { canCreate: boolean; canUpdate: boolean }) {
   const { token } = useAuth();
   const { query } = useWorkspaceSearch();
+  const previousStatusMapRef = useRef<Record<number, SupportTicketStatus>>({});
+  const hasLoadedRef = useRef(false);
 
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,9 +86,48 @@ export function SupportTicketsBoard({ canCreate, canUpdate }: { canCreate: boole
   const [form, setForm] = useState<TicketForm>(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [statusNotice, setStatusNotice] = useState<StatusNotice | null>(null);
+
+  useEffect(() => {
+    if (!statusNotice) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setStatusNotice(null);
+    }, STATUS_TOAST_TIMEOUT_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [statusNotice]);
 
   async function loadTickets(activeToken: string) {
     const data = canCreate ? await getMySupportTickets(activeToken) : await getAllSupportTickets(activeToken);
+    const nextStatusMap = data.reduce<Record<number, SupportTicketStatus>>((accumulator, ticket) => {
+      accumulator[ticket.id] = ticket.status;
+      return accumulator;
+    }, {});
+
+    if (hasLoadedRef.current) {
+      for (const ticket of data) {
+        const previousStatus = previousStatusMapRef.current[ticket.id];
+
+        if (
+          previousStatus !== ticket.status &&
+          (ticket.status === 'RESOLVED' || ticket.status === 'CLOSED')
+        ) {
+          setStatusNotice({
+            ticketId: ticket.id,
+            title: ticket.title,
+            status: ticket.status,
+          });
+          break;
+        }
+      }
+    } else {
+      hasLoadedRef.current = true;
+    }
+
+    previousStatusMapRef.current = nextStatusMap;
     setTickets(data);
   }
 
@@ -88,8 +152,16 @@ export function SupportTicketsBoard({ canCreate, canUpdate }: { canCreate: boole
         setIsLoading(false);
       });
 
+    const pollId = window.setInterval(() => {
+      void loadTickets(token).catch((err: unknown) => {
+        if (!mounted) return;
+        setError(err instanceof Error ? err.message : 'Failed to load support tickets');
+      });
+    }, POLL_INTERVAL_MS);
+
     return () => {
       mounted = false;
+      window.clearInterval(pollId);
     };
   }, [token, canCreate]);
 
@@ -161,6 +233,18 @@ export function SupportTicketsBoard({ canCreate, canUpdate }: { canCreate: boole
     try {
       const updated = await updateSupportTicket(token, ticketId, { status, managerNote });
       setTickets((current) => current.map((ticket) => (ticket.id === ticketId ? updated : ticket)));
+      previousStatusMapRef.current = {
+        ...previousStatusMapRef.current,
+        [ticketId]: updated.status,
+      };
+
+      if (updated.status === 'RESOLVED' || updated.status === 'CLOSED') {
+        setStatusNotice({
+          ticketId: updated.id,
+          title: updated.title,
+          status: updated.status,
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update ticket');
     } finally {
@@ -170,6 +254,43 @@ export function SupportTicketsBoard({ canCreate, canUpdate }: { canCreate: boole
 
   return (
     <section className="mt-8 rounded-2xl bg-transparent">
+      {statusNotice && (
+        <div className="fixed right-4 top-4 z-50 w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-4 shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+          <div className="flex items-start gap-3">
+            <div
+              className={[
+                'mt-0.5 flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold',
+                statusNotice.status === 'RESOLVED'
+                  ? 'bg-[var(--tint-success)] text-[var(--color-success)]'
+                  : 'bg-slate-100 text-slate-600',
+              ].join(' ')}
+            >
+              {statusNotice.status === 'RESOLVED' ? 'R' : 'C'}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Ticket updated</p>
+              <p className="mt-1 text-sm font-semibold text-slate-950">
+                #{statusNotice.ticketId} {statusNotice.title}
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                Marked as {STATUS_LABELS[statusNotice.status].toLowerCase()}.
+                {statusNotice.status === 'RESOLVED' ? ' The issue is resolved.' : ' The ticket is closed.'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setStatusNotice(null)}
+              className="rounded-full px-2 py-1 text-sm text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+              aria-label="Dismiss notification"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Support tickets</h2>
@@ -280,7 +401,11 @@ export function SupportTicketsBoard({ canCreate, canUpdate }: { canCreate: boole
                   </td>
                   <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{CATEGORY_LABELS[ticket.category]}</td>
                   <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{PRIORITY_LABELS[ticket.priority]}</td>
-                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{ticket.status}</td>
+                  <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
+                    <span className={["inline-flex rounded-full px-2.5 py-1 font-medium", STATUS_CLASSES[ticket.status]].join(' ')}>
+                      {STATUS_LABELS[ticket.status]}
+                    </span>
+                  </td>
                   <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
                     <p>{ticket.createdBy.name ?? ticket.createdBy.email}</p>
                     <p className="text-[var(--muted-foreground)]">{ticket.createdBy.roles}</p>
@@ -295,9 +420,9 @@ export function SupportTicketsBoard({ canCreate, canUpdate }: { canCreate: boole
                             type="button"
                             disabled={busyTicketId === ticket.id}
                             onClick={() => changeStatus(ticket.id, status, status === 'RESOLVED' ? 'Ticket resolved' : undefined)}
-                            className="rounded-md bg-[var(--tint-info)] px-3 py-1.5 text-xs font-medium text-[var(--color-info)] disabled:opacity-40"
+                            className="rounded-md bg-[var(--tint-info)] px-3 py-1.5 text-xs font-medium text-[var(--color-info)] transition-opacity hover:opacity-90 disabled:opacity-40"
                           >
-                            {status}
+                            {status === 'RESOLVED' ? 'Mark resolved' : 'Mark closed'}
                           </button>
                         ))}
                       </div>

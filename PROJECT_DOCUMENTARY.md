@@ -531,3 +531,193 @@ If you want, I can:
 - or convert the backlog into a CSV/Excel for PM chapters.
 
 Tell me which of those you want next and I'll prepare it.
+
+---
+
+## Detailed Project Resume
+
+This section is a concise, shareable resume of the Warehouse Pfe project suitable for emailing to supervisors, reviewers, or teammates. It summarizes the goals, architecture, data model, important workflows, and how to run the system locally.
+
+- Project: Warehouse Pfe — full-stack Warehouse Management System for order, shipment and inventory lifecycle management.
+- Stack: Backend — NestJS, TypeScript, Prisma ORM, PostgreSQL. Frontend — Next.js (App Router), TypeScript, React. Development tooling: Jest, Playwright/Cypress (E2E), ESLint, Prettier.
+- Primary capabilities: role-based access control (ADMIN, MANAGER, TECHNICIEN, CUSTOMER, PENDING), transactional stock updates, shipment receive and restock flows, multi-item orders, support-ticket integration and a lightweight chatbot assistant.
+- Key constraints: bloc capacity enforcement, atomic stock movements using database transactions, server-side RBAC enforced by guards and decorators.
+
+Contactable summary (1-paragraph): Warehouse Pfe models a real-world warehouse where customers place orders, managers/admins validate and fulfill them, technicians operate inventory, and shipments restore stock. The system guarantees consistency by using Prisma transactions to protect stock updates and implements strict role-based access control both in the frontend and backend.
+
+---
+
+## Technical Architecture Deep-Dive
+
+### Backend (warehouse-backend)
+
+- Structure: Modular NestJS architecture with modules for `auth`, `user`, `admin`, `product`, `bloc`, `warehouse`, `order`, `shipment`, `support-ticket`, and `prisma` integration.
+- Persistence: Prisma Client with a PostgreSQL database. The `PrismaModule` centralizes client creation and graceful disposal. Migrations live under `prisma/migrations/` and generated client code appears under `generated/prisma/`.
+- Services: Business logic is implemented in services (e.g., `OrderService`, `ShipmentService`) and controllers expose HTTP endpoints. Services use Prisma transactions (`$transaction`) to perform multi-step stock updates atomically.
+- Security: JWT-based authentication; backend guards enforce role checks. Sensitive operations (approve order, receive shipment) validate capacity and ownership restrictions server-side.
+- Error model: Controllers return structured HTTP errors with codes and machine-readable payloads for frontend consumption. Capacity checks return specific error codes so UI can show actionable messages.
+
+### Frontend (warehouse-frontend)
+
+- Structure: Next.js App Router with per-role route segments under `/admin`, `/manager`, `/technicien`, `/customer`, `/pending`.
+- Auth: Browser stores JWT in-memory (recommended pattern in current codebase). Route guard component (`AuthRedirect`) redirects users to the appropriate workspace and blocks unauthorized access. Token should be forwarded with `Authorization: Bearer <token>` for API calls.
+- UX patterns: role-colored shells, status badges, optimistic UI updates on common actions, and concise error display extracted from backend responses.
+
+### Integration & Chatbot
+
+- The chatbot integrates with backend endpoints for ticket creation and order queries. It forwards the logged-in user's JWT for RBAC enforcement. Intent recognition can be LLM-based or via a light NLU.
+
+---
+
+## Data Model & Prisma Excerpts
+
+Below are representative Prisma schema excerpts to include in documentation and the report; see [warehouse-backend/prisma/schema.prisma](warehouse-backend/prisma/schema.prisma) for the full schema.
+
+Example core models:
+
+```prisma
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  TECHNICIEN
+  CUSTOMER
+  PENDING
+}
+
+model Bloc {
+  id          Int      @id @default(autoincrement())
+  name        String
+  capacity    Int
+  currentUsage Int     @default(0)
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  warehouseId Int
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  bloc      Bloc?    @relation(fields: [blocId], references: [id])
+  blocId    Int?
+  quantity  Int      @default(0)
+  price     Float
+}
+```
+
+Important notes:
+- All inventory mutations that affect `Bloc.currentUsage` and `Product.quantity` are executed inside a transaction and validated against `Bloc.capacity` to prevent overfill.
+- Orders use `Order` + `OrderItem` models to support multi-item transactions.
+
+---
+
+## API Summary (example endpoints and payloads)
+
+This summary highlights the most important API routes a reviewer will want to inspect. Full controllers are under `warehouse-backend/src/*/controller.ts`.
+
+- Auth
+  - `POST /auth/login` — body: `{ email, password }` -> returns `{ accessToken, user }`.
+  - `GET /auth/me` — header: `Authorization: Bearer <token>` -> returns current user payload.
+
+- Users / Admin
+  - `GET /admin/users` — list users (ADMIN role required).
+  - `PATCH /admin/users/:id/role` — body: `{ role }` to change role.
+
+- Warehouses & Blocs
+  - `POST /warehouses` — create warehouse (ADMIN/ MANAGER allowed).
+  - `POST /blocs` — create bloc with `capacity` and `warehouseId`.
+
+- Products
+  - `POST /products` — create product with `blocId`, `quantity`, `price`.
+  - `PATCH /products/:id/transfer` — move product to another bloc (validates target capacity).
+
+- Orders
+  - `POST /orders/create` — body: `{ items: [{ productId, quantity }], deliveryAddress, customerName }` — creates `Order` and `OrderItem`s.
+  - `POST /orders/:id/approve` — manager approves; service decrements stock in transaction.
+
+- Shipments
+  - `POST /shipments` — create restock shipment (optionally linked to order).
+  - `POST /shipments/:id/receive` — mark received; increments product quantities after capacity validation.
+
+Example approval flow (high-level):
+1. Manager calls `POST /orders/:id/approve`.
+2. Server checks all `OrderItem` availability across blocs.
+3. If available, server opens a transaction: decrement `Product.quantity`, update `Bloc.currentUsage`, set `Order.status` to `APPROVED`.
+
+---
+
+## Deployment, CI and Run Commands
+
+Local dev (backend):
+
+```bash
+cd warehouse-backend
+pnpm install
+pnpm prisma:migrate:dev   # or `npx prisma migrate dev`
+pnpm prisma:generate
+pnpm start:dev            # runs NestJS with watch
+```
+
+Local dev (frontend):
+
+```bash
+cd warehouse-frontend
+pnpm install
+pnpm dev                 # Next.js dev server
+```
+
+CI/Production notes:
+- Use `prisma migrate deploy` in CI/CD pipelines to apply migrations.
+- Build backend and frontend artifacts separately; backend should run migrations on startup in deploy scripts if appropriate.
+- For reproducible demos, prefer a `docker-compose.yml` that boots Postgres, the backend, and the frontend.
+
+---
+
+## Testing & Quality Assurance (expanded)
+
+- Unit tests: Services and guards should be covered with unit tests using Jest and Prisma mocking. Focus on capacity rules and transactional consistency.
+- Integration tests: Use a disposable test database (Postgres container). Test flows: registration → admin role assignment → create order → approve → stock changes.
+- E2E: Use Playwright or Cypress to test the main role flows: customer order creation, manager approval, shipment receive.
+
+Commands (examples):
+
+```bash
+cd warehouse-backend
+pnpm test
+
+cd warehouse-frontend
+pnpm test:e2e
+```
+
+---
+
+## Diagrams, Assets, and Report Embedding
+
+- Export mermaid diagrams as PNG/SVG and place them in `chapters/assets/` so the LaTeX report embeds the same images. Keep source mermaid files in a `diagrams/` folder for future edits.
+- Suggested naming: `diagrams/class_diagram.mmd`, `chapters/assets/class_diagram.png`.
+
+---
+
+## Appendix: Reviewer Checklist
+
+- Run `pnpm install` in both apps and start services locally.
+- Inspect `prisma/schema.prisma` for model details and enums.
+- Verify `POST /orders/create` and `POST /orders/:id/approve` flows using Postman or curl.
+- Review `src/*/service.ts` files for transaction usage and capacity checks.
+
+---
+
+If you want, I can now:
+- export the mermaid diagrams to PNG and place them in `chapters/assets/`;
+- generate a one-page PDF resume for the project from this documentary;
+- or create the `SPRINT_LOG.md` printable sprint-by-sprint activity log.
+
+Tell me which of those you want next and I will proceed.

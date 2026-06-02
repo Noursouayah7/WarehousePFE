@@ -15,7 +15,12 @@ import {
 
 type DraftState = Record<number, { status: ReclamationStatus; managerNote: string }>;
 
-const statusOptions: ReclamationStatus[] = ['PENDING', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+const finalStatusOptions: ReclamationStatus[] = ['RESOLVED', 'CLOSED'];
+const POLL_INTERVAL_MS = 5000;
+
+function isFinalStatus(status: ReclamationStatus): boolean {
+	return status === 'RESOLVED' || status === 'CLOSED';
+}
 
 function formatDate(value: string): string {
 	const date = new Date(value);
@@ -36,6 +41,20 @@ export function ReclamationsBoard() {
 	const [error, setError] = useState<string | null>(null);
 	const [savingId, setSavingId] = useState<number | null>(null);
 
+	async function loadReclamations(activeToken: string) {
+		const data = await getAllReclamations(activeToken);
+		setReclamations(data);
+		setDrafts(
+			data.reduce<DraftState>((accumulator, reclamation) => {
+				accumulator[reclamation.id] = {
+					status: reclamation.status,
+					managerNote: reclamation.managerNote ?? '',
+				};
+				return accumulator;
+			}, {}),
+		);
+	}
+
 	useEffect(() => {
 		if (!token) {
 			setError('Missing auth token. Please login again.');
@@ -47,19 +66,9 @@ export function ReclamationsBoard() {
 		setIsLoading(true);
 		setError(null);
 
-		void getAllReclamations(token)
+		void loadReclamations(token)
 			.then((data) => {
 				if (!mounted) return;
-				setReclamations(data);
-				setDrafts(
-					data.reduce<DraftState>((accumulator, reclamation) => {
-						accumulator[reclamation.id] = {
-							status: reclamation.status,
-							managerNote: reclamation.managerNote ?? '',
-						};
-						return accumulator;
-					}, {}),
-				);
 			})
 			.catch((err: unknown) => {
 				if (!mounted) return;
@@ -70,8 +79,16 @@ export function ReclamationsBoard() {
 				setIsLoading(false);
 			});
 
+		const pollId = window.setInterval(() => {
+			void loadReclamations(token).catch((err: unknown) => {
+				if (!mounted) return;
+				setError(err instanceof Error ? err.message : 'Failed to load reclamations');
+			});
+		}, POLL_INTERVAL_MS);
+
 		return () => {
 			mounted = false;
+			window.clearInterval(pollId);
 		};
 	}, [token]);
 
@@ -172,7 +189,26 @@ export function ReclamationsBoard() {
 									<p className={`text-sm font-semibold ${getStatusColor(reclamation.status)}`}>{getStatusLabel(reclamation.status)}</p>
 								</div>
 
-								<div className="grid gap-4 md:grid-cols-2">
+								{isFinalStatus(reclamation.status) ? (
+									<div className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-4 md:grid-cols-[1.5fr_1fr_auto] md:items-center">
+										<div>
+											<p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Summary</p>
+											<p className="mt-1 text-sm font-semibold text-[var(--foreground)]">{getProblemTypeLabel(reclamation.problemType)}</p>
+											<p className="mt-1 text-sm text-[var(--muted-foreground)]">
+												{reclamation.customer?.name ?? reclamation.customer?.email ?? 'Customer'}
+											</p>
+										</div>
+										<div>
+											<p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Final status</p>
+											<p className={`mt-1 text-sm font-semibold ${getStatusColor(reclamation.status)}`}>{getStatusLabel(reclamation.status)}</p>
+											<p className="mt-1 text-xs text-[var(--muted-foreground)]">Saved {formatDate(reclamation.updatedAt)}</p>
+										</div>
+										<div className="text-xs text-[var(--muted-foreground)] md:text-right">
+											<p>{reclamation.managerNote || 'No manager note'}</p>
+										</div>
+									</div>
+								) : (
+									<div className="grid gap-4 md:grid-cols-2">
 									<div className="space-y-3">
 										<div>
 											<p className="text-xs font-medium text-[var(--muted-foreground)]">Description</p>
@@ -206,24 +242,32 @@ export function ReclamationsBoard() {
 
 									<div className="space-y-3 rounded-2xl bg-[var(--background)] p-4">
 										<div>
-											<label className="block text-xs font-medium text-[var(--muted-foreground)]">Status</label>
-											<select
-												value={draft.status}
-												onChange={(event) =>
-													setDrafts((current) => ({
-														...current,
-														[reclamation.id]: {
-															...draft,
-															status: event.target.value as ReclamationStatus,
-														},
-													}))
-												}
-												className="mt-2 w-full rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none focus:border-[var(--ring)]"
-											>
-												{statusOptions.map((option) => (
-													<option key={option} value={option}>{getStatusLabel(option)}</option>
+											<label className="block text-xs font-medium text-[var(--muted-foreground)]">Final action</label>
+											<div className="mt-2 flex flex-wrap gap-2">
+												{finalStatusOptions.map((option) => (
+													<button
+														key={option}
+														type="button"
+														onClick={() =>
+															setDrafts((current) => ({
+																...current,
+																[reclamation.id]: {
+																	...draft,
+																	status: option,
+																},
+															}))
+														}
+													className={[
+														'rounded-full px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90',
+														draft.status === option
+															? 'bg-[var(--role-admin)] text-black'
+															: 'bg-[var(--tint-info)] text-[var(--color-info)]',
+													].join(' ')}
+													>
+														{getStatusLabel(option)}
+													</button>
 												))}
-											</select>
+											</div>
 										</div>
 
 										<div>
@@ -254,7 +298,8 @@ export function ReclamationsBoard() {
 											{savingId === reclamation.id ? 'Saving...' : 'Save changes'}
 										</button>
 									</div>
-								</div>
+									</div>
+								)}
 
 								<div className="mt-4 border-t border-[var(--border)] pt-4 text-xs text-[var(--muted-foreground)]">Created {formatDate(reclamation.createdAt)}</div>
 							</article>

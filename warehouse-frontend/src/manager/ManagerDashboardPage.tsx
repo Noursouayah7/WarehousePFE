@@ -1,6 +1,7 @@
 'use client';
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
+import PriceForecastWidget from '@/src/components/PriceForecastWidget';
 import { useAuth } from '@/src/auth/AuthProvider';
 import {
   approveOrder,

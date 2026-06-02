@@ -323,3 +323,15 @@ enum ReclamationStatus {
   RESOLVED
   CLOSED
 }
+
+model PricePredictionLog {
+  id           Int      @id @default(autoincrement())
+  userId       Int?
+  role         UserRole
+  input        Json
+  predictedPrice Float
+  modelVersion String?
+  createdAt    DateTime @default(now())
+
+  @@map("price_prediction_logs")
+}

@@ -21,9 +21,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body
-        className={`${inter.className} m-0 p-0`}
+        className={`${inter.className} m-0 flex min-h-full flex-col p-0`}
         style={{ '--font-display': display.style.fontFamily } as React.CSSProperties}
       >
         <AuthProvider>
