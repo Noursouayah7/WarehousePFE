@@ -1,0 +1,15 @@
+{
+  "model_name": "random_forest_price_model",
+  "version": "v1",
+  "target": "price",
+  "features": [
+    "year",
+    "month",
+    "cost",
+    "revenue",
+    "stock",
+    "quantity_sold"
+  ],
+  "train_rows": 8651,
+  "test_rows": 2163
+}
