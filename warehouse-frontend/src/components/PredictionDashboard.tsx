@@ -34,6 +34,8 @@ const defaultScenario: ScenarioForm = {
   quantity_sold: 220,
 };
 
+const estimatedCostRatio = 0.63;
+
 function formatCurrency(value: number | null): string {
   if (value === null || Number.isNaN(value)) return '—';
   return `${value.toFixed(2)} TND / 1L bottle`;
@@ -225,14 +227,19 @@ export default function PredictionDashboard() {
   }, [payload]);
 
   const visibleScenarioEntries = useMemo(
-    () => Object.entries(scenario).filter(([key]) => key !== 'revenue'),
+    () => Object.entries(scenario).filter(([key]) => key !== 'revenue' && key !== 'cost'),
     [scenario],
   );
 
+  const estimatedCost = useMemo(() => {
+    const referencePrice = payload?.previousPrice ?? payload?.predictedPrice ?? 20;
+    return Number((referencePrice * estimatedCostRatio).toFixed(2));
+  }, [payload?.predictedPrice, payload?.previousPrice]);
+
   const estimatedRevenue = useMemo(() => {
-    const referencePrice = payload?.previousPrice ?? Math.max(scenario.cost * 1.35, scenario.cost);
+    const referencePrice = payload?.previousPrice ?? payload?.predictedPrice ?? 20;
     return Number((referencePrice * scenario.quantity_sold).toFixed(2));
-  }, [payload?.previousPrice, scenario.cost, scenario.quantity_sold]);
+  }, [payload?.predictedPrice, payload?.previousPrice, scenario.quantity_sold]);
 
   const insightText = payload?.trend === 'up'
     ? 'The model expects an upward move. Consider reviewing stock and procurement timing.'
@@ -327,7 +334,10 @@ export default function PredictionDashboard() {
           </div>
 
           <div className="mt-5 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--muted)] p-4 text-sm text-[var(--muted-foreground)]">
-            Unit standard: one sales unit equals one 1-liter olive oil bottle. Price and cost are interpreted in TND per 1L bottle.
+            Unit standard: one sales unit equals one 1-liter olive oil bottle. Model v1 still expects cost and revenue, so both are estimated internally instead of being entered as scenario inputs.
+            <span className="mt-2 block font-medium text-slate-900">
+              Estimated cost sent to model: {estimatedCost.toFixed(2)} TND / 1L bottle
+            </span>
             <span className="mt-2 block font-medium text-slate-900">
               Estimated revenue sent to model: {estimatedRevenue.toFixed(2)} TND
             </span>

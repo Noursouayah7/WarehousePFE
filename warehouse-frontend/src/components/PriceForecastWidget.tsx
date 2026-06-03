@@ -46,10 +46,11 @@ const scenarioFields: Array<{
 }> = [
   { key: 'year', label: 'Year', helper: 'Planning period' },
   { key: 'month', label: 'Month', helper: '1 to 12' },
-  { key: 'cost', label: 'Cost per 1L bottle', helper: 'Expected cost in TND', step: '0.01' },
   { key: 'stock', label: 'Stock', helper: 'Available 1L bottles' },
   { key: 'quantity_sold', label: 'Quantity sold', helper: 'Expected 1L bottles sold' },
 ];
+
+const estimatedCostRatio = 0.63;
 
 function formatCurrency(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) return 'Not available';
@@ -132,10 +133,13 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
   const forecastPrice = data?.predictedPrice ?? null;
   const delta = data?.delta ?? null;
   const deltaPercent = data?.deltaPercent ?? null;
+  const referenceBottlePrice = latestBottlePrice ?? forecastPrice ?? 20;
+  const costEstimate = useMemo(() => {
+    return Number((referenceBottlePrice * estimatedCostRatio).toFixed(2));
+  }, [referenceBottlePrice]);
   const revenueEstimate = useMemo(() => {
-    const referencePrice = latestBottlePrice ?? Math.max(form.cost * 1.35, form.cost);
-    return Number((referencePrice * form.quantity_sold).toFixed(2));
-  }, [form.cost, form.quantity_sold, latestBottlePrice]);
+    return Number((referenceBottlePrice * form.quantity_sold).toFixed(2));
+  }, [form.quantity_sold, referenceBottlePrice]);
 
   async function refresh() {
     if (!token) {
@@ -177,6 +181,7 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
     try {
       const payload: ScenarioForm = {
         ...form,
+        cost: costEstimate,
         revenue: revenueEstimate,
       };
 
@@ -312,7 +317,10 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
           </div>
 
           <div className="mt-5 rounded-xl bg-[var(--tint-info)] p-4 text-sm leading-6 text-slate-700">
-            Unit standard: one sales unit equals one 1-liter olive oil bottle. Revenue is estimated internally from the latest known 1L bottle price because model v1 still expects it.
+            Unit standard: one sales unit equals one 1-liter olive oil bottle. Model v1 still expects cost and revenue, so both are estimated internally instead of being entered as scenario inputs.
+            <span className="mt-2 block font-medium text-slate-900">
+              Estimated cost sent to model: {costEstimate.toFixed(2)} TND / 1L bottle
+            </span>
             <span className="mt-2 block font-medium text-slate-900">
               Estimated revenue sent to model: {revenueEstimate.toFixed(2)} TND
             </span>
