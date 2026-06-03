@@ -47,7 +47,6 @@ const scenarioFields: Array<{
   { key: 'year', label: 'Year', helper: 'Planning period' },
   { key: 'month', label: 'Month', helper: '1 to 12' },
   { key: 'cost', label: 'Cost per 1L bottle', helper: 'Expected cost in TND', step: '0.01' },
-  { key: 'revenue', label: 'Revenue', helper: 'Expected sales revenue', step: '0.01' },
   { key: 'stock', label: 'Stock', helper: 'Available 1L bottles' },
   { key: 'quantity_sold', label: 'Quantity sold', helper: 'Expected 1L bottles sold' },
 ];
@@ -118,6 +117,7 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
   const [predicting, setPredicting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<ForecastPayload | null>(null);
+  const [latestBottlePrice, setLatestBottlePrice] = useState<number | null>(null);
   const [form, setForm] = useState<ScenarioForm>(defaultScenario);
 
   useEffect(() => {
@@ -132,6 +132,10 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
   const forecastPrice = data?.predictedPrice ?? null;
   const delta = data?.delta ?? null;
   const deltaPercent = data?.deltaPercent ?? null;
+  const revenueEstimate = useMemo(() => {
+    const referencePrice = latestBottlePrice ?? Math.max(form.cost * 1.35, form.cost);
+    return Number((referencePrice * form.quantity_sold).toFixed(2));
+  }, [form.cost, form.quantity_sold, latestBottlePrice]);
 
   async function refresh() {
     if (!token) {
@@ -152,6 +156,9 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
 
       const json = (await res.json()) as ForecastPayload;
       setData(json);
+      if (typeof json.previousPrice === 'number' && Number.isFinite(json.previousPrice)) {
+        setLatestBottlePrice(json.previousPrice);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Forecast service is unavailable.');
     } finally {
@@ -168,13 +175,18 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
     setPredicting(true);
     setError(null);
     try {
+      const payload: ScenarioForm = {
+        ...form,
+        revenue: revenueEstimate,
+      };
+
       const res = await fetch(`${apiBase}/ai/price/predict`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -184,6 +196,9 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
 
       const json = (await res.json()) as ForecastPayload;
       setData(json);
+      if (typeof json.previousPrice === 'number' && Number.isFinite(json.previousPrice)) {
+        setLatestBottlePrice(json.previousPrice);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Prediction failed.');
     } finally {
@@ -297,7 +312,10 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
           </div>
 
           <div className="mt-5 rounded-xl bg-[var(--tint-info)] p-4 text-sm leading-6 text-slate-700">
-            Unit standard: one sales unit equals one 1-liter olive oil bottle. Price and cost are interpreted in TND per 1L bottle.
+            Unit standard: one sales unit equals one 1-liter olive oil bottle. Revenue is estimated internally from the latest known 1L bottle price because model v1 still expects it.
+            <span className="mt-2 block font-medium text-slate-900">
+              Estimated revenue sent to model: {revenueEstimate.toFixed(2)} TND
+            </span>
           </div>
         </div>
       </div>

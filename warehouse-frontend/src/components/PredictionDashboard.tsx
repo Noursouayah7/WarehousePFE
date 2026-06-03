@@ -224,6 +224,16 @@ export default function PredictionDashboard() {
     ];
   }, [payload]);
 
+  const visibleScenarioEntries = useMemo(
+    () => Object.entries(scenario).filter(([key]) => key !== 'revenue'),
+    [scenario],
+  );
+
+  const estimatedRevenue = useMemo(() => {
+    const referencePrice = payload?.previousPrice ?? Math.max(scenario.cost * 1.35, scenario.cost);
+    return Number((referencePrice * scenario.quantity_sold).toFixed(2));
+  }, [payload?.previousPrice, scenario.cost, scenario.quantity_sold]);
+
   const insightText = payload?.trend === 'up'
     ? 'The model expects an upward move. Consider reviewing stock and procurement timing.'
     : payload?.trend === 'down'
@@ -303,7 +313,7 @@ export default function PredictionDashboard() {
           <h3 className="mt-1 text-xl font-semibold tracking-tight">What-if scenario</h3>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {Object.entries(scenario).map(([key, value]) => (
+            {visibleScenarioEntries.map(([key, value]) => (
               <label key={key} className="space-y-2">
                 <span className="text-sm font-medium capitalize text-slate-800">{key.replace('_', ' ')}</span>
                 <input
@@ -318,6 +328,9 @@ export default function PredictionDashboard() {
 
           <div className="mt-5 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--muted)] p-4 text-sm text-[var(--muted-foreground)]">
             Unit standard: one sales unit equals one 1-liter olive oil bottle. Price and cost are interpreted in TND per 1L bottle.
+            <span className="mt-2 block font-medium text-slate-900">
+              Estimated revenue sent to model: {estimatedRevenue.toFixed(2)} TND
+            </span>
           </div>
         </div>
 
