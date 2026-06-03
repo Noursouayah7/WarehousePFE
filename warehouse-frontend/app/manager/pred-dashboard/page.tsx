@@ -7,7 +7,7 @@ export default function ManagerPredictionDashboardPage() {
     <AuthRedirect mode="protected" allowedRoles={['MANAGER']}>
       <ManagerSectionLayout
         title="Price planning"
-        description="Olive oil forecast, scenario checks, and model status."
+        description="Olive oil forecast in TND per 1L bottle, scenario checks, and model status."
         showHero={false}
       >
         <PriceForecastWidget />

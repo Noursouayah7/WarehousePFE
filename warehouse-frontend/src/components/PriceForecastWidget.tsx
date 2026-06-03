@@ -46,15 +46,15 @@ const scenarioFields: Array<{
 }> = [
   { key: 'year', label: 'Year', helper: 'Planning period' },
   { key: 'month', label: 'Month', helper: '1 to 12' },
-  { key: 'cost', label: 'Cost', helper: 'Expected cost per unit', step: '0.01' },
+  { key: 'cost', label: 'Cost per 1L bottle', helper: 'Expected cost in TND', step: '0.01' },
   { key: 'revenue', label: 'Revenue', helper: 'Expected sales revenue', step: '0.01' },
-  { key: 'stock', label: 'Stock', helper: 'Available stock' },
-  { key: 'quantity_sold', label: 'Quantity sold', helper: 'Expected demand' },
+  { key: 'stock', label: 'Stock', helper: 'Available 1L bottles' },
+  { key: 'quantity_sold', label: 'Quantity sold', helper: 'Expected 1L bottles sold' },
 ];
 
 function formatCurrency(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) return 'Not available';
-  return `${value.toFixed(2)} TND`;
+  return `${value.toFixed(2)} TND / 1L bottle`;
 }
 
 function formatSignedCurrency(value: number | null | undefined): string {
@@ -85,7 +85,7 @@ function getTrendCopy(payload: ForecastPayload | null): {
     return {
       label: 'Waiting for forecast',
       tone: 'bg-[var(--muted)] text-[var(--muted-foreground)]',
-      insight: 'Connect the inference service to see the next price estimate.',
+      insight: 'Connect the inference service to see the next 1L bottle price estimate.',
     };
   }
 
@@ -93,7 +93,7 @@ function getTrendCopy(payload: ForecastPayload | null): {
     return {
       label: 'Price may rise',
       tone: 'bg-[var(--tint-warning)] text-[var(--color-warning)]',
-      insight: 'A higher estimate can support earlier procurement or tighter stock allocation.',
+      insight: 'A higher 1L bottle estimate can support earlier procurement or tighter stock allocation.',
     };
   }
 
@@ -101,7 +101,7 @@ function getTrendCopy(payload: ForecastPayload | null): {
     return {
       label: 'Price may soften',
       tone: 'bg-[var(--tint-info)] text-[var(--color-info)]',
-      insight: 'A lower estimate can help with promotion planning or slower purchasing.',
+      insight: 'A lower 1L bottle estimate can help with promotion planning or slower purchasing.',
     };
   }
 
@@ -212,7 +212,7 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
                 {formatCurrency(forecastPrice)}
               </h2>
               <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--muted-foreground)]">
-                Next-period estimate for planning purchase timing, stock levels, and customer pricing.
+                Next-period estimate for one 1-liter bottle, used for purchase timing, stock levels, and customer pricing.
               </p>
             </div>
 
@@ -225,12 +225,12 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
             <div className="rounded-xl border border-[var(--border)] bg-white px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--muted-foreground)]">Change</p>
               <p className="mt-2 text-lg font-semibold text-slate-950">{formatSignedCurrency(delta)}</p>
-              <p className="mt-1 text-sm text-[var(--muted-foreground)]">{formatPercent(deltaPercent)}</p>
+              <p className="mt-1 text-sm text-[var(--muted-foreground)]">{formatPercent(deltaPercent)} per 1L bottle</p>
             </div>
             <div className="rounded-xl border border-[var(--border)] bg-white px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--muted-foreground)]">Previous</p>
               <p className="mt-2 text-lg font-semibold text-slate-950">{formatCurrency(data?.previousPrice)}</p>
-              <p className="mt-1 text-sm text-[var(--muted-foreground)]">Latest product price</p>
+              <p className="mt-1 text-sm text-[var(--muted-foreground)]">Latest 1L bottle price</p>
             </div>
             <div className="rounded-xl border border-[var(--border)] bg-white px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--muted-foreground)]">Model</p>
@@ -297,7 +297,7 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
           </div>
 
           <div className="mt-5 rounded-xl bg-[var(--tint-info)] p-4 text-sm leading-6 text-slate-700">
-            The model reads these six values together, so a scenario should reflect one coherent business period.
+            Unit standard: one sales unit equals one 1-liter olive oil bottle. Price and cost are interpreted in TND per 1L bottle.
           </div>
         </div>
       </div>

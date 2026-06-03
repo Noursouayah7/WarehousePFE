@@ -7,7 +7,7 @@ export default function AdminPredictionDashboardPage() {
     <AuthRedirect mode="protected" allowedRoles={['ADMIN']}>
       <AdminSectionLayout
         title="Price planning"
-        description="Olive oil forecast, scenario checks, and model status."
+        description="Olive oil forecast in TND per 1L bottle, scenario checks, and model status."
       >
         <PriceForecastWidget />
       </AdminSectionLayout>

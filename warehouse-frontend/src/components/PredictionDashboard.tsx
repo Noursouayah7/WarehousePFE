@@ -36,7 +36,7 @@ const defaultScenario: ScenarioForm = {
 
 function formatCurrency(value: number | null): string {
   if (value === null || Number.isNaN(value)) return '—';
-  return `${value.toFixed(2)} TND`;
+  return `${value.toFixed(2)} TND / 1L bottle`;
 }
 
 function formatPercent(value: number | null): string {
@@ -83,7 +83,7 @@ function ChartCard({ points }: { points: Point[] }) {
           <h3 className="mt-1 text-xl font-semibold tracking-tight">Price movement overview</h3>
         </div>
         <div className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted-foreground)]">
-          TND / period
+          TND / 1L bottle
         </div>
       </div>
 
@@ -126,7 +126,7 @@ function ChartCard({ points }: { points: Point[] }) {
         {points.map((point) => (
           <div key={point.label} className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-3 py-2">
             <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--muted-foreground)]">{point.label}</p>
-            <p className="mt-1 text-sm font-semibold">{point.value.toFixed(2)} TND</p>
+            <p className="mt-1 text-sm font-semibold">{point.value.toFixed(2)} TND / 1L</p>
           </div>
         ))}
       </div>
@@ -149,7 +149,7 @@ function MiniBarChart({ points }: { points: Point[] }) {
             <div key={point.label}>
               <div className="mb-1 flex items-center justify-between text-sm">
                 <span>{point.label}</span>
-                <span className="font-medium text-[var(--muted-foreground)]">{point.value.toFixed(2)} TND</span>
+                <span className="font-medium text-[var(--muted-foreground)]">{point.value.toFixed(2)} TND / 1L</span>
               </div>
               <div className="h-3 rounded-full bg-[var(--muted)]">
                 <div
@@ -217,8 +217,8 @@ export default function PredictionDashboard() {
     const deltaPercent = payload?.deltaPercent ?? (previous !== null && delta !== null ? (delta / previous) * 100 : null);
 
     return [
-      { label: 'Predicted price', value: formatCurrency(predicted), hint: 'Next period estimate' },
-      { label: 'Previous price', value: formatCurrency(previous), hint: 'Latest observed price' },
+      { label: 'Predicted price', value: formatCurrency(predicted), hint: 'Next period estimate per 1L bottle' },
+      { label: 'Previous price', value: formatCurrency(previous), hint: 'Latest observed 1L bottle price' },
       { label: 'Difference', value: formatCurrency(delta), hint: `${formatPercent(deltaPercent)} vs previous` },
       { label: 'Model version', value: payload?.modelVersion ?? 'v1', hint: 'Current deployed model' },
     ];
@@ -239,10 +239,10 @@ export default function PredictionDashboard() {
               Prediction dashboard
             </div>
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950 md:text-5xl">
-              Human-readable price forecast for planning and simulations
+              Human-readable 1L bottle price forecast for planning and simulations
             </h1>
             <p className="max-w-2xl text-sm leading-6 text-[var(--muted-foreground)] md:text-base">
-              Review the next estimated price, compare it with the last observed value, and test what-if scenarios before making decisions.
+              Review the next estimated price per 1-liter bottle, compare it with the last observed value, and test what-if scenarios before making decisions.
             </p>
           </div>
 
@@ -317,7 +317,7 @@ export default function PredictionDashboard() {
           </div>
 
           <div className="mt-5 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--muted)] p-4 text-sm text-[var(--muted-foreground)]">
-            These inputs are ready for the prediction modal request. The graph updates when the backend forecast is refreshed.
+            Unit standard: one sales unit equals one 1-liter olive oil bottle. Price and cost are interpreted in TND per 1L bottle.
           </div>
         </div>
 
@@ -330,7 +330,7 @@ export default function PredictionDashboard() {
               The forecast compares the current estimate with the latest known price, so the change is easy to scan at a glance.
             </p>
             <p>
-              Use the chart to see whether the model is moving upward, downward, or staying flat over the next period.
+              Use the chart to see whether the 1L bottle price is moving upward, downward, or staying flat over the next period.
             </p>
             <p>
               The page stays intentionally simple so managers and admins can read it quickly during planning sessions.
