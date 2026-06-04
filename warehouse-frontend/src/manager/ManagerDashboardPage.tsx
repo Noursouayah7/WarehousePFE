@@ -1,7 +1,7 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
-import PriceForecastWidget from '@/src/components/PriceForecastWidget';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import BiDashboardPanel from '@/src/bi/BiDashboardPanel';
 import { useAuth } from '@/src/auth/AuthProvider';
 import {
   approveOrder,
@@ -9,7 +9,6 @@ import {
   getManagerShipments,
   ManagerOrder,
   ManagerShipment,
-  markOrderDelivered,
   markShipmentInTransit,
   receiveShipment,
   rejectOrder,
@@ -70,7 +69,7 @@ function formatShipmentStatus(status: ManagerShipment['status']): string {
 }
 
 export default function ManagerPage() {
-  const { logout, token } = useAuth();
+  const { token } = useAuth();
 
   const [orders, setOrders] = useState<ManagerOrder[]>([]);
   const [shipments, setShipments] = useState<ManagerShipment[]>([]);
@@ -125,13 +124,6 @@ export default function ManagerPage() {
       mounted = false;
     };
   }, [token]);
-
-  const orderCount = useMemo(() => orders.length, [orders]);
-  const shipmentCount = useMemo(() => shipments.length, [shipments]);
-  const waitingShipmentCount = useMemo(
-    () => shipments.filter((shipment) => shipment.status !== 'RECEIVED').length,
-    [shipments],
-  );
 
   async function runAction(actionKey: string, action: (activeToken: string) => Promise<void>) {
     if (!token) {
@@ -246,19 +238,7 @@ export default function ManagerPage() {
   return (
     <div className="min-h-screen bg-[var(--muted)] text-[var(--foreground)]">
       <div className="px-[40px] py-[60px]">
-        <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {[
-            { label: 'Orders', value: String(orderCount), accent: 'var(--tint-success)' },
-            { label: 'Shipments', value: String(shipmentCount), accent: 'var(--tint-info)' },
-            { label: 'Waiting receive', value: String(waitingShipmentCount), accent: 'var(--tint-warning)' },
-          ].map((card) => (
-            <div key={card.label} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-              <div className="mb-4 h-6 w-[3px]" style={{ background: card.accent }} />
-              <p className="mb-2 text-sm font-medium text-[var(--muted-foreground)]">{card.label}</p>
-              <p className="text-[28px] font-bold">{card.value}</p>
-            </div>
-          ))}
-        </div>
+        <BiDashboardPanel role="MANAGER" />
 
         {error && (
           <div className="mt-6 rounded-lg border border-[var(--color-error)] bg-[var(--tint-error)] px-4 py-3 text-sm text-[var(--color-error)]">

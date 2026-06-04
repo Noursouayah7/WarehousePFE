@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import WorkspaceShell from '@/src/common/WorkspaceShell';
 import { useAuth } from '@/src/auth/AuthProvider';
+import BiDashboardPanel from '@/src/bi/BiDashboardPanel';
 import { AdminDashboardWarehouse, getAdminWarehouses } from '@/src/admin/WarehousesDashbord/WarehouseDashbord.admin.api';
 import {
   completeRestockAlert,
@@ -76,7 +77,7 @@ export default function TechnicienPage() {
   const [alertLocationDrafts, setAlertLocationDrafts] = useState<Record<number, { warehouseId: string; blocId: string }>>({});
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   const [moveForm, setMoveForm] = useState<{ productId: string; quantity: string; destinationBlocId: string; note: string }>({ productId: '', quantity: '', destinationBlocId: '', note: '' });
-  const [isMoveLoading, setIsMoveLoading] = useState(false);;
+  const [isMoveLoading, setIsMoveLoading] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -164,21 +165,10 @@ export default function TechnicienPage() {
     },
   ];
 
-  const warehouseCount = useMemo(() => warehouses.length, [warehouses]);
-  const blocCount = useMemo(() => warehouses.reduce((sum, warehouse) => sum + warehouse.blocks.length, 0), [warehouses]);
   const highUsageBlocks = useMemo(
     () => warehouses.flatMap((warehouse) => warehouse.blocks).filter((bloc) => bloc.capacity > 0 && bloc.currentUsage / bloc.capacity >= 0.8),
     [warehouses],
   );
-  const totalCapacity = useMemo(
-    () => warehouses.reduce((sum, warehouse) => sum + warehouse.blocks.reduce((blocSum, bloc) => blocSum + bloc.capacity, 0), 0),
-    [warehouses],
-  );
-  const totalUsage = useMemo(
-    () => warehouses.reduce((sum, warehouse) => sum + warehouse.blocks.reduce((blocSum, bloc) => blocSum + bloc.currentUsage, 0), 0),
-    [warehouses],
-  );
-  const occupancyRate = percent(totalUsage, totalCapacity);
   const stockInCount = useMemo(() => movements.filter((movement) => movement.operationType === 'STOCK_IN' || movement.operationType === 'RESTOCK').length, [movements]);
   const stockOutCount = useMemo(() => movements.filter((movement) => movement.operationType === 'STOCK_OUT' || movement.operationType === 'DAMAGE').length, [movements]);
   const transferCount = useMemo(() => movements.filter((movement) => movement.operationType === 'TRANSFER').length, [movements]);
@@ -274,30 +264,9 @@ export default function TechnicienPage() {
       navGroups={navGroups}
     >
       {isDashboardPage && (
-      <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <div className="rounded-xl bg-[var(--card)] p-5 shadow-sm">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Warehouses</p>
-          <p className="mt-2 text-3xl font-semibold">{warehouseCount}</p>
+        <div className="mb-8">
+          <BiDashboardPanel role="TECHNICIEN" />
         </div>
-        <div className="rounded-xl bg-[var(--card)] p-5 shadow-sm">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Blocs</p>
-          <p className="mt-2 text-3xl font-semibold">{blocCount}</p>
-        </div>
-        <div className="rounded-xl bg-[var(--card)] p-5 shadow-sm">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">High usage blocs</p>
-          <p className="mt-2 text-3xl font-semibold">{highUsageBlocks.length}</p>
-        </div>
-        <div className="rounded-xl bg-[var(--card)] p-5 shadow-sm">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Occupancy</p>
-          <p className="mt-2 text-3xl font-semibold">{occupancyRate}%</p>
-        </div>
-        {isMovementsPage && (
-          <div className="rounded-xl bg-[var(--card)] p-5 shadow-sm">
-            <p className="text-sm font-medium text-[var(--muted-foreground)]">Movements</p>
-            <p className="mt-2 text-3xl font-semibold">{movements.length}</p>
-          </div>
-        )}
-      </section>
       )}
 
       {!token ? (
