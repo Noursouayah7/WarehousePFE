@@ -36,6 +36,11 @@ export class RestockAlertsController {
     return this.restockAlertsService.updateLocation(id, dto);
   }
 
+  @Patch(':id/in-transit')
+  markInTransit(@Request() req: { user: RequestUser }, @Param('id', ParseIntPipe) id: number) {
+    return this.restockAlertsService.markInTransit(id, req.user.id);
+  }
+
   @Patch(':id/confirm-restock')
   confirmRestock(@Request() req: { user: RequestUser }, @Param('id', ParseIntPipe) id: number, @Body() dto: ExecuteRestockAlertDto) {
     return this.restockAlertsService.confirmRestock(id, dto, req.user.id);

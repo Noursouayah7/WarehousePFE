@@ -310,6 +310,11 @@ export async function transferRestockAlert(
   return normalizeRestockAlert(data);
 }
 
+export async function markRestockAlertInTransit(accessToken: string, alertId: number): Promise<RestockAlert> {
+  const data = await requestJson(`/restock-alerts/${alertId}/in-transit`, 'PATCH', accessToken);
+  return normalizeRestockAlert(data);
+}
+
 export async function completeRestockAlert(accessToken: string, alertId: number): Promise<RestockAlert> {
   const data = await requestJson(`/restock-alerts/${alertId}/complete`, 'PATCH', accessToken);
   return normalizeRestockAlert(data);

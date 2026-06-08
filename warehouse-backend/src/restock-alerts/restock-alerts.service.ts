@@ -126,6 +126,23 @@ export class RestockAlertsService {
     });
   }
 
+  async markInTransit(id: number, technicianId?: number) {
+    const alert = await this.findOne(id);
+
+    if (alert.status === RestockAlertStatus.COMPLETED) {
+      throw new BadRequestException('Completed restock alert cannot be moved to transit');
+    }
+
+    return this.prisma.restockAlert.update({
+      where: { id },
+      data: {
+        status: RestockAlertStatus.IN_PROGRESS,
+        technicianId: technicianId ?? alert.technicianId ?? null,
+      },
+      include: this.alertInclude,
+    });
+  }
+
   async confirmRestock(id: number, dto: ExecuteRestockAlertDto, technicianId?: number) {
     const alert = await this.findOne(id);
 

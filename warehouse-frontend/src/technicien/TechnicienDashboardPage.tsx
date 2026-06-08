@@ -9,11 +9,9 @@ import BiDashboardPanel from '@/src/bi/BiDashboardPanel';
 import { AdminDashboardWarehouse, getAdminWarehouses } from '@/src/admin/WarehousesDashbord/WarehouseDashbord.admin.api';
 import {
   completeRestockAlert,
-  confirmRestockAlert,
   getRestockAlerts,
+  markRestockAlertInTransit,
   RestockAlert,
-  transferRestockAlert,
-  updateRestockAlertLocation,
 } from '@/src/common/restock-alerts.api';
 import { TechnicianInventoryMovement, getTechnicianMovements, TechnicianProduct, getTechnicianProducts, transferProduct } from './technicien.api';
 
@@ -74,7 +72,6 @@ export default function TechnicienPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [alertLocationDrafts, setAlertLocationDrafts] = useState<Record<number, { warehouseId: string; blocId: string }>>({});
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   const [moveForm, setMoveForm] = useState<{ productId: string; quantity: string; destinationBlocId: string; note: string }>({ productId: '', quantity: '', destinationBlocId: '', note: '' });
   const [isMoveLoading, setIsMoveLoading] = useState(false);
@@ -111,22 +108,6 @@ export default function TechnicienPage() {
         setMovements(movementData);
         setRestockAlerts(alertData);
         setProducts(productData);
-        if (isRestockAlertsPage) {
-          setAlertLocationDrafts((current) => {
-            const next = { ...current };
-
-            for (const alert of alertData) {
-              if (!next[alert.id]) {
-                next[alert.id] = {
-                  warehouseId: String(alert.warehouseId),
-                  blocId: String(alert.blocId),
-                };
-              }
-            }
-
-            return next;
-          });
-        }
         setError(null);
         setHasLoaded(true);
         setLastUpdated(new Date().toISOString());
@@ -205,17 +186,6 @@ export default function TechnicienPage() {
     } finally {
       setIsMoveLoading(false);
     }
-  }
-
-  function setAlertDraft(alertId: number, draft: Partial<{ warehouseId: string; blocId: string }>) {
-    setAlertLocationDrafts((current) => ({
-      ...current,
-      [alertId]: {
-        warehouseId: current[alertId]?.warehouseId ?? '',
-        blocId: current[alertId]?.blocId ?? '',
-        ...draft,
-      },
-    }));
   }
 
   async function runAlertAction(alertId: number, action: (activeToken: string) => Promise<void>) {
@@ -496,11 +466,6 @@ export default function TechnicienPage() {
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           {restockAlerts.map((alert) => {
             const status = restockStatusMeta(alert.status);
-            const draft = alertLocationDrafts[alert.id] ?? {
-              warehouseId: String(alert.warehouseId),
-              blocId: String(alert.blocId),
-            };
-            const warehouseBlocs = warehouses.filter((warehouse) => warehouse.id === Number(draft.warehouseId)).flatMap((warehouse) => warehouse.blocks);
 
             return (
               <div key={alert.id} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm">
@@ -529,86 +494,24 @@ export default function TechnicienPage() {
                   <p className="mt-1">{alert.managerNote ?? 'No note provided.'}</p>
                 </div>
 
-                <div className="mt-4 grid gap-3">
-                  <select
-                    value={draft.warehouseId}
-                    onChange={(event) => setAlertDraft(alert.id, { warehouseId: event.target.value, blocId: '' })}
-                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
-                  >
-                    <option value="">Target warehouse</option>
-                    {warehouses.map((warehouse) => (
-                      <option key={warehouse.id} value={String(warehouse.id)}>
-                        {warehouse.name}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={draft.blocId}
-                    onChange={(event) => setAlertDraft(alert.id, { blocId: event.target.value })}
-                    className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
-                  >
-                    <option value="">Target bloc</option>
-                    {warehouseBlocs.map((bloc) => (
-                      <option key={bloc.id} value={String(bloc.id)}>
-                        {bloc.name} (usage {bloc.currentUsage}/{bloc.capacity})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => void runAlertAction(alert.id, async (activeToken) => {
-                      await confirmRestockAlert(activeToken, alert.id, {
-                        quantity: alert.requestedQuantity,
-                        note: alert.managerNote ?? undefined,
-                      });
+                      await markRestockAlertInTransit(activeToken, alert.id);
                     })}
-                    className="rounded-md bg-[var(--tint-info)] px-3 py-2 text-xs font-semibold text-[var(--color-info)]"
+                    disabled={alert.status !== 'PENDING'}
+                    className="rounded-md bg-[var(--tint-info)] px-3 py-2 text-xs font-semibold text-[var(--color-info)] disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Confirm restocking
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void runAlertAction(alert.id, async (activeToken) => {
-                      if (!draft.blocId) {
-                        throw new Error('Select a destination bloc first');
-                      }
-
-                      await transferRestockAlert(activeToken, alert.id, {
-                        quantity: alert.requestedQuantity,
-                        destinationBlocId: Number(draft.blocId),
-                        note: alert.managerNote ?? undefined,
-                      });
-                    })}
-                    className="rounded-md bg-[var(--tint-warning)] px-3 py-2 text-xs font-semibold text-[var(--color-warning)]"
-                  >
-                    Move products
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void runAlertAction(alert.id, async (activeToken) => {
-                      if (!draft.warehouseId || !draft.blocId) {
-                        throw new Error('Select a warehouse and bloc first');
-                      }
-
-                      await updateRestockAlertLocation(activeToken, alert.id, {
-                        warehouseId: Number(draft.warehouseId),
-                        blocId: Number(draft.blocId),
-                      });
-                    })}
-                    className="rounded-md bg-[var(--tint-error)] px-3 py-2 text-xs font-semibold text-[var(--color-error)]"
-                  >
-                    Change placement
+                    In transit
                   </button>
                   <button
                     type="button"
                     onClick={() => void runAlertAction(alert.id, async (activeToken) => {
                       await completeRestockAlert(activeToken, alert.id);
                     })}
-                    className="rounded-md bg-[var(--tint-success)] px-3 py-2 text-xs font-semibold text-[var(--color-success)]"
+                    disabled={alert.status === 'COMPLETED'}
+                    className="rounded-md bg-[var(--tint-success)] px-3 py-2 text-xs font-semibold text-[var(--color-success)] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Mark completed
                   </button>
