@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useAuth } from '@/src/auth/AuthProvider';
 
 export default function PendingPage() {
@@ -18,18 +17,6 @@ export default function PendingPage() {
 				</p>
 
 				<div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-					<Link
-						href="/login"
-						className="w-full rounded-full border border-[var(--border)] bg-white px-5 py-3 text-xs font-semibold text-[var(--muted-foreground)] transition hover:bg-[var(--secondary)] hover:text-[var(--foreground)] sm:w-auto"
-					>
-						Back to login
-					</Link>
-					<Link
-						href="/pending/profile"
-						className="w-full rounded-full border border-[var(--border)] bg-white px-5 py-3 text-xs font-semibold text-[var(--muted-foreground)] transition hover:bg-[var(--secondary)] hover:text-[var(--foreground)] sm:w-auto"
-					>
-						View profile
-					</Link>
 					<button
 						onClick={logout}
 						className="w-full rounded-full bg-[var(--color-primary)] px-5 py-3 text-xs font-semibold text-white shadow-[0_12px_28px_rgba(37,99,235,0.24)] transition hover:opacity-90 sm:w-auto"
