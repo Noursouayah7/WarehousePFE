@@ -1,19 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { useLogin } from './uselogin';
 
 export function LoginForm() {
   const { login, error, loading } = useLogin();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [registered, setRegistered] = useState(false);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setRegistered(params.get('registered') === '1');
-  }, []);
+  const registered = searchParams.get('registered') === '1';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,7 +28,7 @@ export function LoginForm() {
                 className="h-8 w-8 rounded-md bg-[var(--role-admin)]"
                 style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
               />
-              <span className="text-sm font-semibold tracking-tight">Cerebro WMS</span>
+              <span className="text-sm font-semibold tracking-tight">WMS</span>
             </div>
 
             <p className="mb-3 text-xs font-medium text-[var(--muted-foreground)]">Warehouse operations</p>
@@ -134,7 +131,7 @@ export function LoginForm() {
       </div>
 
       <p className="border-t border-[var(--border)] px-6 py-4 text-center text-xs text-[var(--muted-foreground)] lg:px-12">
-        Cerebro Solutions © 2026
+        WMS © 2026
       </p>
     </div>
   );

@@ -31,7 +31,7 @@ export function CustomerPanel({
 						className="h-6 w-6 bg-[var(--role-customer)]"
 						style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
 					/>
-					<span className="text-sm font-medium tracking-[0.04em]">Cerebro WMS</span>
+					<span className="text-sm font-medium tracking-[0.04em]">WMS</span>
 				</div>
 				<div className="flex items-center gap-6">
 					<span className="rounded-full bg-[var(--role-customer)] px-3 py-1 text-[11px] font-semibold tracking-[0.04em] text-black">

@@ -175,7 +175,7 @@ export default function WorkspaceShell({
                 className="h-7 w-7 flex-shrink-0 rounded-xl shadow-[0_12px_30px_rgba(37,99,235,0.22)]"
                 style={{ backgroundColor: roleColor }}
               />
-              {!collapsed && <p className="truncate text-sm font-semibold tracking-[0.08em] text-slate-900">Cerebro WMS</p>}
+              {!collapsed && <p className="truncate text-sm font-semibold tracking-[0.08em] text-slate-900">WMS</p>}
             </div>
             <button
               type="button"

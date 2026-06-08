@@ -49,7 +49,7 @@ export default function BiDashboardPanel({ role }: BiDashboardPanelProps) {
   if (!summary && !error) {
     return (
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--muted-foreground)] shadow-sm">
-        Loading business intelligence dashboard...
+        Loading dashboard...
       </div>
     );
   }

@@ -6,7 +6,7 @@ export default function AdminRoutePage() {
   return (
     <AuthRedirect mode="protected" allowedRoles={['ADMIN']}>
       <AdminSectionLayout
-        title="Business intelligence"
+        title="Admin's dashboard"
         description="Global operational overview across inventory, warehouses, users, orders, shipments, and support."
       >
         <BiDashboardPanel role="ADMIN" />

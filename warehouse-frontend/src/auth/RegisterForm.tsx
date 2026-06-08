@@ -46,7 +46,7 @@ export function RegisterForm() {
                 className="h-8 w-8 rounded-md bg-[var(--role-customer)]"
                 style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
               />
-              <span className="text-sm font-semibold tracking-tight">Cerebro WMS</span>
+              <span className="text-sm font-semibold tracking-tight">WMS</span>
             </div>
 
             <p className="mb-3 text-xs font-medium text-[var(--muted-foreground)]">Open registration</p>

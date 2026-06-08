@@ -137,7 +137,7 @@ export function LandingPage() {
             transition={{ duration: 0.6 }}
           >
             <div>
-              <p className="text-[10px] uppercase tracking-[0.35em] text-[var(--muted-foreground)]">Cerebro Solutions</p>
+              <p className="text-[10px] uppercase tracking-[0.35em] text-[var(--muted-foreground)]">WMS</p>
               <p className="text-sm font-medium text-[var(--foreground)]">Olive oil factory</p>
             </div>
             <div className="flex items-center gap-2">
@@ -178,9 +178,6 @@ export function LandingPage() {
               </motion.p>
 
               <motion.div variants={item} className="mt-8 flex flex-wrap gap-3">
-                <Link href="#products" className="rounded-full bg-[var(--role-admin)] px-6 py-3 text-sm font-semibold text-black shadow-[0_16px_40px_rgba(0,0,0,0.10)] transition hover:-translate-y-0.5 hover:opacity-95">
-                  Explore products
-                </Link>
                 <Link href="/login" className="rounded-full border border-[var(--border)] bg-[var(--card)] px-6 py-3 text-sm font-semibold text-[var(--foreground)] backdrop-blur transition hover:bg-[var(--secondary)]">
                   Login
                 </Link>
@@ -282,7 +279,7 @@ export function LandingPage() {
                 <div className="flex h-full flex-col justify-between rounded-[22px] border border-white/15 bg-white/8 p-4 text-white backdrop-blur-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-[10px] uppercase tracking-[0.28em] text-white/70">Cerebro Oil</p>
+                      <p className="text-[10px] uppercase tracking-[0.28em] text-white/70">WMS</p>
                       <p className="mt-2 text-2xl font-semibold leading-tight [font-family:var(--font-display)]">{product.name}</p>
                     </div>
                   </div>
@@ -325,9 +322,6 @@ export function LandingPage() {
           <motion.article variants={item} className="rounded-[30px] border border-[var(--border)] bg-[linear-gradient(180deg,var(--secondary)_0%,var(--muted)_100%)] p-8 shadow-sm">
             <p className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted-foreground)]">Quick links</p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <Link href="#products" className="rounded-full bg-[var(--role-admin)] px-5 py-3 text-sm font-semibold text-black transition hover:opacity-95">
-                Explore products
-              </Link>
               <button
                 type="button"
                 onClick={() => setIsContactOpen(true)}

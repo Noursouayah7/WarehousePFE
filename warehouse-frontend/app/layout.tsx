@@ -15,7 +15,7 @@ const display = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: 'Cerebro Olive Oil',
+  title: 'WMS',
   description: 'Premium olive oil production powered by intelligent warehouse management.',
 };
 
