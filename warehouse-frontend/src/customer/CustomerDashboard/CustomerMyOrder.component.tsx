@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { CustomerOrder, CustomerOrderStatus } from '../customer.api';
+import { CustomerOrder, CustomerOrderStatus, CustomerShipmentStatus } from '../customer.api';
 import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
 
 interface CustomerMyOrderProps {
@@ -32,6 +32,24 @@ function statusClasses(status: CustomerOrderStatus): string {
 		return 'border-[var(--color-info)] bg-[var(--tint-info)] text-[var(--color-info)]';
 }
 
+function shipmentStatusClasses(status: CustomerShipmentStatus): string {
+	if (status === 'IN_TRANSIT') {
+		return 'bg-[var(--tint-info)] text-[var(--color-info)]';
+	}
+
+	if (status === 'RECEIVED') {
+		return 'bg-[var(--tint-success)] text-[var(--color-success)]';
+	}
+
+	return 'bg-[var(--tint-warning)] text-[var(--color-warning)]';
+}
+
+function formatShipmentStatus(status: CustomerShipmentStatus): string {
+	if (status === 'IN_TRANSIT') return 'In transit';
+	if (status === 'RECEIVED') return 'Delivered';
+	return 'Requested';
+}
+
 export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 	const { query } = useWorkspaceSearch();
 	const visibleOrders = useMemo(() => {
@@ -42,10 +60,11 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 				String(order.id),
 				order.productName,
 				order.customerName,
-				order.customerPhone,
-				order.deliveryStatus,
-				order.status,
-			].some((value) => value.toLowerCase().includes(normalizedQuery));
+								order.customerPhone,
+								order.deliveryStatus,
+								order.status,
+								...order.shipments.map((shipment) => shipment.status),
+							].some((value) => value.toLowerCase().includes(normalizedQuery));
 		});
 	}, [orders, query]);
 
@@ -66,6 +85,7 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 								<th className="px-3 py-2">QTY</th>
 								<th className="px-3 py-2">DELIVERY DATE</th>
 								<th className="px-3 py-2">STATUS</th>
+								<th className="px-3 py-2">SHIPMENT</th>
 								<th className="px-3 py-2">NOTE</th>
 							</tr>
 						</thead>
@@ -85,6 +105,24 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 										</span>
 										<p className="mt-2 text-xs text-[var(--muted-foreground)]">{order.deliveryStatus}</p>
 									</td>
+									<td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
+										{order.shipments.length > 0 ? (
+											<div className="space-y-2">
+												{order.shipments.map((shipment) => (
+													<div key={shipment.id}>
+														<span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${shipmentStatusClasses(shipment.status)}`}>
+															{formatShipmentStatus(shipment.status)}
+														</span>
+														<p className="mt-1">
+															#{shipment.id} · {shipment.productName} x{shipment.quantity}
+														</p>
+													</div>
+												))}
+											</div>
+										) : (
+											'—'
+										)}
+									</td>
 									<td className="rounded-r-lg bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
 										{order.items.length > 0 ? (
 											<div className="space-y-1">
@@ -103,7 +141,7 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 
 							{visibleOrders.length === 0 && (
 								<tr>
-									<td colSpan={6} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
+									<td colSpan={7} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
 										{query.trim() ? 'No orders match your search' : 'No orders yet'}
 									</td>
 								</tr>

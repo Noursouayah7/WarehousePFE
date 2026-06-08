@@ -5,11 +5,9 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 const navItems = [
-  { label: 'Products', href: '/customer/products', icon: '📦' },
   { label: 'My Orders', href: '/customer/orders', icon: '🛒' },
   { label: 'Shipment Tracking', href: '/customer/shipment-tracking', icon: '🚚' },
   { label: 'Reclamations', href: '/customer/reclamations', icon: '📋' },
-  { label: 'Profile', href: '/customer/profile', icon: '👤' },
 ];
 
 export function CustomerNavigation() {

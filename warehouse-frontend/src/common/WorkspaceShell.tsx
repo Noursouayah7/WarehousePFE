@@ -23,7 +23,7 @@ type WorkspaceShellProps = {
   description: string;
   roleLabel: string;
   roleColor: string;
-  profileHref: string;
+  profileHref?: string;
   navGroups: ShellNavGroup[];
   children: ReactNode;
   showHero?: boolean;
@@ -232,12 +232,14 @@ export default function WorkspaceShell({
                 onChange={(event) => setQuery(event.target.value)}
                 className="w-52 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition focus:border-[var(--ring)] focus:ring-2 focus:ring-[color:var(--ring)]/15"
               />
-              <Link
-                href={profileHref}
-                className="rounded-full px-3 py-2 text-sm text-slate-500 transition hover:bg-white hover:text-slate-900"
-              >
-                Profile
-              </Link>
+              {profileHref && (
+                <Link
+                  href={profileHref}
+                  className="rounded-full px-3 py-2 text-sm text-slate-500 transition hover:bg-white hover:text-slate-900"
+                >
+                  Profile
+                </Link>
+              )}
               <button
                 onClick={logout}
                 className="rounded-full px-3 py-2 text-sm text-slate-500 transition hover:bg-white hover:text-slate-900"

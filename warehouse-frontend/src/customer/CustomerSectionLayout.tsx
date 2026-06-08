@@ -14,11 +14,9 @@ export default function CustomerSectionLayout({ title, description, children }: 
     {
       label: 'Workspace',
       items: [
-        { label: 'Products', href: '/customer/products', icon: 'products' as const },
         { label: 'My Orders', href: '/customer/orders', icon: 'orders' as const },
         { label: 'Shipment Tracking', href: '/customer/shipment-tracking', icon: 'shipments' as const },
         { label: 'Reclamations', href: '/customer/reclamations', icon: 'users' as const },
-        { label: 'Profile', href: '/customer/profile', icon: 'users' as const },
       ],
     },
   ];
@@ -29,7 +27,6 @@ export default function CustomerSectionLayout({ title, description, children }: 
       description={description}
       roleLabel="Customer"
       roleColor="var(--role-customer)"
-      profileHref="/customer/profile"
       navGroups={navGroups}
     >
       {children}

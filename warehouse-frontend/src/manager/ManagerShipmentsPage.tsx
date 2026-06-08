@@ -133,6 +133,27 @@ export default function ManagerShipmentsPage() {
     }
   }
 
+  async function handleMarkInTransit(shipmentId: number) {
+    if (!token) {
+      setError('Missing auth token. Please login again.');
+      return;
+    }
+
+    setBusyAction(`transit-${shipmentId}`);
+    setError(null);
+
+    try {
+      const updatedShipment = await markShipmentInTransit(token, shipmentId);
+      setShipments((current) => current.map((shipment) => (shipment.id === shipmentId ? updatedShipment : shipment)));
+      setStatusFilter((current) => (current === 'REQUESTED' ? 'IN_TRANSIT' : current));
+      await loadData(token);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Operation failed');
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
   async function submitReceive(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!receiveShipmentId) return;
@@ -236,11 +257,7 @@ export default function ManagerShipmentsPage() {
                       <td className="rounded-r-lg bg-[var(--card)] px-3 py-3">
                         <div className="flex flex-wrap gap-2">
                           <button
-                            onClick={() =>
-                              runAction(`transit-${shipment.id}`, (activeToken) =>
-                                markShipmentInTransit(activeToken, shipment.id).then(() => undefined),
-                              )
-                            }
+                            onClick={() => void handleMarkInTransit(shipment.id)}
                             disabled={!canTransit || busyAction !== null}
                             className="rounded-md bg-[var(--tint-info)] px-3 py-1.5 text-xs font-medium text-[var(--color-info)] disabled:opacity-40"
                           >

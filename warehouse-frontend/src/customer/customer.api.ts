@@ -8,6 +8,7 @@ export type CustomerOrderStatus =
   | 'COMPLETED';
 
 export type CustomerDeliveryStatus = 'PENDING' | 'IN_DELIVERY' | 'DELIVERED';
+export type CustomerShipmentStatus = 'REQUESTED' | 'IN_TRANSIT' | 'RECEIVED';
 
 export interface CustomerProductOption {
   id: number;
@@ -38,6 +39,18 @@ export interface CustomerOrderItem {
   lineTotal: number;
 }
 
+export interface CustomerOrderShipment {
+  id: number;
+  status: CustomerShipmentStatus;
+  quantity: number;
+  productName: string;
+  trackingNumber: string | null;
+  expectedAt: string | null;
+  receivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CustomerOrder {
   id: number;
   productName: string;
@@ -56,6 +69,7 @@ export interface CustomerOrder {
   createdAt: string;
   updatedAt: string;
   items: CustomerOrderItem[];
+  shipments: CustomerOrderShipment[];
 }
 
 function parseErrorMessage(data: unknown, fallback: string): string {
@@ -147,6 +161,33 @@ function normalizeCustomerOrderItem(data: unknown): CustomerOrderItem {
   };
 }
 
+function normalizeCustomerOrderShipment(data: unknown): CustomerOrderShipment {
+  const raw = asRecord(data, 'customer order shipment');
+
+  if (
+    typeof raw.id !== 'number' ||
+    typeof raw.status !== 'string' ||
+    typeof raw.quantity !== 'number' ||
+    typeof raw.productName !== 'string' ||
+    typeof raw.createdAt !== 'string' ||
+    typeof raw.updatedAt !== 'string'
+  ) {
+    throw new Error('Invalid customer order shipment payload');
+  }
+
+  return {
+    id: raw.id,
+    status: raw.status as CustomerShipmentStatus,
+    quantity: raw.quantity,
+    productName: raw.productName,
+    trackingNumber: typeof raw.trackingNumber === 'string' ? raw.trackingNumber : null,
+    expectedAt: typeof raw.expectedAt === 'string' ? raw.expectedAt : null,
+    receivedAt: typeof raw.receivedAt === 'string' ? raw.receivedAt : null,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+  };
+}
+
 function normalizeCustomerOrder(data: unknown): CustomerOrder {
   const raw = asRecord(data, 'customer order');
 
@@ -185,6 +226,7 @@ function normalizeCustomerOrder(data: unknown): CustomerOrder {
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
     items: Array.isArray(raw.items) ? raw.items.map(normalizeCustomerOrderItem) : [],
+    shipments: Array.isArray(raw.shipments) ? raw.shipments.map(normalizeCustomerOrderShipment) : [],
   };
 }
 

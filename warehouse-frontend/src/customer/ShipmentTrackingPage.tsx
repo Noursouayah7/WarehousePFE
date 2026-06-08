@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
 import { motion } from 'framer-motion';
 
@@ -22,7 +22,7 @@ type Shipment = {
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 async function fetchCustomerShipments(accessToken: string): Promise<Shipment[]> {
-  const response = await fetch(`${API_URL}/shipment/my-shipments`, {
+  const response = await fetch(`${API_URL}/shipments/my-shipments`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -63,12 +63,7 @@ export default function ShipmentTrackingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!token) return;
-    fetchShipments();
-  }, [token]);
-
-  const fetchShipments = async () => {
+  const fetchShipments = useCallback(async () => {
     if (!token) {
       setError('Missing auth token. Please login again.');
       setIsLoading(false);
@@ -85,7 +80,12 @@ export default function ShipmentTrackingPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    void fetchShipments();
+  }, [fetchShipments, token]);
 
   if (isLoading) {
     return (
