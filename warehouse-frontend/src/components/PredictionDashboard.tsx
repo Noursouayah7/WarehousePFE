@@ -225,10 +225,10 @@ export default function PredictionDashboard() {
     return [
       { label: 'Predicted price', value: formatCurrency(predicted), hint: 'Next period estimate per 1L bottle' },
       { label: 'Previous price', value: formatCurrency(previous), hint: 'Latest observed 1L bottle price' },
-      { label: 'Difference', value: formatCurrency(delta), hint: `${formatPercent(deltaPercent)} vs previous` },
+      { label: 'Difference', value: formatCurrency(delta), hint: `${formatPercent(deltaPercent)} ${tx('vs previous')}` },
       { label: 'Model version', value: payload?.modelVersion ?? 'v1', hint: 'Current deployed model' },
     ];
-  }, [payload]);
+  }, [payload, tx]);
 
   const visibleScenarioEntries = useMemo(
     () => Object.entries(scenario).filter(([key]) => key !== 'revenue' && key !== 'cost'),
@@ -310,7 +310,7 @@ export default function PredictionDashboard() {
             <p className="mt-3 text-lg font-medium leading-7 text-slate-950">{insightText}</p>
             <div className="mt-5 rounded-2xl bg-[var(--muted)] p-4 text-sm text-[var(--muted-foreground)]">
               <p className="font-medium text-slate-900">{tx('Trend indicator')}</p>
-              <p className="mt-1">{payload?.trend ?? 'flat'} {tx('forecast with')} {formatPercent(payload?.deltaPercent ?? null)} {tx('change')}.</p>
+              <p className="mt-1">{tx(payload?.trend ?? 'flat')} {tx('forecast with')} {formatPercent(payload?.deltaPercent ?? null)} {tx('change')}.</p>
             </div>
           </div>
 
@@ -366,7 +366,7 @@ export default function PredictionDashboard() {
 
           <div className="mt-6 rounded-2xl bg-[linear-gradient(135deg,rgba(14,165,233,0.12),rgba(37,99,235,0.06))] p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">{tx('Current trend')}</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-950">{payload?.trend ?? 'flat'}</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-950">{tx(payload?.trend ?? 'flat')}</p>
           </div>
         </div>
       </div>

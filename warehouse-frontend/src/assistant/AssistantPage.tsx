@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import LanguageSwitcher from '@/src/i18n/LanguageSwitcher';
 import {
   askAssistant,
@@ -27,6 +28,7 @@ const starterPrompts = [
 
 export default function AssistantPage() {
   const { token, role } = useAuth();
+  const { tx } = useI18n();
   const [input, setInput] = useState('');
   const [entries, setEntries] = useState<ChatEntry[]>([
     {
@@ -69,7 +71,7 @@ export default function AssistantPage() {
         if (!isMounted) {
           return;
         }
-        const message = err instanceof Error ? err.message : 'Could not load conversation history.';
+        const message = err instanceof Error ? err.message : tx('Could not load conversation history.');
         setHistoryError(message);
       })
       .finally(() => {
@@ -85,13 +87,13 @@ export default function AssistantPage() {
 
   async function submitQuery(message: string) {
     if (!token) {
-      setError('Missing auth token. Please login again.');
+      setError(tx('Missing auth token. Please login again.'));
       return;
     }
 
     const trimmed = message.trim();
     if (!trimmed) {
-      setError('Type a question first.');
+      setError(tx('Type a question first.'));
       return;
     }
 
@@ -123,7 +125,7 @@ export default function AssistantPage() {
       const refreshedHistory = await getAssistantHistory(token);
       setHistory(refreshedHistory);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Assistant request failed';
+      const message = err instanceof Error ? err.message : tx('Assistant request failed');
       setError(message);
       setEntries((current) => [
         ...current,
@@ -152,24 +154,24 @@ export default function AssistantPage() {
             <LanguageSwitcher />
           </div>
           <div className="rounded-2xl bg-[linear-gradient(130deg,var(--color-info)_0%,var(--color-success)_100%)] p-4 text-white">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-white/80">Assistant</p>
-            <h1 className="mt-2 text-2xl font-semibold leading-tight">Warehouse Copilot</h1>
-            <p className="mt-2 text-sm text-white/85">Ask in plain language. Get instant operations answers.</p>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-white/80">{tx('Assistant')}</p>
+            <h1 className="mt-2 text-2xl font-semibold leading-tight">{tx('Warehouse Copilot')}</h1>
+            <p className="mt-2 text-sm text-white/85">{tx('Ask in plain language. Get instant operations answers.')}</p>
             <div className="mt-4 rounded-xl bg-white/15 px-3 py-2 text-xs">
-              Logged in as <span className="font-semibold">{role ?? 'guest'}</span>
+              {tx('Logged in as')} <span className="font-semibold">{role ?? tx('guest')}</span>
             </div>
           </div>
 
           <section className="mt-5">
             <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Historique</h2>
-              {isLoadingHistory && <span className="text-xs text-[var(--muted-foreground)]">Loading...</span>}
+              <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">{tx('History')}</h2>
+              {isLoadingHistory && <span className="text-xs text-[var(--muted-foreground)]">{tx('Loading...')}</span>}
             </div>
-            {historyError && <p className="mt-2 rounded-lg bg-[var(--tint-error)] px-2 py-1 text-xs text-[var(--color-error)]">{historyError}</p>}
+            {historyError && <p className="mt-2 rounded-lg bg-[var(--tint-error)] px-2 py-1 text-xs text-[var(--color-error)]">{tx(historyError)}</p>}
             <div className="mt-3 max-h-[420px] space-y-2 overflow-y-auto pr-1">
               {historyPreview.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-[var(--border)] bg-white/70 px-3 py-3 text-xs text-[var(--muted-foreground)]">
-                  No previous conversation yet.
+                  {tx('No previous conversation yet.')}
                 </p>
               ) : (
                 historyPreview.map((item, index) => (
@@ -192,10 +194,10 @@ export default function AssistantPage() {
               <button
                 key={prompt}
                 type="button"
-                onClick={() => setInput(prompt)}
+                onClick={() => setInput(tx(prompt))}
                 className="w-full rounded-xl border border-[var(--border)] bg-white/90 px-3 py-2 text-left text-sm transition hover:border-[var(--ring)] hover:bg-white"
               >
-                {prompt}
+                {tx(prompt)}
               </button>
             ))}
           </section>
@@ -204,12 +206,12 @@ export default function AssistantPage() {
         <section className="flex min-h-[80vh] flex-col rounded-[30px] border border-[var(--border)] bg-[var(--card)] shadow-[0_22px_55px_rgba(8,30,49,0.1)] backdrop-blur-xl">
           <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4 md:px-7">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--muted-foreground)]">Live chat</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight">Conversation</h2>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--muted-foreground)]">{tx('Live chat')}</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight">{tx('Conversation')}</h2>
             </div>
             {isSending ? (
               <span className="rounded-full bg-[var(--tint-info)] px-3 py-1 text-xs font-medium text-[var(--color-info)] animate-pulse">
-                Thinking...
+                {tx('Thinking...')}
               </span>
             ) : null}
           </div>
@@ -227,14 +229,14 @@ export default function AssistantPage() {
                         : 'border border-[var(--border)] bg-[linear-gradient(180deg,var(--card)_0%,var(--secondary)_100%)] text-[var(--foreground)]',
                   ].join(' ')}
                 >
-                  <p>{entry.text}</p>
+                  <p>{tx(entry.text)}</p>
 
                   {entry.response?.matches && entry.response.matches.length > 0 && (
                     <div className="mt-3 overflow-hidden rounded-2xl border border-[var(--border)] bg-white/80 text-[13px] text-[var(--foreground)]">
                       <div className="grid grid-cols-[1.3fr_1.2fr_0.6fr] border-b border-[var(--border)] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-                        <span>Product</span>
-                        <span>Location</span>
-                        <span>Qty</span>
+                        <span>{tx('Product')}</span>
+                        <span>{tx('Location')}</span>
+                        <span>{tx('Qty')}</span>
                       </div>
                       {entry.response.matches.map((match) => (
                         <div key={match.id} className="grid grid-cols-[1.3fr_1.2fr_0.6fr] border-b border-[var(--border)] px-3 py-2 last:border-b-0">
@@ -249,7 +251,7 @@ export default function AssistantPage() {
                   )}
 
                   {typeof entry.response?.totalQuantity === 'number' && (
-                    <p className="mt-2 text-xs text-[var(--muted-foreground)]">Total units: {entry.response.totalQuantity}</p>
+                    <p className="mt-2 text-xs text-[var(--muted-foreground)]">{tx('Total units')}: {entry.response.totalQuantity}</p>
                   )}
 
                   {entry.timestamp ? (
@@ -261,12 +263,12 @@ export default function AssistantPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="border-t border-[rgba(19,54,79,0.1)] p-4 md:p-5">
-            {error ? <p className="mb-3 rounded-xl bg-[var(--tint-error)] px-4 py-2 text-sm text-[var(--color-error)]">{error}</p> : null}
+            {error ? <p className="mb-3 rounded-xl bg-[var(--tint-error)] px-4 py-2 text-sm text-[var(--color-error)]">{tx(error)}</p> : null}
             <div className="flex flex-col gap-3 md:flex-row">
               <input
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder="Ask stock, location, low stock, or order status..."
+                placeholder={tx('Ask stock, location, low stock, or order status...')}
                 className="flex-1 rounded-2xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
               />
               <button
@@ -274,7 +276,7 @@ export default function AssistantPage() {
                 disabled={isSending}
                 className="rounded-2xl bg-[linear-gradient(135deg,var(--color-info)_0%,var(--color-success)_100%)] px-6 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {isSending ? 'Sending...' : 'Send'}
+                {isSending ? tx('Sending...') : tx('Send')}
               </button>
             </div>
           </form>
