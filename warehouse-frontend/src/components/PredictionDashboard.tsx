@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useI18n } from '@/src/i18n/I18nProvider';
 
 type WidgetPayload = {
   title: string;
@@ -47,18 +48,19 @@ function formatPercent(value: number | null): string {
   return `${sign}${value.toFixed(2)}%`;
 }
 
-function buildHistory(previousPrice: number | null, predictedPrice: number): Point[] {
+function buildHistory(previousPrice: number | null, predictedPrice: number, tx: (text: string) => string): Point[] {
   const base = previousPrice ?? predictedPrice * 0.96;
   const spread = Math.max(predictedPrice - base, 0.5);
   return [
-    { label: 'Last week', value: base * 0.96 },
-    { label: 'This week', value: base },
-    { label: 'Forecast', value: predictedPrice },
-    { label: 'Target', value: predictedPrice + spread * 0.2 },
+    { label: tx('Last week'), value: base * 0.96 },
+    { label: tx('This week'), value: base },
+    { label: tx('Forecast'), value: predictedPrice },
+    { label: tx('Target'), value: predictedPrice + spread * 0.2 },
   ];
 }
 
 function ChartCard({ points }: { points: Point[] }) {
+  const { tx } = useI18n();
   const width = 720;
   const height = 260;
   const padding = 32;
@@ -80,9 +82,9 @@ function ChartCard({ points }: { points: Point[] }) {
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-semibold tracking-[0.16em] text-[var(--muted-foreground)] uppercase">
-            Forecast chart
+            {tx('Forecast chart')}
           </p>
-          <h3 className="mt-1 text-xl font-semibold tracking-tight">Price movement overview</h3>
+          <h3 className="mt-1 text-xl font-semibold tracking-tight">{tx('Price movement overview')}</h3>
         </div>
         <div className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted-foreground)]">
           TND / 1L bottle
@@ -137,12 +139,13 @@ function ChartCard({ points }: { points: Point[] }) {
 }
 
 function MiniBarChart({ points }: { points: Point[] }) {
+  const { tx } = useI18n();
   const max = Math.max(...points.map((point) => point.value));
 
   return (
     <div className="rounded-[1.75rem] border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-      <p className="text-sm font-semibold tracking-[0.16em] text-[var(--muted-foreground)] uppercase">Trend bars</p>
-      <h3 className="mt-1 text-xl font-semibold tracking-tight">Relative values</h3>
+      <p className="text-sm font-semibold tracking-[0.16em] text-[var(--muted-foreground)] uppercase">{tx('Trend bars')}</p>
+      <h3 className="mt-1 text-xl font-semibold tracking-tight">{tx('Relative values')}</h3>
 
       <div className="mt-5 space-y-4">
         {points.map((point) => {
@@ -169,6 +172,7 @@ function MiniBarChart({ points }: { points: Point[] }) {
 
 export default function PredictionDashboard() {
   const { token } = useAuth();
+  const { tx } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payload, setPayload] = useState<WidgetPayload | null>(null);
@@ -176,7 +180,7 @@ export default function PredictionDashboard() {
 
   async function loadWidget() {
     if (!token) {
-      setError('Please sign in to load predictions.');
+      setError(tx('Please sign in to load predictions.'));
       return;
     }
 
@@ -195,7 +199,7 @@ export default function PredictionDashboard() {
       const data = (await response.json()) as WidgetPayload;
       setPayload(data);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Failed to load prediction data');
+      setError(requestError instanceof Error ? requestError.message : tx('Failed to load prediction data'));
     } finally {
       setLoading(false);
     }
@@ -209,8 +213,8 @@ export default function PredictionDashboard() {
   const chartPoints = useMemo(() => {
     const predicted = payload?.predictedPrice ?? 18.5;
     const previous = payload?.previousPrice ?? predicted * 0.96;
-    return buildHistory(previous, predicted);
-  }, [payload]);
+    return buildHistory(previous, predicted, tx);
+  }, [payload, tx]);
 
   const mainStats = useMemo(() => {
     const predicted = payload?.predictedPrice ?? 18.5;
@@ -242,10 +246,10 @@ export default function PredictionDashboard() {
   }, [payload?.predictedPrice, payload?.previousPrice, scenario.quantity_sold]);
 
   const insightText = payload?.trend === 'up'
-    ? 'The model expects an upward move. Consider reviewing stock and procurement timing.'
+    ? tx('The model expects an upward move. Consider reviewing stock and procurement timing.')
     : payload?.trend === 'down'
-      ? 'The model expects a downward move. You can prepare discount or clearance scenarios.'
-      : 'The forecast is stable. The price is likely to stay close to the current level.';
+      ? tx('The model expects a downward move. You can prepare discount or clearance scenarios.')
+      : tx('The forecast is stable. The price is likely to stay close to the current level.');
 
   return (
     <div className="space-y-6">
@@ -253,30 +257,30 @@ export default function PredictionDashboard() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl space-y-4">
             <div className="inline-flex rounded-full border border-[var(--border)] bg-white/70 px-3 py-1 text-xs font-medium tracking-[0.12em] text-[var(--muted-foreground)] uppercase">
-              Prediction dashboard
+              {tx('Prediction dashboard')}
             </div>
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950 md:text-5xl">
-              Human-readable 1L bottle price forecast for planning and simulations
+              {tx('Human-readable 1L bottle price forecast for planning and simulations')}
             </h1>
             <p className="max-w-2xl text-sm leading-6 text-[var(--muted-foreground)] md:text-base">
-              Review the next estimated price per 1-liter bottle, compare it with the last observed value, and test what-if scenarios before making decisions.
+              {tx('Review the next estimated price per 1-liter bottle, compare it with the last observed value, and test what-if scenarios before making decisions.')}
             </p>
           </div>
 
           <div className="rounded-[1.5rem] border border-[var(--border)] bg-white/80 p-4 backdrop-blur">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Status</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">{tx('Status')}</p>
             <p className="mt-2 text-lg font-semibold text-slate-950">
-              {loading ? 'Loading forecast...' : payload ? 'Forecast ready' : 'Awaiting data'}
+              {loading ? tx('Loading forecast...') : payload ? tx('Forecast ready') : tx('Awaiting data')}
             </p>
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-              {payload ? `Updated at ${new Date(payload.predictedAt).toLocaleString()}` : 'Fetches automatically after sign-in.'}
+              {payload ? `${tx('Updated at')} ${new Date(payload.predictedAt).toLocaleString()}` : tx('Fetches automatically after sign-in.')}
             </p>
             <button
               type="button"
               onClick={loadWidget}
               className="mt-4 rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
             >
-              Refresh forecast
+              {tx('Refresh forecast')}
             </button>
           </div>
         </div>
@@ -291,9 +295,9 @@ export default function PredictionDashboard() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {mainStats.map((stat) => (
           <div key={stat.label} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">{stat.label}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">{tx(stat.label)}</p>
             <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">{stat.value}</p>
-            <p className="mt-2 text-sm text-[var(--muted-foreground)]">{stat.hint}</p>
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">{tx(stat.hint)}</p>
           </div>
         ))}
       </div>
@@ -302,11 +306,11 @@ export default function PredictionDashboard() {
         <ChartCard points={chartPoints} />
         <div className="space-y-6">
           <div className="rounded-[1.75rem] border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-            <p className="text-sm font-semibold tracking-[0.16em] text-[var(--muted-foreground)] uppercase">Business insight</p>
+            <p className="text-sm font-semibold tracking-[0.16em] text-[var(--muted-foreground)] uppercase">{tx('Business insight')}</p>
             <p className="mt-3 text-lg font-medium leading-7 text-slate-950">{insightText}</p>
             <div className="mt-5 rounded-2xl bg-[var(--muted)] p-4 text-sm text-[var(--muted-foreground)]">
-              <p className="font-medium text-slate-900">Trend indicator</p>
-              <p className="mt-1">{payload?.trend ?? 'flat'} forecast with {formatPercent(payload?.deltaPercent ?? null)} change.</p>
+              <p className="font-medium text-slate-900">{tx('Trend indicator')}</p>
+              <p className="mt-1">{payload?.trend ?? 'flat'} {tx('forecast with')} {formatPercent(payload?.deltaPercent ?? null)} {tx('change')}.</p>
             </div>
           </div>
 
@@ -316,13 +320,13 @@ export default function PredictionDashboard() {
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
         <div className="rounded-[1.75rem] border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-          <p className="text-sm font-semibold tracking-[0.16em] text-[var(--muted-foreground)] uppercase">Simulation inputs</p>
-          <h3 className="mt-1 text-xl font-semibold tracking-tight">What-if scenario</h3>
+          <p className="text-sm font-semibold tracking-[0.16em] text-[var(--muted-foreground)] uppercase">{tx('Simulation inputs')}</p>
+          <h3 className="mt-1 text-xl font-semibold tracking-tight">{tx('What-if scenario')}</h3>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             {visibleScenarioEntries.map(([key, value]) => (
               <label key={key} className="space-y-2">
-                <span className="text-sm font-medium capitalize text-slate-800">{key.replace('_', ' ')}</span>
+                <span className="text-sm font-medium capitalize text-slate-800">{tx(key.replace('_', ' '))}</span>
                 <input
                   type="number"
                   value={value}
@@ -334,34 +338,34 @@ export default function PredictionDashboard() {
           </div>
 
           <div className="mt-5 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--muted)] p-4 text-sm text-[var(--muted-foreground)]">
-            Unit standard: one sales unit equals one 1-liter olive oil bottle. Model v1 still expects cost and revenue, so both are estimated internally instead of being entered as scenario inputs.
+            {tx('Unit standard: one sales unit equals one 1-liter olive oil bottle. Model v1 still expects cost and revenue, so both are estimated internally instead of being entered as scenario inputs.')}
             <span className="mt-2 block font-medium text-slate-900">
-              Estimated cost sent to model: {estimatedCost.toFixed(2)} TND / 1L bottle
+              {tx('Estimated cost sent to model')}: {estimatedCost.toFixed(2)} TND / 1L bottle
             </span>
             <span className="mt-2 block font-medium text-slate-900">
-              Estimated revenue sent to model: {estimatedRevenue.toFixed(2)} TND
+              {tx('Estimated revenue sent to model')}: {estimatedRevenue.toFixed(2)} TND
             </span>
           </div>
         </div>
 
         <div className="rounded-[1.75rem] border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-          <p className="text-sm font-semibold tracking-[0.16em] text-[var(--muted-foreground)] uppercase">Model notes</p>
-          <h3 className="mt-1 text-xl font-semibold tracking-tight">How to read the result</h3>
+          <p className="text-sm font-semibold tracking-[0.16em] text-[var(--muted-foreground)] uppercase">{tx('Model notes')}</p>
+          <h3 className="mt-1 text-xl font-semibold tracking-tight">{tx('How to read the result')}</h3>
 
           <div className="mt-5 space-y-4 text-sm leading-6 text-slate-700">
             <p>
-              The forecast compares the current estimate with the latest known price, so the change is easy to scan at a glance.
+              {tx('The forecast compares the current estimate with the latest known price, so the change is easy to scan at a glance.')}
             </p>
             <p>
-              Use the chart to see whether the 1L bottle price is moving upward, downward, or staying flat over the next period.
+              {tx('Use the chart to see whether the 1L bottle price is moving upward, downward, or staying flat over the next period.')}
             </p>
             <p>
-              The page stays intentionally simple so managers and admins can read it quickly during planning sessions.
+              {tx('The page stays intentionally simple so managers and admins can read it quickly during planning sessions.')}
             </p>
           </div>
 
           <div className="mt-6 rounded-2xl bg-[linear-gradient(135deg,rgba(14,165,233,0.12),rgba(37,99,235,0.06))] p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Current trend</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">{tx('Current trend')}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">{payload?.trend ?? 'flat'}</p>
           </div>
         </div>

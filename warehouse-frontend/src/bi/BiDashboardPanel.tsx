@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import BiDashboard from './BiDashboard';
 import type { BiRole, BiSummary } from './bi.api';
 import { getBiSummary } from './bi.api';
@@ -12,6 +13,7 @@ type BiDashboardPanelProps = {
 
 export default function BiDashboardPanel({ role }: BiDashboardPanelProps) {
   const { token } = useAuth();
+  const { tx } = useI18n();
   const [summary, setSummary] = useState<BiSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +43,7 @@ export default function BiDashboardPanel({ role }: BiDashboardPanelProps) {
   if (!token) {
     return (
       <div className="rounded-2xl border border-[var(--color-error)] bg-[var(--tint-error)] p-4 text-sm text-[var(--color-error)]">
-        Missing auth token. Please login again.
+        {tx('Missing auth token. Please login again.')}
       </div>
     );
   }
@@ -49,7 +51,7 @@ export default function BiDashboardPanel({ role }: BiDashboardPanelProps) {
   if (!summary && !error) {
     return (
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--muted-foreground)] shadow-sm">
-        Loading dashboard...
+        {tx('Loading dashboard...')}
       </div>
     );
   }
@@ -65,7 +67,7 @@ export default function BiDashboardPanel({ role }: BiDashboardPanelProps) {
   if (!summary) {
     return (
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--muted-foreground)] shadow-sm">
-        No BI data available yet.
+        {tx('No BI data available yet.')}
       </div>
     );
   }

@@ -13,6 +13,7 @@ type I18nContextValue = {
   language: AppLanguage;
   setLanguage: (language: AppLanguage) => void;
   t: (key: string, fallback?: string) => string;
+  tx: (text: string) => string;
 };
 
 const LANGUAGE_STORAGE_KEY = 'wms-language';
@@ -53,6 +54,75 @@ function resolveKey(dictionary: TranslationTree, key: string): string | null {
   return typeof value === 'string' ? value : null;
 }
 
+function resolvePhrase(dictionary: TranslationTree, text: string): string | null {
+  const phrases = dictionary.phrases;
+  if (!phrases || typeof phrases === 'string') {
+    return null;
+  }
+
+  const value = phrases[text];
+  return typeof value === 'string' ? value : null;
+}
+
+function getPhrases(language: AppLanguage): Record<string, string> {
+  const phrases = resources[language].phrases;
+  return phrases && typeof phrases !== 'string' ? phrases as Record<string, string> : {};
+}
+
+function buildPhraseMap(language: AppLanguage): Map<string, string> {
+  const targetPhrases = getPhrases(language);
+  const map = new Map<string, string>();
+
+  for (const key of Object.keys(getPhrases('en'))) {
+    const target = targetPhrases[key] ?? key;
+    map.set(key, target);
+
+    for (const sourceLanguage of Object.keys(resources) as AppLanguage[]) {
+      const source = getPhrases(sourceLanguage)[key];
+      if (source) {
+        map.set(source, target);
+      }
+    }
+  }
+
+  return map;
+}
+
+function translateDocument(language: AppLanguage) {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  const phraseMap = buildPhraseMap(language);
+  const translate = (value: string) => {
+    const trimmed = value.trim();
+    const translated = phraseMap.get(trimmed);
+    return translated ? value.replace(trimmed, translated) : value;
+  };
+
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  let node = walker.nextNode();
+
+  while (node) {
+    if (node.parentElement?.closest('script, style, textarea')) {
+      node = walker.nextNode();
+      continue;
+    }
+
+    node.textContent = translate(node.textContent ?? '');
+    node = walker.nextNode();
+  }
+
+  for (const element of document.querySelectorAll<HTMLElement>('[placeholder],[title],[aria-label]')) {
+    for (const attribute of ['placeholder', 'title', 'aria-label']) {
+      const value = element.getAttribute(attribute);
+      if (value) {
+        element.setAttribute(attribute, translate(value));
+      }
+    }
+  }
+}
+
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<AppLanguage>('en');
 
@@ -63,6 +133,18 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = language;
     window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    window.requestAnimationFrame(() => translateDocument(language));
+
+    const observer = new MutationObserver(() => {
+      window.requestAnimationFrame(() => translateDocument(language));
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => observer.disconnect();
   }, [language]);
 
   const value = useMemo<I18nContextValue>(() => {
@@ -74,7 +156,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       return resolveKey(resources[language], key) ?? resolveKey(resources.en, key) ?? fallback ?? key;
     }
 
-    return { language, setLanguage, t };
+    function tx(text: string): string {
+      return resolvePhrase(resources[language], text) ?? resolvePhrase(resources.en, text) ?? text;
+    }
+
+    return { language, setLanguage, t, tx };
   }, [language]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

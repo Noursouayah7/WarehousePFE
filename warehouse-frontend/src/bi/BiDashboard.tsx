@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import type { BiSummary, BiStatusCounts } from './bi.api';
 
 type BiDashboardProps = {
@@ -45,8 +46,8 @@ function formatDate(value: string): string {
   return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString();
 }
 
-function labelFor(value: string): string {
-  return statusLabels[value] ?? value.replaceAll('_', ' ').toLowerCase();
+function labelFor(value: string, tx: (text: string) => string): string {
+  return tx(statusLabels[value] ?? value.replaceAll('_', ' ').toLowerCase());
 }
 
 function percentBarClass(value: number): string {
@@ -56,23 +57,27 @@ function percentBarClass(value: number): string {
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
+  const { tx } = useI18n();
+
   return (
     <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">{title}</h3>
+      <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">{tx(title)}</h3>
       <div className="mt-4">{children}</div>
     </section>
   );
 }
 
 function KpiGrid({ cards }: { cards: KpiCard[] }) {
+  const { tx } = useI18n();
+
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => (
         <div key={card.label} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
           <div className="mb-4 h-7 w-[3px] rounded-full" style={{ background: card.tone }} />
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">{card.label}</p>
+          <p className="text-sm font-medium text-[var(--muted-foreground)]">{tx(card.label)}</p>
           <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{card.value}</p>
-          <p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)]">{card.hint}</p>
+          <p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)]">{tx(card.hint)}</p>
         </div>
       ))}
     </div>
@@ -80,11 +85,12 @@ function KpiGrid({ cards }: { cards: KpiCard[] }) {
 }
 
 function StatusBars({ counts }: { counts: BiStatusCounts }) {
+  const { tx } = useI18n();
   const entries = Object.entries(counts).filter(([, value]) => value > 0);
   const total = entries.reduce((sum, [, value]) => sum + value, 0);
 
   if (entries.length === 0) {
-    return <p className="text-sm text-[var(--muted-foreground)]">No data yet.</p>;
+    return <p className="text-sm text-[var(--muted-foreground)]">{tx('No data yet.')}</p>;
   }
 
   return (
@@ -95,7 +101,7 @@ function StatusBars({ counts }: { counts: BiStatusCounts }) {
         return (
           <div key={key}>
             <div className="mb-1 flex items-center justify-between text-sm">
-              <span className="font-medium text-slate-800">{labelFor(key)}</span>
+              <span className="font-medium text-slate-800">{labelFor(key, tx)}</span>
               <span className="text-[var(--muted-foreground)]">{value}</span>
             </div>
             <div className="h-2.5 rounded-full bg-[var(--muted)]">
@@ -109,12 +115,13 @@ function StatusBars({ counts }: { counts: BiStatusCounts }) {
 }
 
 function CapacityBars({ summary, mode }: BiDashboardProps) {
+  const { tx } = useI18n();
   const rows = mode === 'TECHNICIEN'
     ? summary.warehouse.blockUsage.slice(0, 8)
     : summary.warehouse.warehouseUsage.slice(0, 8);
 
   if (rows.length === 0) {
-    return <p className="text-sm text-[var(--muted-foreground)]">No warehouse capacity data yet.</p>;
+    return <p className="text-sm text-[var(--muted-foreground)]">{tx('No warehouse capacity data yet.')}</p>;
   }
 
   return (
@@ -127,7 +134,7 @@ function CapacityBars({ summary, mode }: BiDashboardProps) {
                 {'warehouseName' in row ? `${row.name} · ${row.warehouseName}` : row.name}
               </p>
               <p className="text-xs text-[var(--muted-foreground)]">
-                {formatNumber(Math.round(row.currentUsage))} / {formatNumber(Math.round(row.capacity))} occupied
+                {formatNumber(Math.round(row.currentUsage))} / {formatNumber(Math.round(row.capacity))} {tx('occupied')}
               </p>
             </div>
             <span className="font-semibold text-slate-900">{row.usagePercent}%</span>
@@ -142,10 +149,11 @@ function CapacityBars({ summary, mode }: BiDashboardProps) {
 }
 
 function LowStockList({ summary }: { summary: BiSummary }) {
+  const { tx } = useI18n();
   const products = summary.inventory.lowStockProducts;
 
   if (products.length === 0) {
-    return <p className="text-sm text-[var(--muted-foreground)]">No products below the low-stock threshold.</p>;
+    return <p className="text-sm text-[var(--muted-foreground)]">{tx('No products below the low-stock threshold.')}</p>;
   }
 
   return (
@@ -166,10 +174,11 @@ function LowStockList({ summary }: { summary: BiSummary }) {
 }
 
 function RecentMovements({ summary }: { summary: BiSummary }) {
+  const { tx } = useI18n();
   const movements = summary.inventory.recentMovements;
 
   if (movements.length === 0) {
-    return <p className="text-sm text-[var(--muted-foreground)]">No inventory movements recorded yet.</p>;
+    return <p className="text-sm text-[var(--muted-foreground)]">{tx('No inventory movements recorded yet.')}</p>;
   }
 
   return (
@@ -180,13 +189,13 @@ function RecentMovements({ summary }: { summary: BiSummary }) {
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-slate-900">{movement.productName}</p>
               <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                {labelFor(movement.operationType)} · {movement.quantity} units
+                {labelFor(movement.operationType, tx)} · {movement.quantity} {tx('units')}
               </p>
             </div>
             <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{formatDate(movement.createdAt)}</span>
           </div>
           <p className="mt-2 truncate text-xs text-[var(--muted-foreground)]">
-            {movement.sourceBlocName ?? 'External'} → {movement.destinationBlocName ?? 'External'}
+            {movement.sourceBlocName ?? tx('External')} → {movement.destinationBlocName ?? tx('External')}
           </p>
         </div>
       ))}
@@ -194,7 +203,7 @@ function RecentMovements({ summary }: { summary: BiSummary }) {
   );
 }
 
-function cardsFor(summary: BiSummary, mode: BiDashboardProps['mode']): KpiCard[] {
+function cardsFor(summary: BiSummary, mode: BiDashboardProps['mode'], tx: (text: string) => string): KpiCard[] {
   if (mode === 'TECHNICIEN') {
     return [
       { label: 'Total products', value: formatNumber(summary.inventory.totalProducts), hint: 'Registered products in stock', tone: 'var(--color-info)' },
@@ -207,11 +216,11 @@ function cardsFor(summary: BiSummary, mode: BiDashboardProps['mode']): KpiCard[]
   return [
     { label: 'Total products', value: formatNumber(summary.inventory.totalProducts), hint: 'Registered products in platform', tone: 'var(--color-info)' },
     { label: 'Total stock', value: formatNumber(summary.inventory.totalStockQuantity), hint: 'All product quantities combined', tone: 'var(--color-success)' },
-    { label: 'Low stock', value: summary.inventory.lowStockProductsCount, hint: `Products at or below ${summary.lowStockThreshold}`, tone: 'var(--color-warning)' },
+      { label: 'Low stock', value: summary.inventory.lowStockProductsCount, hint: `${tx('Products at or below')} ${summary.lowStockThreshold}`, tone: 'var(--color-warning)' },
     { label: 'Capacity usage', value: `${summary.warehouse.capacityUsagePercent}%`, hint: 'Occupied storage capacity', tone: 'var(--color-error)' },
-    { label: 'Warehouses', value: summary.warehouse.totalWarehouses, hint: `${summary.warehouse.totalBlocks} storage blocks`, tone: 'var(--role-manager)' },
+    { label: 'Warehouses', value: summary.warehouse.totalWarehouses, hint: `${summary.warehouse.totalBlocks} ${tx('storage blocks')}`, tone: 'var(--role-manager)' },
     { label: 'Customers', value: summary.users.totalCustomers, hint: 'Registered customer accounts', tone: 'var(--role-customer)' },
-    { label: 'Orders', value: summary.orders.totalOrders, hint: `${summary.orders.approvedOrders} approved, ${summary.orders.rejectedOrders} rejected`, tone: 'var(--role-admin)' },
+    { label: 'Orders', value: summary.orders.totalOrders, hint: `${summary.orders.approvedOrders} ${tx('approved')}, ${summary.orders.rejectedOrders} ${tx('rejected')}`, tone: 'var(--role-admin)' },
     { label: 'Active issues', value: summary.support.openSupportTickets + summary.support.openReclamations, hint: 'Open tickets and reclamations', tone: 'var(--color-warning)' },
   ];
 }
@@ -227,9 +236,11 @@ function combineCounts(...groups: BiStatusCounts[]): BiStatusCounts {
 }
 
 export default function BiDashboard({ summary, mode }: BiDashboardProps) {
+  const { tx } = useI18n();
+
   return (
     <div className="space-y-6">
-      <KpiGrid cards={cardsFor(summary, mode)} />
+      <KpiGrid cards={cardsFor(summary, mode, tx)} />
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <Section title={mode === 'TECHNICIEN' ? 'Block Capacity Usage' : 'Warehouse Capacity Usage'}>

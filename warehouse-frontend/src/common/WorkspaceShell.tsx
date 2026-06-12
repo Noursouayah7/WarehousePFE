@@ -158,7 +158,7 @@ export default function WorkspaceShell({
   showHero = true,
 }: WorkspaceShellProps) {
   const { logout } = useAuth();
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState('');
@@ -274,9 +274,9 @@ export default function WorkspaceShell({
                   <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] px-6 py-7 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl md:px-8">
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">{t('common.workspace')}</p>
                     <h1 className="mt-2 font-[family:var(--font-display)] text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl">
-                      {title}
+                      {tx(title)}
                     </h1>
-                    <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">{description}</p>
+                    <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">{tx(description)}</p>
                   </div>
                 )}
 
