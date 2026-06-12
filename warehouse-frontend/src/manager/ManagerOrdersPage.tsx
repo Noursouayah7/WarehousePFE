@@ -3,6 +3,7 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
 import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import ManagerSectionLayout from './ManagerSectionLayout';
 import {
   approveOrder,
@@ -84,6 +85,7 @@ function getDeliveryDay(value: string | null): string {
 export default function ManagerOrdersPage() {
   const { token } = useAuth();
   const { query } = useWorkspaceSearch();
+  const { tx } = useI18n();
 
   const [orders, setOrders] = useState<ManagerOrder[]>([]);
   const [products, setProducts] = useState<AdminDashboardProduct[]>([]);
@@ -375,19 +377,19 @@ export default function ManagerOrdersPage() {
             onChange={(event) => setStatusFilter(event.target.value as 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED')}
             className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
           >
-            <option value="ALL">Filter: All statuses</option>
-            <option value="PENDING">Filter: Pending</option>
-            <option value="APPROVED">Filter: Approved</option>
-            <option value="REJECTED">Filter: Rejected</option>
+            <option value="ALL">{tx('Filter: All statuses')}</option>
+            <option value="PENDING">{tx('Filter: Pending')}</option>
+            <option value="APPROVED">{tx('Filter: Approved')}</option>
+            <option value="REJECTED">{tx('Filter: Rejected')}</option>
           </select>
           <select
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value as 'latest' | 'deadline' | 'quantity')}
             className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
           >
-            <option value="latest">Sort: Latest</option>
-            <option value="deadline">Sort: Deadline</option>
-            <option value="quantity">Sort: Quantity</option>
+            <option value="latest">{tx('Sort: Latest')}</option>
+            <option value="deadline">{tx('Sort: Deadline')}</option>
+            <option value="quantity">{tx('Sort: Quantity')}</option>
           </select>
         </div>
 
@@ -404,7 +406,7 @@ export default function ManagerOrdersPage() {
                   : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]',
               ].join(' ')}
             >
-              {mode} view
+              {tx(`${mode} view`)}
             </button>
           ))}
         </div>
@@ -437,7 +439,7 @@ export default function ManagerOrdersPage() {
           <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
             <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-6 py-4">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted-foreground)]">Restock request</p>
+                <p className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted-foreground)]">{tx('Restock request')}</p>
                 <h3 className="mt-1 text-2xl font-semibold tracking-tight">{stockReviewOrder.productName}</h3>
               </div>
               <button
@@ -459,31 +461,31 @@ export default function ManagerOrdersPage() {
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <p className="font-semibold text-[var(--foreground)]">{entry.line.productName}</p>
                       <span className={`rounded-full px-3 py-1 text-xs font-medium ${entry.availableQuantity <= 0 ? 'bg-[var(--tint-error)] text-[var(--color-error)]' : entry.availableQuantity < entry.line.quantity ? 'bg-[var(--tint-warning)] text-[var(--color-warning)]' : 'bg-[var(--tint-success)] text-[var(--color-success)]'}`}>
-                        {entry.availableQuantity <= 0 ? 'Low stock' : entry.availableQuantity < entry.line.quantity ? 'Limited stock' : 'Healthy'}
+                        {entry.availableQuantity <= 0 ? tx('Low stock') : entry.availableQuantity < entry.line.quantity ? tx('Limited stock') : tx('Healthy')}
                       </span>
                     </div>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <div className="rounded-xl bg-white px-4 py-3">
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Current stock</p>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted-foreground)]">{tx('Current stock')}</p>
                         <p className="mt-1 text-2xl font-semibold">{entry.currentStock}</p>
                       </div>
                       <div className="rounded-xl bg-white px-4 py-3">
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Requested</p>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted-foreground)]">{tx('Requested')}</p>
                         <p className="mt-1 text-2xl font-semibold">{entry.line.quantity}</p>
                       </div>
                     </div>
 
                     <div className="mt-4 grid gap-2 text-sm text-[var(--muted-foreground)] sm:grid-cols-2">
-                      <p>Warehouse: {entry.warehouse?.name ?? 'Unknown warehouse'}</p>
-                      <p>Bloc: {entry.location?.name ?? 'Unknown bloc'}</p>
+                      <p>{tx('Warehouse')}: {entry.warehouse?.name ?? tx('Unknown warehouse')}</p>
+                      <p>{tx('Bloc')}: {entry.location?.name ?? tx('Unknown bloc')}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
               <div className="rounded-2xl border border-[var(--border)] bg-[var(--tint-warning)] p-4">
-                <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted-foreground)]">Restock alert form</p>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted-foreground)]">{tx('Restock alert form')}</p>
                 <div className="mt-4 grid gap-3">
                   <input
                     name="productName"
@@ -514,7 +516,7 @@ export default function ManagerOrdersPage() {
                     }}
                     className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none placeholder:text-[var(--muted-foreground)]"
                   >
-                    <option value="">Target warehouse</option>
+                    <option value="">{tx('Target warehouse')}</option>
                     {warehouses.map((warehouse) => (
                       <option key={warehouse.id} value={String(warehouse.id)}>
                         {warehouse.name}
@@ -527,7 +529,7 @@ export default function ManagerOrdersPage() {
                     onChange={onRestockInputChange}
                     className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
                   >
-                    <option value="">Target bloc</option>
+                    <option value="">{tx('Target bloc')}</option>
                     {blocs
                       .filter((bloc) => !restockForm.warehouseId || bloc.warehouseId === Number(restockForm.warehouseId))
                       .map((bloc) => (
@@ -542,13 +544,13 @@ export default function ManagerOrdersPage() {
                     onChange={onRestockInputChange}
                     className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
                   >
-                    <option value="LOW">Low priority</option>
-                    <option value="MEDIUM">Medium priority</option>
-                    <option value="HIGH">High priority</option>
+                    <option value="LOW">{tx('Low priority')}</option>
+                    <option value="MEDIUM">{tx('Medium priority')}</option>
+                    <option value="HIGH">{tx('High priority')}</option>
                   </select>
                   <textarea
                     name="note"
-                    placeholder="Optional note for the technician"
+                    placeholder={tx('Optional note for the technician')}
                     value={restockForm.note}
                     onChange={onRestockInputChange}
                     rows={4}
@@ -560,7 +562,7 @@ export default function ManagerOrdersPage() {
                       disabled={busyAction !== null}
                       className="rounded-md bg-[var(--tint-warning)] px-4 py-2 text-sm font-medium text-[var(--color-warning)] disabled:opacity-40"
                     >
-                      Send Restock Alert
+                      {tx('Send Restock Alert')}
                     </button>
                     <button
                       type="button"
@@ -570,7 +572,7 @@ export default function ManagerOrdersPage() {
                       }}
                       className="rounded-md border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--muted-foreground)]"
                     >
-                      Cancel
+                      {tx('Cancel')}
                     </button>
                   </div>
                 </div>
@@ -581,11 +583,11 @@ export default function ManagerOrdersPage() {
       )}
 
       <section className="rounded-2xl bg-transparent">
-        <h2 className="text-lg font-semibold tracking-tight">Order workflow</h2>
-        <p className="mt-1 text-sm text-[var(--muted-foreground)]">Manage approvals, restock requests, and shipment handoff with a lightweight view.</p>
+        <h2 className="text-lg font-semibold tracking-tight">{tx('Order workflow')}</h2>
+        <p className="mt-1 text-sm text-[var(--muted-foreground)]">{tx('Manage approvals, restock requests, and shipment handoff with a lightweight view.')}</p>
 
         {isLoading ? (
-          <div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading orders...</div>
+          <div className="py-10 text-center text-sm text-[var(--muted-foreground)]">{tx('Loading orders...')}</div>
         ) : (
           <>
             {view === 'table' && (
@@ -594,12 +596,12 @@ export default function ManagerOrdersPage() {
                   <thead>
                     <tr className="text-left text-xs font-medium text-[var(--muted-foreground)]">
                       <th className="px-3 py-2">ID</th>
-                      <th className="px-3 py-2">Product</th>
-                      <th className="px-3 py-2">Qty</th>
-                      <th className="px-3 py-2">Status</th>
-                      <th className="px-3 py-2">Deadline</th>
-                      <th className="px-3 py-2">Customer</th>
-                      <th className="px-3 py-2">Actions</th>
+                      <th className="px-3 py-2">{tx('Product')}</th>
+                      <th className="px-3 py-2">{tx('Qty')}</th>
+                      <th className="px-3 py-2">{tx('Status')}</th>
+                      <th className="px-3 py-2">{tx('Deadline')}</th>
+                      <th className="px-3 py-2">{tx('Customer')}</th>
+                      <th className="px-3 py-2">{tx('Actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -623,7 +625,7 @@ export default function ManagerOrdersPage() {
                       <td className="bg-[var(--card)] px-3 py-3 text-[var(--foreground)]">{order.quantity}</td>
                       <td className="bg-[var(--card)] px-3 py-3">
                         <span className={[ 'inline-flex rounded-full px-2.5 py-1 text-xs font-medium', badge.className ].join(' ')}>
-                          {badge.label}
+                          {tx(badge.label)}
                         </span>
                       </td>
                       <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{formatDate(order.deliveryDeadline)}</td>
@@ -638,7 +640,7 @@ export default function ManagerOrdersPage() {
                             disabled={!canApprove || busyAction !== null}
                             className="rounded-md bg-[var(--tint-success)] px-3 py-1.5 text-xs font-medium text-[var(--color-success)] disabled:opacity-40"
                           >
-                            Approve
+                            {tx('Approve')}
                           </button>
                           <button
                             onClick={() => {
@@ -648,7 +650,7 @@ export default function ManagerOrdersPage() {
                             disabled={!canReject || busyAction !== null}
                             className="rounded-md bg-[var(--tint-error)] px-3 py-1.5 text-xs font-medium text-[var(--color-error)] disabled:opacity-40"
                           >
-                            Reject
+                            {tx('Reject')}
                           </button>
                           <button
                             onClick={() => {
@@ -678,7 +680,7 @@ export default function ManagerOrdersPage() {
                             disabled={busyAction !== null}
                             className="rounded-md bg-[var(--tint-warning)] px-3 py-1.5 text-xs font-medium text-[var(--color-warning)] disabled:opacity-40"
                           >
-                            Restock Request
+                            {tx('Restock Request')}
                           </button>
                         </div>
 
@@ -686,14 +688,14 @@ export default function ManagerOrdersPage() {
                             <form onSubmit={submitReject} className="mt-3 space-y-2 rounded-md bg-[var(--muted)] p-3">
                             <input
                               name="reason"
-                              placeholder="Reject reason"
+                              placeholder={tx('Reject reason')}
                               value={rejectForm.reason}
                               onChange={onRejectInputChange}
                               className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                             />
                             <textarea
                               name="managerNote"
-                              placeholder="Manager note (optional)"
+                              placeholder={tx('Manager note (optional)')}
                               value={rejectForm.managerNote}
                               onChange={onRejectInputChange}
                               rows={2}
@@ -705,14 +707,14 @@ export default function ManagerOrdersPage() {
                                 disabled={busyAction !== null}
                                 className="rounded-md bg-[var(--tint-error)] px-3 py-1 text-xs font-medium text-[var(--color-error)] disabled:opacity-40"
                               >
-                                Confirm reject
+                                {tx('Confirm reject')}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setRejectOrderId(null)}
                                 className="rounded-md border border-[var(--input)] bg-white px-3 py-1 text-xs text-[var(--muted-foreground)]"
                               >
-                                Cancel
+                                {tx('Cancel')}
                               </button>
                             </div>
                           </form>
@@ -726,7 +728,7 @@ export default function ManagerOrdersPage() {
                     {visibleOrders.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
-                      No orders found
+                      {tx('No orders found')}
                     </td>
                   </tr>
                 )}
@@ -745,16 +747,16 @@ export default function ManagerOrdersPage() {
                   const laneOrders = visibleOrders.filter(lane.matcher);
                   return (
                     <div key={lane.key} className="rounded-xl bg-[var(--muted)] p-3">
-                      <p className="mb-2 text-sm font-semibold">{lane.key}</p>
+                      <p className="mb-2 text-sm font-semibold">{tx(lane.key)}</p>
                       <div className="space-y-2">
                         {laneOrders.map((order) => (
                           <div key={order.id} className="rounded-lg bg-white p-3 shadow-sm">
                             <p className="text-sm font-semibold">#{order.id} {order.productName}</p>
-                            <p className="mt-1 text-xs text-[var(--muted-foreground)]">Qty {order.quantity} • {getDeliveryDay(order.deliveryDeadline)}</p>
+                            <p className="mt-1 text-xs text-[var(--muted-foreground)]">{tx('Qty')} {order.quantity} • {getDeliveryDay(order.deliveryDeadline)}</p>
                             <p className="mt-1 text-xs text-[var(--muted-foreground)]">{order.customerName}</p>
                           </div>
                         ))}
-                        {laneOrders.length === 0 && <p className="text-xs text-[var(--muted-foreground)]">No orders</p>}
+                        {laneOrders.length === 0 && <p className="text-xs text-[var(--muted-foreground)]">{tx('No orders')}</p>}
                       </div>
                     </div>
                   );
@@ -770,9 +772,9 @@ export default function ManagerOrdersPage() {
                     <div className="mt-2 space-y-2">
                       {dayOrders.map((order) => (
                         <div key={order.id} className="flex items-center justify-between rounded-md bg-[var(--muted)] px-3 py-2 text-sm">
-                          <p>#{order.id} {order.productName} • Qty {order.quantity}</p>
+                          <p>#{order.id} {order.productName} • {tx('Qty')} {order.quantity}</p>
                           <span className={[ 'rounded-full px-2 py-1 text-xs font-medium', getOrderBadge(order).className ].join(' ')}>
-                            {getOrderBadge(order).label}
+                            {tx(getOrderBadge(order).label)}
                           </span>
                         </div>
                       ))}
@@ -780,7 +782,7 @@ export default function ManagerOrdersPage() {
                   </div>
                 ))}
                 {calendarGroups.length === 0 && (
-                  <p className="text-sm text-[var(--muted-foreground)]">No scheduled orders in this filter.</p>
+                  <p className="text-sm text-[var(--muted-foreground)]">{tx('No scheduled orders in this filter.')}</p>
                 )}
               </div>
             )}

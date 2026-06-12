@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
 import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import {
 	getAllReclamations,
 	getProblemTypeLabel,
@@ -34,6 +35,7 @@ function isImageAttachment(attachmentUrl: string): boolean {
 export function ReclamationsBoard() {
 	const { token } = useAuth();
 	const { query } = useWorkspaceSearch();
+	const { tx } = useI18n();
 
 	const [reclamations, setReclamations] = useState<Reclamation[]>([]);
 	const [drafts, setDrafts] = useState<DraftState>({});
@@ -57,7 +59,7 @@ export function ReclamationsBoard() {
 
 	useEffect(() => {
 		if (!token) {
-			setError('Missing auth token. Please login again.');
+			setError(tx('Missing auth token. Please login again.'));
 			setIsLoading(false);
 			return;
 		}
@@ -72,7 +74,7 @@ export function ReclamationsBoard() {
 			})
 			.catch((err: unknown) => {
 				if (!mounted) return;
-				setError(err instanceof Error ? err.message : 'Failed to load reclamations');
+				setError(err instanceof Error ? err.message : tx('Failed to load reclamations'));
 			})
 			.finally(() => {
 				if (!mounted) return;
@@ -82,7 +84,7 @@ export function ReclamationsBoard() {
 		const pollId = window.setInterval(() => {
 			void loadReclamations(token).catch((err: unknown) => {
 				if (!mounted) return;
-				setError(err instanceof Error ? err.message : 'Failed to load reclamations');
+				setError(err instanceof Error ? err.message : tx('Failed to load reclamations'));
 			});
 		}, POLL_INTERVAL_MS);
 
@@ -113,7 +115,7 @@ export function ReclamationsBoard() {
 
 	async function handleSave(reclamationId: number) {
 		if (!token) {
-			setError('Missing auth token. Please login again.');
+			setError(tx('Missing auth token. Please login again.'));
 			return;
 		}
 
@@ -138,22 +140,22 @@ export function ReclamationsBoard() {
 				},
 			}));
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to update reclamation');
+			setError(err instanceof Error ? err.message : tx('Failed to update reclamation'));
 		} finally {
 			setSavingId(null);
 		}
 	}
 
 	if (isLoading) {
-		return <div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading reclamations...</div>;
+		return <div className="py-10 text-center text-sm text-[var(--muted-foreground)]">{tx('Loading reclamations...')}</div>;
 	}
 
 	return (
 		<section className="mt-8 rounded-2xl bg-transparent">
 			<div className="mb-5 flex flex-wrap items-center justify-between gap-3">
 				<div>
-					<h2 className="text-lg font-semibold tracking-tight">Reclamations</h2>
-					<p className="mt-1 text-sm text-[var(--muted-foreground)]">{visibleReclamations.length} items</p>
+					<h2 className="text-lg font-semibold tracking-tight">{tx('Reclamations')}</h2>
+					<p className="mt-1 text-sm text-[var(--muted-foreground)]">{visibleReclamations.length} {tx('items')}</p>
 				</div>
 			</div>
 
@@ -166,7 +168,7 @@ export function ReclamationsBoard() {
 
 			{visibleReclamations.length === 0 ? (
 				<div className="rounded-2xl bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)] shadow-sm">
-					No reclamations found.
+					{tx('No reclamations found.')}
 				</div>
 			) : (
 				<div className="grid gap-4">
@@ -181,48 +183,48 @@ export function ReclamationsBoard() {
 								<div className="mb-4 flex flex-wrap items-start justify-between gap-3">
 									<div>
 										<p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Reclamation #{reclamation.id}</p>
-										<h3 className="mt-1 text-lg font-semibold">{getProblemTypeLabel(reclamation.problemType)}</h3>
+										<h3 className="mt-1 text-lg font-semibold">{tx(getProblemTypeLabel(reclamation.problemType))}</h3>
 										<p className="text-sm text-[var(--muted-foreground)]">
-											{reclamation.customer?.name ?? reclamation.customer?.email ?? 'Customer'}
+											{reclamation.customer?.name ?? reclamation.customer?.email ?? tx('Customer')}
 										</p>
 									</div>
-									<p className={`text-sm font-semibold ${getStatusColor(reclamation.status)}`}>{getStatusLabel(reclamation.status)}</p>
+									<p className={`text-sm font-semibold ${getStatusColor(reclamation.status)}`}>{tx(getStatusLabel(reclamation.status))}</p>
 								</div>
 
 								{isFinalStatus(reclamation.status) ? (
 									<div className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-4 md:grid-cols-[1.5fr_1fr_auto] md:items-center">
 										<div>
-											<p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Summary</p>
-											<p className="mt-1 text-sm font-semibold text-[var(--foreground)]">{getProblemTypeLabel(reclamation.problemType)}</p>
+											<p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--muted-foreground)]">{tx('Summary')}</p>
+											<p className="mt-1 text-sm font-semibold text-[var(--foreground)]">{tx(getProblemTypeLabel(reclamation.problemType))}</p>
 											<p className="mt-1 text-sm text-[var(--muted-foreground)]">
-												{reclamation.customer?.name ?? reclamation.customer?.email ?? 'Customer'}
+												{reclamation.customer?.name ?? reclamation.customer?.email ?? tx('Customer')}
 											</p>
 										</div>
 										<div>
-											<p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Final status</p>
-											<p className={`mt-1 text-sm font-semibold ${getStatusColor(reclamation.status)}`}>{getStatusLabel(reclamation.status)}</p>
-											<p className="mt-1 text-xs text-[var(--muted-foreground)]">Saved {formatDate(reclamation.updatedAt)}</p>
+											<p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--muted-foreground)]">{tx('Final status')}</p>
+											<p className={`mt-1 text-sm font-semibold ${getStatusColor(reclamation.status)}`}>{tx(getStatusLabel(reclamation.status))}</p>
+											<p className="mt-1 text-xs text-[var(--muted-foreground)]">{tx('Saved')} {formatDate(reclamation.updatedAt)}</p>
 										</div>
 										<div className="text-xs text-[var(--muted-foreground)] md:text-right">
-											<p>{reclamation.managerNote || 'No manager note'}</p>
+											<p>{reclamation.managerNote || tx('No manager note')}</p>
 										</div>
 									</div>
 								) : (
 									<div className="grid gap-4 md:grid-cols-2">
 									<div className="space-y-3">
 										<div>
-											<p className="text-xs font-medium text-[var(--muted-foreground)]">Description</p>
+											<p className="text-xs font-medium text-[var(--muted-foreground)]">{tx('Description')}</p>
 											<p className="mt-1 text-sm text-[var(--foreground)]">{reclamation.description}</p>
 										</div>
 
 										{reclamation.attachmentUrl && (
 											<div>
-												<p className="text-xs font-medium text-[var(--muted-foreground)]">Attachment</p>
+												<p className="text-xs font-medium text-[var(--muted-foreground)]">{tx('Attachment')}</p>
 												{isImageAttachment(reclamation.attachmentUrl) ? (
 													<img src={reclamation.attachmentUrl} alt="Reclamation attachment preview" className="mt-2 max-h-48 rounded-xl border border-[var(--border)] object-contain" />
 												) : (
 													<a href={reclamation.attachmentUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-sm font-medium text-[var(--role-admin)] underline-offset-4 hover:underline">
-														Open attachment
+														{tx('Open attachment')}
 													</a>
 												)}
 											</div>
@@ -230,19 +232,19 @@ export function ReclamationsBoard() {
 
 										<div className="grid gap-3 text-sm text-[var(--muted-foreground)] sm:grid-cols-2">
 											<div>
-												<p className="text-xs font-medium uppercase tracking-[0.16em]">Order</p>
-												<p className="mt-1">{reclamation.order ? `#${reclamation.order.id} - ${reclamation.order.productName}` : 'Not linked'}</p>
+												<p className="text-xs font-medium uppercase tracking-[0.16em]">{tx('Order')}</p>
+												<p className="mt-1">{reclamation.order ? `#${reclamation.order.id} - ${reclamation.order.productName}` : tx('Not linked')}</p>
 											</div>
 											<div>
-												<p className="text-xs font-medium uppercase tracking-[0.16em]">Shipment</p>
-												<p className="mt-1">{reclamation.shipment ? `#${reclamation.shipment.id} - ${reclamation.shipment.productName}` : 'Not linked'}</p>
+												<p className="text-xs font-medium uppercase tracking-[0.16em]">{tx('Shipment')}</p>
+												<p className="mt-1">{reclamation.shipment ? `#${reclamation.shipment.id} - ${reclamation.shipment.productName}` : tx('Not linked')}</p>
 											</div>
 										</div>
 									</div>
 
 									<div className="space-y-3 rounded-2xl bg-[var(--background)] p-4">
 										<div>
-											<label className="block text-xs font-medium text-[var(--muted-foreground)]">Final action</label>
+											<label className="block text-xs font-medium text-[var(--muted-foreground)]">{tx('Final action')}</label>
 											<div className="mt-2 flex flex-wrap gap-2">
 												{finalStatusOptions.map((option) => (
 													<button
@@ -264,14 +266,14 @@ export function ReclamationsBoard() {
 															: 'bg-[var(--tint-info)] text-[var(--color-info)]',
 													].join(' ')}
 													>
-														{getStatusLabel(option)}
+														{tx(getStatusLabel(option))}
 													</button>
 												))}
 											</div>
 										</div>
 
 										<div>
-											<label className="block text-xs font-medium text-[var(--muted-foreground)]">Manager note</label>
+											<label className="block text-xs font-medium text-[var(--muted-foreground)]">{tx('Manager note')}</label>
 											<textarea
 												value={draft.managerNote}
 												onChange={(event) =>
@@ -285,7 +287,7 @@ export function ReclamationsBoard() {
 												}
 												rows={4}
 												className="mt-2 w-full rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none focus:border-[var(--ring)]"
-												placeholder="Add context or resolution details"
+												placeholder={tx('Add context or resolution details')}
 											/>
 										</div>
 
@@ -295,13 +297,13 @@ export function ReclamationsBoard() {
 											disabled={savingId === reclamation.id}
 											className="w-full rounded-xl bg-[var(--role-admin)] px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
 										>
-											{savingId === reclamation.id ? 'Saving...' : 'Save changes'}
+											{savingId === reclamation.id ? tx('Saving...') : tx('Save changes')}
 										</button>
 									</div>
 									</div>
 								)}
 
-								<div className="mt-4 border-t border-[var(--border)] pt-4 text-xs text-[var(--muted-foreground)]">Created {formatDate(reclamation.createdAt)}</div>
+								<div className="mt-4 border-t border-[var(--border)] pt-4 text-xs text-[var(--muted-foreground)]">{tx('Created')} {formatDate(reclamation.createdAt)}</div>
 							</article>
 						);
 					})}

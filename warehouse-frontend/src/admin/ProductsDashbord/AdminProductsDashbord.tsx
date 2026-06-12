@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
 import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import {
 	AdminDashboardProduct,
 	createAdminProduct,
@@ -55,6 +56,7 @@ function toPayload(form: ProductFormState): ProductPayload {
 export default function AdminProductsDashbord() {
 	const { token } = useAuth();
 	const { query } = useWorkspaceSearch();
+	const { tx } = useI18n();
 	const [products, setProducts] = useState<AdminDashboardProduct[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -236,8 +238,8 @@ export default function AdminProductsDashbord() {
 		<section className="mt-8 rounded-2xl bg-transparent">
 			<div className="mb-5 flex flex-wrap items-center justify-between gap-3">
 				<div>
-					<h2 className="text-lg font-semibold tracking-tight">Products</h2>
-					<p className="mt-1 text-sm text-[var(--muted-foreground)]">{productCount} products</p>
+					<h2 className="text-lg font-semibold tracking-tight">{tx('Products')}</h2>
+					<p className="mt-1 text-sm text-[var(--muted-foreground)]">{productCount} {tx('products')}</p>
 				</div>
 
 				<button
@@ -245,7 +247,7 @@ export default function AdminProductsDashbord() {
 					onClick={openCreateModal}
 					className="rounded-md bg-[var(--tint-success)] px-4 py-2 text-xs font-medium text-[var(--color-success)] transition-colors"
 				>
-					Add new product
+					{tx('Add new product')}
 				</button>
 			</div>
 
@@ -257,20 +259,20 @@ export default function AdminProductsDashbord() {
 			)}
 
 			{isLoading ? (
-				<div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading products...</div>
+				<div className="py-10 text-center text-sm text-[var(--muted-foreground)]">{tx('Loading products...')}</div>
 			) : (
 				<div className="overflow-x-auto">
 					<table className="min-w-full border-separate border-spacing-y-2">
 						<thead>
 							<tr className="text-left text-xs font-medium text-[var(--muted-foreground)]">
 								<th className="px-3 py-3">ID</th>
-								<th className="px-3 py-3">NAME</th>
-								<th className="px-3 py-3">DESCRIPTION</th>
-								<th className="px-3 py-3">BLOC ID</th>
-								<th className="px-3 py-3">PRICE</th>
-								<th className="px-3 py-3">QUANTITY</th>
-								<th className="px-3 py-3">UPDATE</th>
-								<th className="px-3 py-3">DELETE</th>
+								<th className="px-3 py-3">{tx('NAME')}</th>
+								<th className="px-3 py-3">{tx('DESCRIPTION')}</th>
+								<th className="px-3 py-3">{tx('BLOC ID')}</th>
+								<th className="px-3 py-3">{tx('PRICE')}</th>
+								<th className="px-3 py-3">{tx('QUANTITY')}</th>
+								<th className="px-3 py-3">{tx('UPDATE')}</th>
+								<th className="px-3 py-3">{tx('DELETE')}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -291,7 +293,7 @@ export default function AdminProductsDashbord() {
 												onClick={() => openUpdateModal(product)}
 												className="rounded-md bg-[var(--tint-info)] px-3 py-1.5 text-xs font-medium text-[var(--color-info)]"
 											>
-												Update
+												{tx('Update')}
 											</button>
 										</td>
 										<td className="rounded-r-lg bg-[var(--card)] px-3 py-3">
@@ -301,7 +303,7 @@ export default function AdminProductsDashbord() {
 												disabled={isDeleting}
 												className="rounded-md bg-[var(--tint-error)] px-3 py-1.5 text-xs font-medium text-[var(--color-error)] disabled:cursor-not-allowed disabled:opacity-40"
 											>
-												{isDeleting ? 'Deleting...' : 'Delete'}
+												{isDeleting ? tx('Deleting...') : tx('Delete')}
 											</button>
 										</td>
 									</tr>
@@ -311,7 +313,7 @@ export default function AdminProductsDashbord() {
 							{visibleProducts.length === 0 && (
 								<tr>
 									<td colSpan={8} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
-										{query.trim() ? 'No products match your search' : 'No products found'}
+										{query.trim() ? tx('No products match your search') : tx('No products found')}
 									</td>
 								</tr>
 							)}
@@ -324,15 +326,15 @@ export default function AdminProductsDashbord() {
 				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--popover-foreground)]/30 px-4 backdrop-blur-sm">
 					<div className="w-full max-w-2xl rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
 						<p className="mb-2 text-[11px] tracking-[0.22em] text-[var(--muted-foreground)]">
-							{editingProduct ? 'UPDATE PRODUCT' : 'ADD PRODUCT'}
+							{editingProduct ? tx('UPDATE PRODUCT') : tx('ADD PRODUCT')}
 						</p>
 						<h3 className="mb-6 text-xl font-bold tracking-[0.04em] text-[var(--foreground)]">
-							{editingProduct ? `Edit ${editingProduct.name}` : 'Create a new product'}
+							{editingProduct ? `${tx('Edit')} ${editingProduct.name}` : tx('Create a new product')}
 						</h3>
 
 						<form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">NAME</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">{tx('NAME')}</label>
 							<input
 								value={form.name}
 								onChange={(event) => {
@@ -348,7 +350,7 @@ export default function AdminProductsDashbord() {
 						</div>
 
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">WAREHOUSE</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">{tx('WAREHOUSE')}</label>
 							<select
 								value={selectedWarehouseId}
 								onChange={(event) => {
@@ -358,7 +360,7 @@ export default function AdminProductsDashbord() {
 								required
 								className="border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)]"
 							>
-								<option value="" disabled>Select a warehouse</option>
+								<option value="" disabled>{tx('Select a warehouse')}</option>
 								{warehouses.map((w) => (
 									<option key={w.id} value={String(w.id)}>{w.name}</option>
 								))}
@@ -367,7 +369,7 @@ export default function AdminProductsDashbord() {
 
 						{selectedWarehouseId && (
 							<div className="flex flex-col gap-2 md:col-span-2">
-								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">BLOC</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">{tx('BLOC')}</label>
 								<select
 									value={form.blocId}
 								onChange={(event) => {
@@ -377,7 +379,7 @@ export default function AdminProductsDashbord() {
 								required
 								className={`border bg-[var(--secondary)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--role-admin)] ${formError && !formError.includes('already exists') ? 'border-[var(--color-error)]' : 'border-[var(--border)]'}`}
 							>
-								<option value="" disabled>Select a bloc</option>
+								<option value="" disabled>{tx('Select a bloc')}</option>
 								{warehouses
 									.find((w) => String(w.id) === selectedWarehouseId)
 									?.blocks.map((b) => (
@@ -390,7 +392,7 @@ export default function AdminProductsDashbord() {
 							</div>
 						)}
 							<div className="flex flex-col gap-2 md:col-span-2">
-								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">DESCRIPTION</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">{tx('DESCRIPTION')}</label>
 								<textarea
 									value={form.description}
 									onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
@@ -400,7 +402,7 @@ export default function AdminProductsDashbord() {
 							</div>
 
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">PRICE</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">{tx('PRICE')}</label>
 								<input
 									type="number"
 									min="0"
@@ -413,7 +415,7 @@ export default function AdminProductsDashbord() {
 							</div>
 
 							<div className="flex flex-col gap-2">
-								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">QUANTITY</label>
+								<label className="text-[11px] tracking-[0.16em] text-[var(--muted-foreground)]">{tx('QUANTITY')}</label>
 								<input
 									type="number"
 									min="0"
@@ -430,14 +432,14 @@ export default function AdminProductsDashbord() {
 									onClick={closeFormModal}
 									className="border border-[var(--border)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
 								>
-									CANCEL
+									{tx('CANCEL')}
 								</button>
 								<button
 									type="submit"
 									disabled={savingProduct}
 									className="border border-[var(--color-success)] bg-[var(--tint-success)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--color-success)] transition-colors hover:border-[var(--color-success)] hover:text-[var(--color-success)] disabled:cursor-not-allowed disabled:opacity-40"
 								>
-									{savingProduct ? 'SAVING...' : editingProduct ? 'SAVE CHANGES' : 'CREATE PRODUCT'}
+									{savingProduct ? tx('SAVING...') : editingProduct ? tx('SAVE CHANGES') : tx('CREATE PRODUCT')}
 								</button>
 							</div>
 						</form>
@@ -448,9 +450,9 @@ export default function AdminProductsDashbord() {
 			{confirmDeleteProduct && (
 				<div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--popover-foreground)]/30 px-4 backdrop-blur-sm">
 					<div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white p-6 shadow-xl">
-						<p className="mb-2 text-[11px] tracking-[0.22em] text-[var(--muted-foreground)]">DELETE PRODUCT</p>
+						<p className="mb-2 text-[11px] tracking-[0.22em] text-[var(--muted-foreground)]">{tx('DELETE PRODUCT')}</p>
 						<h3 className="mb-3 text-xl font-bold tracking-[0.04em] text-[var(--foreground)]">
-							Are you sure you want to delete this product?
+							{tx('Are you sure you want to delete this product?')}
 						</h3>
 						<p className="mb-6 text-[13px] tracking-[0.04em] text-[var(--muted-foreground)]">
 							{confirmDeleteProduct.name}
@@ -461,7 +463,7 @@ export default function AdminProductsDashbord() {
 								onClick={() => setConfirmDeleteProductId(null)}
 								className="border border-[var(--border)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
 							>
-								CANCEL
+								{tx('CANCEL')}
 							</button>
 							<button
 								type="button"
@@ -469,7 +471,7 @@ export default function AdminProductsDashbord() {
 								disabled={deletingProductId === confirmDeleteProduct.id}
 								className="border border-[var(--color-error)] bg-[var(--tint-error)] px-4 py-2 text-[11px] tracking-[0.14em] text-[var(--color-error)] transition-colors hover:border-[var(--color-error)] hover:text-[var(--color-error)] disabled:cursor-not-allowed disabled:opacity-40"
 							>
-								{deletingProductId === confirmDeleteProduct.id ? 'DELETING...' : 'DELETE PRODUCT'}
+								{deletingProductId === confirmDeleteProduct.id ? tx('DELETING...') : tx('DELETE PRODUCT')}
 							</button>
 						</div>
 					</div>

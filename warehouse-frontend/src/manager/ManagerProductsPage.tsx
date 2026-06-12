@@ -2,6 +2,7 @@
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import ManagerSectionLayout from './ManagerSectionLayout';
 import AdminProductsDashbord from '@/src/admin/ProductsDashbord/AdminProductsDashbord';
 import { AdminDashboardProduct, getAdminProducts } from '@/src/admin/ProductsDashbord/ProductDashbord.admin.api';
@@ -47,6 +48,7 @@ function getBlocLabel(bloc: WarehouseBloc): string {
 
 export default function ManagerProductsPage() {
   const { token } = useAuth();
+  const { tx } = useI18n();
 
   const [products, setProducts] = useState<AdminDashboardProduct[]>([]);
   const [warehouses, setWarehouses] = useState<AdminDashboardWarehouse[]>([]);
@@ -243,10 +245,10 @@ export default function ManagerProductsPage() {
     >
       <div className="mb-6 flex flex-col gap-4 rounded-[1.75rem] border border-[color:var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Inventory action</p>
-          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Send a restock alert</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">{tx('Inventory action')}</p>
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">{tx('Send a restock alert')}</h2>
           <p className="max-w-2xl text-sm text-[var(--text-muted)]">
-            Choose the product, quantity, and destination bloc, then send a direct alert to the technicien team.
+            {tx('Choose the product, quantity, and destination bloc, then send a direct alert to the technicien team.')}
           </p>
         </div>
 
@@ -255,7 +257,7 @@ export default function ManagerProductsPage() {
           onClick={openModal}
           className="inline-flex items-center justify-center rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
         >
-          Send restock alert
+          {tx('Send restock alert')}
         </button>
       </div>
 
@@ -273,7 +275,7 @@ export default function ManagerProductsPage() {
 
       {isLoading ? (
         <div className="rounded-[1.75rem] border border-[color:var(--border-subtle)] bg-[var(--surface)] p-8 text-sm text-[var(--text-muted)]">
-          Loading inventory data...
+          {tx('Loading inventory data...')}
         </div>
       ) : null}
 
@@ -284,10 +286,10 @@ export default function ManagerProductsPage() {
           <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6 text-slate-900 shadow-[0_30px_80px_rgba(15,23,42,0.32)]">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Restock alert</p>
-                <h3 className="mt-1 text-2xl font-semibold text-slate-950">Send to technicien</h3>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{tx('Restock alert')}</p>
+                <h3 className="mt-1 text-2xl font-semibold text-slate-950">{tx('Send to technicien')}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Fill in the product, requested quantity, and target bloc. The current stock comes from the selected product.
+                  {tx('Fill in the product, requested quantity, and target bloc. The current stock comes from the selected product.')}
                 </p>
               </div>
 
@@ -296,20 +298,20 @@ export default function ManagerProductsPage() {
                 onClick={closeModal}
                 className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100"
               >
-                Close
+                {tx('Close')}
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2 text-sm">
-                  <span className="font-medium text-slate-800">Product</span>
+                  <span className="font-medium text-slate-800">{tx('Product')}</span>
                   <select
                     value={form.productId}
                     onChange={handleProductChange}
                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary)]/15"
                   >
-                    <option value="">Select a product</option>
+                    <option value="">{tx('Select a product')}</option>
                     {products.map((product) => (
                       <option key={product.id} value={product.id}>
                         {product.name}
@@ -319,7 +321,7 @@ export default function ManagerProductsPage() {
                 </label>
 
                 <label className="space-y-2 text-sm">
-                  <span className="font-medium text-slate-800">Requested quantity</span>
+                  <span className="font-medium text-slate-800">{tx('Requested quantity')}</span>
                   <input
                     name="requestedQuantity"
                     type="number"
@@ -327,20 +329,20 @@ export default function ManagerProductsPage() {
                     value={form.requestedQuantity}
                     onChange={handleFieldChange}
                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary)]/15"
-                    placeholder="Enter quantity"
+                    placeholder={tx('Enter quantity')}
                   />
                 </label>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
                 <label className="space-y-2 text-sm">
-                  <span className="font-medium text-slate-800">Warehouse</span>
+                  <span className="font-medium text-slate-800">{tx('Warehouse')}</span>
                   <select
                     value={form.warehouseId}
                     onChange={handleWarehouseChange}
                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary)]/15"
                   >
-                    <option value="">Select a warehouse</option>
+                    <option value="">{tx('Select a warehouse')}</option>
                     {warehouses.map((warehouse) => (
                       <option key={warehouse.id} value={warehouse.id}>
                         {warehouse.name}
@@ -350,13 +352,13 @@ export default function ManagerProductsPage() {
                 </label>
 
                 <label className="space-y-2 text-sm">
-                  <span className="font-medium text-slate-800">Bloc</span>
+                  <span className="font-medium text-slate-800">{tx('Bloc')}</span>
                   <select
                     value={form.blocId}
                     onChange={handleBlocChange}
                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary)]/15"
                   >
-                    <option value="">Select a bloc</option>
+                    <option value="">{tx('Select a bloc')}</option>
                     {availableBlocs.map((bloc) => (
                       <option key={bloc.id} value={bloc.id}>
                         {getBlocLabel(bloc)}
@@ -366,53 +368,53 @@ export default function ManagerProductsPage() {
                 </label>
 
                 <label className="space-y-2 text-sm">
-                  <span className="font-medium text-slate-800">Priority</span>
+                  <span className="font-medium text-slate-800">{tx('Priority')}</span>
                   <select
                     name="priority"
                     value={form.priority}
                     onChange={handleFieldChange}
                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary)]/15"
                   >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
+                    <option value="LOW">{tx('Low')}</option>
+                    <option value="MEDIUM">{tx('Medium')}</option>
+                    <option value="HIGH">{tx('High')}</option>
                   </select>
                 </label>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2 text-sm">
-                  <span className="font-medium text-slate-800">Current stock</span>
+                  <span className="font-medium text-slate-800">{tx('Current stock')}</span>
                   <input
                     type="number"
                     value={selectedProduct ? selectedProduct.quantity : ''}
                     readOnly
                     className="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none"
-                    placeholder="Select a product"
+                    placeholder={tx('Select a product')}
                   />
                 </label>
 
                 <label className="space-y-2 text-sm">
-                  <span className="font-medium text-slate-800">Selected product</span>
+                  <span className="font-medium text-slate-800">{tx('Selected product')}</span>
                   <input
                     type="text"
                     value={selectedProduct?.name ?? ''}
                     readOnly
                     className="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none"
-                    placeholder="Select a product"
+                    placeholder={tx('Select a product')}
                   />
                 </label>
               </div>
 
               <label className="space-y-2 text-sm">
-                <span className="font-medium text-slate-800">Note</span>
+                <span className="font-medium text-slate-800">{tx('Note')}</span>
                 <textarea
                   name="note"
                   value={form.note}
                   onChange={handleFieldChange}
                   rows={4}
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary)]/15"
-                  placeholder="Optional message for the technicien team"
+                  placeholder={tx('Optional message for the technicien team')}
                 />
               </label>
 
@@ -422,14 +424,14 @@ export default function ManagerProductsPage() {
                   onClick={closeModal}
                   className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
                 >
-                  Cancel
+                  {tx('Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(37,99,235,0.28)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSubmitting ? 'Sending...' : 'Send restock alert'}
+                  {isSubmitting ? tx('Sending...') : tx('Send restock alert')}
                 </button>
               </div>
             </form>

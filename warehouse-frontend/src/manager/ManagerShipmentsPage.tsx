@@ -3,6 +3,7 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
 import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import ManagerSectionLayout from './ManagerSectionLayout';
 import {
   getManagerShipments,
@@ -50,6 +51,7 @@ function formatDate(value: string | null): string {
 export default function ManagerShipmentsPage() {
   const { token } = useAuth();
   const { query } = useWorkspaceSearch();
+  const { tx } = useI18n();
 
   const [shipments, setShipments] = useState<ManagerShipment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -189,13 +191,13 @@ export default function ManagerShipmentsPage() {
             onChange={(event) => setStatusFilter(event.target.value as 'ALL' | 'REQUESTED' | 'IN_TRANSIT' | 'RECEIVED')}
             className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
           >
-            <option value="ALL">Filter: All statuses</option>
-            <option value="REQUESTED">Filter: Requested</option>
-            <option value="IN_TRANSIT">Filter: In Transit</option>
-            <option value="RECEIVED">Filter: Delivered</option>
+            <option value="ALL">{tx('Filter: All statuses')}</option>
+            <option value="REQUESTED">{tx('Filter: Requested')}</option>
+            <option value="IN_TRANSIT">{tx('Filter: In Transit')}</option>
+            <option value="RECEIVED">{tx('Filter: Delivered')}</option>
           </select>
         </div>
-        <p className="text-sm text-[var(--muted-foreground)]">{visibleShipments.length} visible shipments</p>
+        <p className="text-sm text-[var(--muted-foreground)]">{visibleShipments.length} {tx('visible shipments')}</p>
       </section>
 
       {error && (
@@ -206,23 +208,23 @@ export default function ManagerShipmentsPage() {
       )}
 
       <section className="rounded-2xl bg-transparent">
-        <h2 className="text-lg font-semibold tracking-tight">Shipment workflow</h2>
-        <p className="mt-1 text-sm text-[var(--muted-foreground)]">Move shipments from Requested to In Transit and close them as Delivered.</p>
+        <h2 className="text-lg font-semibold tracking-tight">{tx('Shipment workflow')}</h2>
+        <p className="mt-1 text-sm text-[var(--muted-foreground)]">{tx('Move shipments from Requested to In Transit and close them as Delivered.')}</p>
 
         {isLoading ? (
-          <div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading shipments...</div>
+          <div className="py-10 text-center text-sm text-[var(--muted-foreground)]">{tx('Loading shipments...')}</div>
         ) : (
           <div className="mt-5 overflow-x-auto">
             <table className="min-w-full border-separate border-spacing-y-2 text-sm">
               <thead>
                 <tr className="text-left text-xs font-medium text-[var(--muted-foreground)]">
                   <th className="px-3 py-2">ID</th>
-                  <th className="px-3 py-2">PRODUCT</th>
-                  <th className="px-3 py-2">ORDER</th>
-                  <th className="px-3 py-2">BLOC</th>
-                  <th className="px-3 py-2">STATUS</th>
+                  <th className="px-3 py-2">{tx('PRODUCT')}</th>
+                  <th className="px-3 py-2">{tx('ORDER')}</th>
+                  <th className="px-3 py-2">{tx('BLOC')}</th>
+                  <th className="px-3 py-2">{tx('STATUS')}</th>
                   <th className="px-3 py-2">ETA / DELIVERY</th>
-                  <th className="px-3 py-2">ACTIONS</th>
+                  <th className="px-3 py-2">{tx('ACTIONS')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -237,7 +239,7 @@ export default function ManagerShipmentsPage() {
                       <td className="rounded-l-lg bg-[var(--card)] px-3 py-3 text-[var(--foreground)]">#{shipment.id}</td>
                       <td className="bg-[var(--card)] px-3 py-3">
                         <p className="font-semibold">{shipment.productName}</p>
-                        <p className="mt-1 text-xs text-[var(--muted-foreground)]">Qty: {shipment.quantity}</p>
+                        <p className="mt-1 text-xs text-[var(--muted-foreground)]">{tx('Qty')}: {shipment.quantity}</p>
                         {shipment.note && <p className="mt-1 text-xs text-[var(--muted-foreground)]">{shipment.note}</p>}
                       </td>
                       <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
@@ -245,14 +247,14 @@ export default function ManagerShipmentsPage() {
                       </td>
                       <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
                         <p>{shipment.bloc.name}</p>
-                        <p className="text-[var(--muted-foreground)]">usage {shipment.bloc.currentUsage}/{shipment.bloc.capacity}</p>
+                        <p className="text-[var(--muted-foreground)]">{tx('usage')} {shipment.bloc.currentUsage}/{shipment.bloc.capacity}</p>
                       </td>
                       <td className="bg-[var(--card)] px-3 py-3">
-                        <span className={[ 'inline-flex rounded-full px-2.5 py-1 text-xs font-medium', badge.className ].join(' ')}>{badge.label}</span>
+                        <span className={[ 'inline-flex rounded-full px-2.5 py-1 text-xs font-medium', badge.className ].join(' ')}>{tx(badge.label)}</span>
                       </td>
                       <td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
-                        <p>ETA: {formatDate(shipment.expectedAt)}</p>
-                        <p>Delivered: {formatDate(shipment.receivedAt)}</p>
+                        <p>{tx('ETA')}: {formatDate(shipment.expectedAt)}</p>
+                        <p>{tx('Delivered')}: {formatDate(shipment.receivedAt)}</p>
                       </td>
                       <td className="rounded-r-lg bg-[var(--card)] px-3 py-3">
                         <div className="flex flex-wrap gap-2">
@@ -261,7 +263,7 @@ export default function ManagerShipmentsPage() {
                             disabled={!canTransit || busyAction !== null}
                             className="rounded-md bg-[var(--tint-info)] px-3 py-1.5 text-xs font-medium text-[var(--color-info)] disabled:opacity-40"
                           >
-                            Mark in transit
+                            {tx('Mark in transit')}
                           </button>
                           <button
                             onClick={() => {
@@ -275,7 +277,7 @@ export default function ManagerShipmentsPage() {
                             disabled={!canDeliver || busyAction !== null}
                             className="rounded-md bg-[var(--tint-success)] px-3 py-1.5 text-xs font-medium text-[var(--color-success)] disabled:opacity-40"
                           >
-                            Mark delivered
+                            {tx('Mark delivered')}
                           </button>
                         </div>
 
@@ -283,21 +285,21 @@ export default function ManagerShipmentsPage() {
                           <form onSubmit={submitReceive} className="mt-3 space-y-2 rounded-md bg-[var(--muted)] p-3">
                             <input
                               name="receivedQuantity"
-                              placeholder="Delivered quantity"
+                              placeholder={tx('Delivered quantity')}
                               value={receiveForm.receivedQuantity}
                               onChange={onReceiveInputChange}
                               className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                             />
                             <input
                               name="trackingNumber"
-                              placeholder="Tracking number"
+                              placeholder={tx('Tracking number')}
                               value={receiveForm.trackingNumber}
                               onChange={onReceiveInputChange}
                               className="w-full rounded-md border border-[var(--input)] bg-white px-2 py-1.5 text-xs text-[var(--foreground)] outline-none"
                             />
                             <textarea
                               name="note"
-                              placeholder="Delivery note"
+                              placeholder={tx('Delivery note')}
                               value={receiveForm.note}
                               onChange={onReceiveInputChange}
                               rows={2}
@@ -309,14 +311,14 @@ export default function ManagerShipmentsPage() {
                                 disabled={busyAction !== null}
                                 className="rounded-md bg-[var(--tint-success)] px-3 py-1 text-xs font-medium text-[var(--color-success)] disabled:opacity-40"
                               >
-                                Confirm delivery
+                                {tx('Confirm delivery')}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setReceiveShipmentId(null)}
                                 className="rounded-md border border-[var(--input)] bg-white px-3 py-1 text-xs text-[var(--muted-foreground)]"
                               >
-                                Cancel
+                                {tx('Cancel')}
                               </button>
                             </div>
                           </form>
@@ -329,7 +331,7 @@ export default function ManagerShipmentsPage() {
                 {visibleShipments.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
-                      No shipments found
+                      {tx('No shipments found')}
                     </td>
                   </tr>
                 )}
