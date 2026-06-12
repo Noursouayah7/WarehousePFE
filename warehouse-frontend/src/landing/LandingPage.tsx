@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Archivo_Black } from 'next/font/google';
 import { motion } from 'framer-motion';
 import LanguageSwitcher from '@/src/i18n/LanguageSwitcher';
+import { useI18n } from '@/src/i18n/I18nProvider';
 
 const archivoBlack = Archivo_Black({
   subsets: ['latin'],
@@ -88,6 +89,7 @@ type ContactFormState = {
 };
 
 export function LandingPage() {
+  const { tx } = useI18n();
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [contactForm, setContactForm] = useState<ContactFormState>({
     email: '',
@@ -139,22 +141,22 @@ export function LandingPage() {
           >
             <div>
               <p className="text-[10px] uppercase tracking-[0.35em] text-[var(--muted-foreground)]">WMS</p>
-              <p className="text-sm font-medium text-[var(--foreground)]">Olive oil factory</p>
+              <p className="text-sm font-medium text-[var(--foreground)]">{tx('Olive oil factory')}</p>
             </div>
             <div className="flex items-center gap-2">
               <LanguageSwitcher />
               <Link href="/login" className="rounded-full border border-[var(--border)] bg-[var(--secondary)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]">
-                Login
+                {tx('Login')}
               </Link>
               <button
                 type="button"
                 onClick={() => setIsContactOpen(true)}
                 className="rounded-full border border-[var(--role-admin)]/30 bg-[var(--role-admin)] px-4 py-2 text-sm font-semibold text-black transition hover:opacity-95"
               >
-                Contact us
+                {tx('Contact us')}
               </button>
               <Link href="#story" className="rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--foreground)] transition hover:bg-[var(--secondary)]">
-                Our story
+                {tx('Our story')}
               </Link>
             </div>
           </motion.header>
@@ -165,33 +167,33 @@ export function LandingPage() {
                 variants={item}
                 className="inline-flex rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-1 text-[11px] font-medium uppercase tracking-[0.28em] text-[var(--muted-foreground)] backdrop-blur"
               >
-                Tunisian heritage, crafted with care
+                {tx('Tunisian heritage, crafted with care')}
               </motion.span>
 
               <motion.h1
                 variants={item}
                 className={`${archivoBlack.className} mt-6 max-w-4xl text-5xl leading-[0.96] tracking-tight text-[var(--foreground)] lg:text-7xl`}
               >
-                A refined olive oil factory built on heritage, precision, and care.
+                {tx('A refined olive oil factory built on heritage, precision, and care.')}
               </motion.h1>
 
               <motion.p variants={item} className="mt-6 max-w-3xl text-lg leading-8 text-[var(--muted-foreground)]">
-                We bring together carefully selected Tunisian olives, disciplined production, elegant packaging, and a clear commitment to quality. The result is a factory story that feels premium, honest, and easy to trust.
+                {tx('We bring together carefully selected Tunisian olives, disciplined production, elegant packaging, and a clear commitment to quality. The result is a factory story that feels premium, honest, and easy to trust.')}
               </motion.p>
 
               <motion.div variants={item} className="mt-8 flex flex-wrap gap-3">
                 <Link href="/login" className="rounded-full border border-[var(--border)] bg-[var(--card)] px-6 py-3 text-sm font-semibold text-[var(--foreground)] backdrop-blur transition hover:bg-[var(--secondary)]">
-                  Login
+                  {tx('Login')}
                 </Link>
                 <button
                   type="button"
                   onClick={() => setIsContactOpen(true)}
                   className="rounded-full border border-[var(--role-admin)]/30 bg-[var(--role-admin)] px-6 py-3 text-sm font-semibold text-black transition hover:opacity-95"
                 >
-                  Contact us
+                  {tx('Contact us')}
                 </button>
                 <Link href="#story" className="rounded-full border border-[var(--border)] bg-[var(--card)] px-6 py-3 text-sm font-semibold text-[var(--foreground)] backdrop-blur transition hover:bg-[var(--secondary)]">
-                  Learn about the factory
+                  {tx('Learn about the factory')}
                 </Link>
               </motion.div>
 
@@ -199,7 +201,7 @@ export function LandingPage() {
                 {stats.map((stat) => (
                   <div key={stat.label} className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-4 text-left shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
                     <p className="text-3xl font-semibold text-[var(--role-admin)] [font-family:var(--font-display)]">{stat.value}</p>
-                    <p className="mt-1 text-sm text-[var(--muted-foreground)]">{stat.label}</p>
+                    <p className="mt-1 text-sm text-[var(--muted-foreground)]">{tx(stat.label)}</p>
                   </div>
                 ))}
               </motion.div>
@@ -209,8 +211,8 @@ export function LandingPage() {
                   {factorySteps.map((step, index) => (
                     <div key={step.title} className="rounded-[1.5rem] border border-[var(--border)] bg-[linear-gradient(180deg,var(--secondary)_0%,var(--background)_100%)] p-5 text-left">
                       <p className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted-foreground)]">0{index + 1}</p>
-                      <h3 className={`${archivoBlack.className} mt-3 text-xl tracking-tight`}>{step.title}</h3>
-                      <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">{step.text}</p>
+                      <h3 className={`${archivoBlack.className} mt-3 text-xl tracking-tight`}>{tx(step.title)}</h3>
+                      <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">{tx(step.text)}</p>
                     </div>
                   ))}
                 </div>
@@ -226,12 +228,12 @@ export function LandingPage() {
               <div className="absolute inset-6 rounded-[36px] bg-[radial-gradient(circle_at_30%_30%,rgba(47,118,246,0.12),transparent_28%),radial-gradient(circle_at_65%_20%,rgba(88,129,87,0.12),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.26),rgba(255,255,255,0.10))] blur-2xl" />
               <div className="relative overflow-hidden rounded-[36px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_30px_80px_rgba(15,23,42,0.10)] backdrop-blur-2xl">
                 <div className="rounded-[28px] border border-[var(--border)] bg-[linear-gradient(180deg,var(--secondary)_0%,var(--background)_100%)] p-5">
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-[var(--muted-foreground)]">Factory at a glance</p>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-[var(--muted-foreground)]">{tx('Factory at a glance')}</p>
                   <h2 className={`${archivoBlack.className} mt-3 text-3xl leading-tight text-[var(--foreground)] lg:text-5xl`}>
-                    Quality you can see, heritage you can trust.
+                    {tx('Quality you can see, heritage you can trust.')}
                   </h2>
                   <p className="mt-4 text-sm leading-7 text-[var(--muted-foreground)]">
-                    From harvest selection to packaging, each step is handled with care so the factory presents a premium, trustworthy identity to every visitor.
+                    {tx('From harvest selection to packaging, each step is handled with care so the factory presents a premium, trustworthy identity to every visitor.')}
                   </p>
 
                   <div className="mt-6 grid gap-4">
@@ -241,7 +243,7 @@ export function LandingPage() {
                       'Export-ready packaging and traceability',
                     ].map((point) => (
                       <div key={point} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--foreground)] shadow-sm">
-                        {point}
+                        {tx(point)}
                       </div>
                     ))}
                   </div>
@@ -261,8 +263,8 @@ export function LandingPage() {
           ].map(([title, text]) => (
             <motion.article key={title} variants={item} className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 text-center shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm">
               <div className="mx-auto mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--secondary)] text-[var(--role-manager)]">✦</div>
-              <h3 className="text-xl font-semibold tracking-tight [font-family:var(--font-display)]">{title}</h3>
-              <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">{text}</p>
+              <h3 className="text-xl font-semibold tracking-tight [font-family:var(--font-display)]">{tx(title)}</h3>
+              <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">{tx(text)}</p>
             </motion.article>
           ))}
         </div>
@@ -282,16 +284,16 @@ export function LandingPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-[10px] uppercase tracking-[0.28em] text-white/70">WMS</p>
-                      <p className="mt-2 text-2xl font-semibold leading-tight [font-family:var(--font-display)]">{product.name}</p>
+                      <p className="mt-2 text-2xl font-semibold leading-tight [font-family:var(--font-display)]">{tx(product.name)}</p>
                     </div>
                   </div>
                   <div className="mt-auto flex justify-end text-right text-sm text-white/76">
-                    <span>250ml / 500ml / 1L · prepared with care</span>
+                    <span>{tx('250ml / 500ml / 1L prepared with care')}</span>
                   </div>
                 </div>
               </div>
-              <h3 className="mt-5 text-xl font-semibold tracking-tight [font-family:var(--font-display)]">{product.name}</h3>
-              <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">{product.note}</p>
+              <h3 className="mt-5 text-xl font-semibold tracking-tight [font-family:var(--font-display)]">{tx(product.name)}</h3>
+              <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">{tx(product.note)}</p>
             </motion.article>
           ))}
         </div>
@@ -302,9 +304,9 @@ export function LandingPage() {
           {values.map((title) => (
             <motion.article key={title} variants={item} whileHover={{ y: -5 }} className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 text-center shadow-[0_16px_35px_rgba(15,23,42,0.06)] transition">
               <div className="mx-auto mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--secondary)] text-[var(--role-admin)]">●</div>
-              <h3 className="text-xl font-semibold tracking-tight [font-family:var(--font-display)]">{title}</h3>
+              <h3 className="text-xl font-semibold tracking-tight [font-family:var(--font-display)]">{tx(title)}</h3>
               <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">
-                Presented with a calm, modern visual language that keeps the factory front and center.
+                {tx('Presented with a calm, modern visual language that keeps the factory front and center.')}
               </p>
             </motion.article>
           ))}
@@ -314,22 +316,22 @@ export function LandingPage() {
       <Section title="Visit the factory" subtitle="A final invitation">
         <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <motion.article variants={item} className="rounded-[30px] border border-[var(--border)] bg-[var(--card)] p-8 text-left shadow-[0_16px_35px_rgba(15,23,42,0.06)]">
-            <p className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted-foreground)]">Factory presence</p>
-            <h3 className="mt-3 text-3xl font-semibold tracking-tight [font-family:var(--font-display)]">A cleaner, calmer, more credible first impression.</h3>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted-foreground)]">{tx('Factory presence')}</p>
+            <h3 className="mt-3 text-3xl font-semibold tracking-tight [font-family:var(--font-display)]">{tx('A cleaner, calmer, more credible first impression.')}</h3>
             <p className="mt-4 text-sm leading-7 text-[var(--muted-foreground)]">
-              This page is meant to welcome visitors, show the identity of the factory, and communicate quality without overwhelming them with internal application details.
+              {tx('This page is meant to welcome visitors, show the identity of the factory, and communicate quality without overwhelming them with internal application details.')}
             </p>
           </motion.article>
 
           <motion.article variants={item} className="rounded-[30px] border border-[var(--border)] bg-[linear-gradient(180deg,var(--secondary)_0%,var(--muted)_100%)] p-8 shadow-sm">
-            <p className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted-foreground)]">Quick links</p>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted-foreground)]">{tx('Quick links')}</p>
             <div className="mt-5 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => setIsContactOpen(true)}
                 className="rounded-full border border-[var(--border)] bg-[var(--card)] px-5 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-white"
               >
-                Contact us
+                {tx('Contact us')}
               </button>
             </div>
           </motion.article>
@@ -345,14 +347,14 @@ export function LandingPage() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[var(--muted-foreground)]">Contact us</p>
-                <h2 className={`${archivoBlack.className} mt-2 text-3xl text-[var(--foreground)]`}>Tell us what you need</h2>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[var(--muted-foreground)]">{tx('Contact us')}</p>
+                <h2 className={`${archivoBlack.className} mt-2 text-3xl text-[var(--foreground)]`}>{tx('Tell us what you need')}</h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsContactOpen(false)}
                 className="rounded-full px-3 py-2 text-lg leading-none text-[var(--muted-foreground)] transition hover:bg-[var(--secondary)] hover:text-[var(--foreground)]"
-                aria-label="Close contact form"
+                aria-label={tx('Close contact form')}
               >
                 ×
               </button>
@@ -361,7 +363,7 @@ export function LandingPage() {
             <form onSubmit={handleContactSubmit} className="mt-6 grid gap-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="grid gap-2 text-sm font-medium text-[var(--foreground)]">
-                  E-mail
+                  {tx('E-mail')}
                   <input
                     type="email"
                     required
@@ -373,7 +375,7 @@ export function LandingPage() {
                 </label>
 
                 <label className="grid gap-2 text-sm font-medium text-[var(--foreground)]">
-                  Phone number
+                  {tx('Phone number')}
                   <input
                     type="tel"
                     required
@@ -386,7 +388,7 @@ export function LandingPage() {
               </div>
 
               <label className="grid gap-2 text-sm font-medium text-[var(--foreground)]">
-                Contact reason
+                {tx('Contact reason')}
                 <select
                   value={contactForm.reason}
                   onChange={(event) => setContactForm((current) => ({ ...current, reason: event.target.value }))}
@@ -394,7 +396,7 @@ export function LandingPage() {
                 >
                   {contactReasonOptions.map((option) => (
                     <option key={option} value={option}>
-                      {option}
+                      {tx(option)}
                     </option>
                   ))}
                 </select>
@@ -406,13 +408,13 @@ export function LandingPage() {
                   onClick={() => setIsContactOpen(false)}
                   className="rounded-full border border-[var(--border)] bg-[var(--secondary)] px-5 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                 >
-                  Cancel
+                  {tx('Cancel')}
                 </button>
                 <button
                   type="submit"
                   className="rounded-full bg-[var(--role-admin)] px-5 py-3 text-sm font-semibold text-black transition hover:opacity-95"
                 >
-                  Send request
+                  {tx('Send request')}
                 </button>
               </div>
             </form>
@@ -422,8 +424,8 @@ export function LandingPage() {
 
       {showSuccessToast && (
         <div className="fixed bottom-5 right-5 z-50 w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-4 shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--muted-foreground)]">Request received</p>
-          <p className="mt-1 text-sm font-semibold text-[var(--foreground)]">We will contact you soon, thank you for your interest.</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--muted-foreground)]">{tx('Request received')}</p>
+          <p className="mt-1 text-sm font-semibold text-[var(--foreground)]">{tx('We will contact you soon, thank you for your interest.')}</p>
         </div>
       )}
 
@@ -442,6 +444,8 @@ function Section({
   children: React.ReactNode;
   id?: string;
 }) {
+  const { tx } = useI18n();
+
   return (
     <section id={id} className="mx-auto max-w-6xl px-6 py-10 lg:px-10">
       <motion.div
@@ -451,8 +455,8 @@ function Section({
         viewport={{ once: true, amount: 0.25 }}
         transition={{ duration: 0.55 }}
       >
-        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-foreground)]">{subtitle}</p>
-        <h2 className={`${archivoBlack.className} mt-3 text-3xl text-[var(--foreground)] lg:text-5xl`}>{title}</h2>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-foreground)]">{tx(subtitle)}</p>
+        <h2 className={`${archivoBlack.className} mt-3 text-3xl text-[var(--foreground)] lg:text-5xl`}>{tx(title)}</h2>
         <div className="mt-8">{children}</div>
       </motion.div>
     </section>
