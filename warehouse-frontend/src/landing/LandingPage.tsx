@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Archivo_Black } from 'next/font/google';
 import { motion } from 'framer-motion';
+import LanguageSwitcher from '@/src/i18n/LanguageSwitcher';
 
 const archivoBlack = Archivo_Black({
   subsets: ['latin'],
@@ -141,6 +142,7 @@ export function LandingPage() {
               <p className="text-sm font-medium text-[var(--foreground)]">Olive oil factory</p>
             </div>
             <div className="flex items-center gap-2">
+              <LanguageSwitcher />
               <Link href="/login" className="rounded-full border border-[var(--border)] bg-[var(--secondary)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]">
                 Login
               </Link>

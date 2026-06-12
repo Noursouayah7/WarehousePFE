@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import LanguageSwitcher from '@/src/i18n/LanguageSwitcher';
+import { useI18n } from '@/src/i18n/I18nProvider';
 
 type NavIcon = 'dashboard' | 'orders' | 'shipments' | 'products' | 'warehouses' | 'users' | 'assistant' | 'movements' | 'alerts';
 
@@ -45,6 +47,13 @@ function formatSegment(segment: string): string {
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
+}
+
+function labelKey(label: string): string {
+  return label
+    .replace(/'s/g, '')
+    .replace(/[^a-zA-Z0-9]+(.)/g, (_, character: string) => character.toUpperCase())
+    .replace(/^[A-Z]/, (character) => character.toLowerCase());
 }
 
 function Icon({ kind }: { kind: NavIcon }) {
@@ -149,15 +158,16 @@ export default function WorkspaceShell({
   showHero = true,
 }: WorkspaceShellProps) {
   const { logout } = useAuth();
+  const { t } = useI18n();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState('');
 
   const breadcrumb = useMemo(() => {
     const parts = pathname.split('/').filter(Boolean);
-    if (parts.length <= 1) return 'Dashboard';
-    return ['Dashboard', ...parts.slice(1).map(formatSegment)].join(' / ');
-  }, [pathname]);
+    if (parts.length <= 1) return t('common.dashboard');
+    return [t('common.dashboard'), ...parts.slice(1).map((part) => t(`nav.${labelKey(formatSegment(part))}`, formatSegment(part)))].join(' / ');
+  }, [pathname, t]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
@@ -190,7 +200,7 @@ export default function WorkspaceShell({
             {navGroups.map((group) => (
               <div key={group.label}>
                 {!collapsed && (
-                  <p className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{group.label}</p>
+                  <p className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{t(`nav.${labelKey(group.label)}`, group.label)}</p>
                 )}
                 <ul className="space-y-1">
                   {group.items.map((item) => {
@@ -209,7 +219,7 @@ export default function WorkspaceShell({
                           title={collapsed ? item.label : undefined}
                         >
                           <Icon kind={item.icon} />
-                          {!collapsed && <span>{item.label}</span>}
+                          {!collapsed && <span>{t(`nav.${labelKey(item.label)}`, item.label)}</span>}
                         </Link>
                       </li>
                     );
@@ -227,24 +237,25 @@ export default function WorkspaceShell({
             <div className="flex items-center gap-3">
               <input
                 aria-label="Search"
-                placeholder="Search"
+                placeholder={t('common.search')}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 className="w-52 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition focus:border-[var(--ring)] focus:ring-2 focus:ring-[color:var(--ring)]/15"
               />
+              <LanguageSwitcher />
               {profileHref && (
                 <Link
                   href={profileHref}
                   className="rounded-full px-3 py-2 text-sm text-slate-500 transition hover:bg-white hover:text-slate-900"
                 >
-                  Profile
+                  {t('common.profile')}
                 </Link>
               )}
               <button
                 onClick={logout}
                 className="rounded-full px-3 py-2 text-sm text-slate-500 transition hover:bg-white hover:text-slate-900"
               >
-                Logout
+                {t('common.logout')}
               </button>
               <div
                 className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)]"
@@ -261,7 +272,7 @@ export default function WorkspaceShell({
               <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-8">
                 {showHero && (
                   <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] px-6 py-7 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl md:px-8">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Workspace</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">{t('common.workspace')}</p>
                     <h1 className="mt-2 font-[family:var(--font-display)] text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl">
                       {title}
                     </h1>

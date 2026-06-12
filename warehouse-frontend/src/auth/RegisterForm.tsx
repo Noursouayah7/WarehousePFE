@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import LanguageSwitcher from '@/src/i18n/LanguageSwitcher';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import { useRegister } from './useRegister';
 
 export function RegisterForm() {
   const { register, error, loading, fieldErrors, clearFieldError } = useRegister();
+  const { t } = useI18n();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -19,7 +22,7 @@ export function RegisterForm() {
     e.preventDefault();
 
     if (!/^\d{8}$/.test(phone)) {
-      setPhoneError('Phone must contain exactly 8 digits.');
+      setPhoneError(t('auth.phoneEightDigits'));
       return;
     }
 
@@ -49,16 +52,16 @@ export function RegisterForm() {
               <span className="text-sm font-semibold tracking-tight">WMS</span>
             </div>
 
-            <p className="mb-3 text-xs font-medium text-[var(--muted-foreground)]">Open registration</p>
+            <p className="mb-3 text-xs font-medium text-[var(--muted-foreground)]">{t('auth.openRegistration')}</p>
             <h1 className="text-4xl font-semibold tracking-tight lg:text-5xl">
-              Create your account and wait for approval.
+              {t('auth.registerHeroTitle')}
             </h1>
             <p className="mt-4 max-w-lg text-sm leading-6 text-[var(--muted-foreground)]">
-              Anyone can register. New accounts stay pending until an admin approves and assigns the final role.
+              {t('auth.registerHeroDescription')}
             </p>
 
             <div className="mt-8 grid max-w-lg gap-3 sm:grid-cols-3">
-              {['Pending review', 'Admin approval', 'Profile autofill'].map((item) => (
+              {[t('auth.pendingReview'), t('auth.adminApproval'), t('auth.profileAutofill')].map((item) => (
                 <div key={item} className="rounded-xl bg-white px-4 py-3 text-sm text-[var(--foreground)] shadow-sm">
                   {item}
                 </div>
@@ -71,17 +74,20 @@ export function RegisterForm() {
           <div className="w-full max-w-[680px] rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-10">
             <div className="mb-8 flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-medium text-[var(--muted-foreground)]">Join the workspace</p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight">Register</h2>
+                <p className="text-xs font-medium text-[var(--muted-foreground)]">{t('auth.joinWorkspace')}</p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight">{t('auth.register')}</h2>
               </div>
-              <div className="rounded-full bg-[var(--tint-success)] px-3 py-1 text-xs font-medium text-[var(--color-success)]">
-                New account
+              <div className="flex items-center gap-2">
+                <LanguageSwitcher />
+                <div className="rounded-full bg-[var(--tint-success)] px-3 py-1 text-xs font-medium text-[var(--color-success)]">
+                  {t('auth.newAccount')}
+                </div>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-xs font-medium text-[var(--muted-foreground)]">Full name (optional)</label>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">{t('auth.fullNameOptional')}</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -91,7 +97,7 @@ export function RegisterForm() {
               </div>
 
               <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-xs font-medium text-[var(--muted-foreground)]">Email</label>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">{t('auth.email')}</label>
                 <input
                   type="email"
                   value={email}
@@ -107,20 +113,20 @@ export function RegisterForm() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium text-[var(--muted-foreground)]">Password</label>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">{t('auth.password')}</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
-                  placeholder="Minimum 8 characters"
+                  placeholder={t('auth.minPassword')}
                   className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium text-[var(--muted-foreground)]">Phone</label>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">{t('auth.phone')}</label>
                 <input
                   value={phone}
                   onChange={(e) => {
@@ -139,18 +145,18 @@ export function RegisterForm() {
               </div>
 
               <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-xs font-medium text-[var(--muted-foreground)]">Address</label>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">{t('auth.address')}</label>
                 <input
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   required
-                  placeholder="City, street, number"
+                  placeholder={t('auth.cityStreetNumber')}
                   className="rounded-xl border border-[var(--input)] bg-white px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--ring)]"
                 />
               </div>
 
               <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-xs font-medium text-[var(--muted-foreground)]">CIN (8 digits)</label>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">{t('auth.cin')}</label>
                 <input
                   value={cin}
                   onChange={(e) => {
@@ -178,21 +184,21 @@ export function RegisterForm() {
                 disabled={loading}
                 className="md:col-span-2 mt-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(47,118,246,0.28)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loading ? 'Creating account...' : 'Register'}
+                {loading ? t('auth.creatingAccount') : t('auth.register')}
               </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-[var(--muted-foreground)]">
-              Already have an account?{' '}
+              {t('auth.alreadyHaveAccount')}{' '}
               <Link href="/login" className="font-medium text-[var(--primary)] underline underline-offset-4">
-                Login
+                {t('auth.login')}
               </Link>
             </p>
 
             <p className="mt-2 text-center text-xs text-[var(--muted-foreground)]">
-              Want to explore the company first?{' '}
+              {t('auth.exploreCompany')}{' '}
               <Link href="/" className="font-medium text-[var(--role-manager)] underline underline-offset-4">
-                Go to landing page
+                {t('auth.goLanding')}
               </Link>
             </p>
           </div>

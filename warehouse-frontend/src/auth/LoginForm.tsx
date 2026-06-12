@@ -3,10 +3,13 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import LanguageSwitcher from '@/src/i18n/LanguageSwitcher';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import { useLogin } from './uselogin';
 
 export function LoginForm() {
   const { login, error, loading } = useLogin();
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,19 +34,19 @@ export function LoginForm() {
               <span className="text-sm font-semibold tracking-tight">WMS</span>
             </div>
 
-            <p className="mb-3 text-xs font-medium text-[var(--muted-foreground)]">Warehouse operations</p>
+            <p className="mb-3 text-xs font-medium text-[var(--muted-foreground)]">{t('auth.warehouseOperations')}</p>
             <h1 className="text-4xl font-semibold tracking-tight lg:text-5xl">
-              Sign in to a cleaner, faster workspace.
+              {t('auth.loginHeroTitle')}
             </h1>
             <p className="mt-4 max-w-lg text-sm leading-6 text-[var(--muted-foreground)]">
-              Access orders, shipments, inventory, and approvals from a calm business interface built for daily work.
+              {t('auth.loginHeroDescription')}
             </p>
 
             <div className="mt-8 grid max-w-lg gap-3 sm:grid-cols-3">
               {[
-                'Order workflow',
-                'Inventory visibility',
-                'Role-based access',
+                t('auth.orderWorkflow'),
+                t('auth.inventoryVisibility'),
+                t('auth.roleBasedAccess'),
               ].map((item) => (
                 <div key={item} className="rounded-xl bg-white px-4 py-3 text-sm text-[var(--foreground)] shadow-sm">
                   {item}
@@ -57,25 +60,26 @@ export function LoginForm() {
           <div className="w-full max-w-[520px] rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-10">
             <div className="mb-8 flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-medium text-[var(--muted-foreground)]">Welcome back</p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight">Sign in</h2>
+                <p className="text-xs font-medium text-[var(--muted-foreground)]">{t('auth.welcomeBack')}</p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight">{t('auth.signIn')}</h2>
               </div>
+              <LanguageSwitcher />
               {registered && (
                 <div className="rounded-full bg-[var(--tint-success)] px-3 py-1 text-xs font-medium text-[var(--color-success)]">
-                  Registered
+                  {t('auth.registered')}
                 </div>
               )}
             </div>
 
             {registered && (
               <div className="mb-6 rounded-xl bg-[var(--tint-success)] px-4 py-3 text-sm text-[var(--color-success)]">
-                Registration successful. Login to continue.
+                {t('auth.registrationSuccess')}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium text-[var(--muted-foreground)]">Email address</label>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">{t('auth.emailAddress')}</label>
                 <input
                   type="email"
                   value={email}
@@ -87,7 +91,7 @@ export function LoginForm() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium text-[var(--muted-foreground)]">Password</label>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">{t('auth.password')}</label>
                 <input
                   type="password"
                   value={password}
@@ -109,21 +113,21 @@ export function LoginForm() {
                 disabled={loading}
                 className="mt-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(47,118,246,0.28)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loading ? 'Authenticating...' : 'Login'}
+                {loading ? t('auth.authenticating') : t('auth.login')}
               </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-[var(--muted-foreground)]">
-              No account yet?{' '}
+              {t('auth.noAccount')}{' '}
               <Link href="/register" className="font-medium text-[var(--primary)] underline underline-offset-4">
-                Register
+                {t('auth.register')}
               </Link>
             </p>
 
             <p className="mt-2 text-center text-xs text-[var(--muted-foreground)]">
-              Visiting first?{' '}
+              {t('auth.visitingFirst')}{' '}
               <Link href="/" className="font-medium text-[var(--role-manager)] underline underline-offset-4">
-                Open the public landing page
+                {t('auth.openLanding')}
               </Link>
             </p>
           </div>

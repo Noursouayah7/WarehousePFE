@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/src/auth/AuthProvider';
+import LanguageSwitcher from '@/src/i18n/LanguageSwitcher';
 
 export default function PendingPage() {
 	const { logout } = useAuth();
@@ -8,6 +9,9 @@ export default function PendingPage() {
 	return (
 		<div className="relative flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(47,118,246,0.12),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(88,129,87,0.08),transparent_30%),linear-gradient(180deg,var(--background)_0%,var(--secondary)_100%)] px-6">
 			<div className="absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px)] bg-[size:42px_42px] opacity-40" />
+			<div className="absolute right-6 top-6 z-20">
+				<LanguageSwitcher />
+			</div>
 
 			<div className="relative z-10 w-full max-w-2xl rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-10 text-center text-[var(--foreground)] shadow-[0_24px_70px_rgba(15,23,42,0.12)] backdrop-blur-xl">
 				<p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted-foreground)]">Account status</p>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/src/auth/AuthProvider';
+import { I18nProvider } from '@/src/i18n/I18nProvider';
 import { Inter } from 'next/font/google';
 import { Cormorant_Garamond } from 'next/font/google';
 import './globals.css';
@@ -26,9 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.className} m-0 flex min-h-full flex-col p-0`}
         style={{ '--font-display': display.style.fontFamily } as React.CSSProperties}
       >
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <I18nProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </I18nProvider>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/src/auth/AuthProvider';
+import LanguageSwitcher from '@/src/i18n/LanguageSwitcher';
 import {
   askAssistant,
   AssistantHistoryEntry,
@@ -147,6 +148,9 @@ export default function AssistantPage() {
     <div className="min-h-screen bg-[radial-gradient(circle_at_10%_20%,rgba(47,118,246,0.12),transparent_35%),radial-gradient(circle_at_95%_10%,rgba(47,143,91,0.10),transparent_32%),linear-gradient(165deg,var(--background)_0%,var(--secondary)_55%,var(--muted)_100%)] text-[var(--foreground)]">
       <div className="mx-auto grid min-h-screen w-full max-w-[1440px] gap-5 px-3 py-4 md:grid-cols-[320px_1fr] md:px-6 md:py-6">
         <aside className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_20px_45px_rgba(8,30,49,0.12)] backdrop-blur-xl">
+          <div className="mb-4 flex justify-end">
+            <LanguageSwitcher />
+          </div>
           <div className="rounded-2xl bg-[linear-gradient(130deg,var(--color-info)_0%,var(--color-success)_100%)] p-4 text-white">
             <p className="text-[11px] uppercase tracking-[0.22em] text-white/80">Assistant</p>
             <h1 className="mt-2 text-2xl font-semibold leading-tight">Warehouse Copilot</h1>
