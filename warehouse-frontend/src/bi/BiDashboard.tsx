@@ -1,10 +1,12 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useI18n } from '@/src/i18n/I18nProvider';
-import type { BiSummary, BiStatusCounts } from './bi.api';
+import { markContactRequestContacted, type BiSummary, type BiStatusCounts } from './bi.api';
 
 type BiDashboardProps = {
   summary: BiSummary;
   mode: 'ADMIN' | 'MANAGER' | 'TECHNICIEN';
+  accessToken?: string;
+  onRefresh?: () => Promise<void>;
 };
 
 type KpiCard = {
@@ -203,6 +205,83 @@ function RecentMovements({ summary }: { summary: BiSummary }) {
   );
 }
 
+function ContactRequestsAlert({
+  summary,
+  accessToken,
+  onRefresh,
+}: {
+  summary: BiSummary;
+  accessToken?: string;
+  onRefresh?: () => Promise<void>;
+}) {
+  const { tx } = useI18n();
+  const [busyId, setBusyId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const requests = summary.support.latestContactRequests ?? [];
+
+  async function markContacted(requestId: number) {
+    if (!accessToken) return;
+
+    setBusyId(requestId);
+    setError(null);
+
+    try {
+      await markContactRequestContacted(accessToken, requestId);
+      await onRefresh?.();
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : tx('Failed to update contact request'));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  if (requests.length === 0) {
+    return (
+      <Section title="Public contact requests">
+        <p className="text-sm text-[var(--muted-foreground)]">{tx('No contact requests yet.')}</p>
+      </Section>
+    );
+  }
+
+  return (
+    <Section title="Public contact requests">
+      <div className="mb-4 rounded-2xl bg-[var(--tint-warning)] px-4 py-3 text-sm text-[var(--color-warning)]">
+        {summary.support.newContactRequests} {tx('new visitor inquiries need follow-up.')}
+      </div>
+
+      {error && (
+        <div className="mb-4 rounded-xl bg-[var(--tint-error)] px-3 py-2 text-sm text-[var(--color-error)]">
+          {tx(error)}
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {requests.map((request) => (
+          <div key={request.id} className="rounded-xl border border-[var(--border)] bg-white px-4 py-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-950">{tx(request.reason)}</p>
+                <p className="mt-1 break-all text-xs text-[var(--muted-foreground)]">{request.email}</p>
+                <p className="text-xs text-[var(--muted-foreground)]">{request.phone}</p>
+                <p className="mt-1 text-xs text-[var(--muted-foreground)]">{formatDate(request.createdAt)}</p>
+              </div>
+
+              <button
+                type="button"
+                disabled={busyId === request.id}
+                onClick={() => void markContacted(request.id)}
+                className="w-fit rounded-full bg-slate-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {busyId === request.id ? tx('Saving...') : tx('Mark contacted')}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
 function cardsFor(summary: BiSummary, mode: BiDashboardProps['mode'], tx: (text: string) => string): KpiCard[] {
   if (mode === 'TECHNICIEN') {
     return [
@@ -222,6 +301,7 @@ function cardsFor(summary: BiSummary, mode: BiDashboardProps['mode'], tx: (text:
     { label: 'Customers', value: summary.users.totalCustomers, hint: 'Registered customer accounts', tone: 'var(--role-customer)' },
     { label: 'Orders', value: summary.orders.totalOrders, hint: `${summary.orders.approvedOrders} ${tx('approved')}, ${summary.orders.rejectedOrders} ${tx('rejected')}`, tone: 'var(--role-admin)' },
     { label: 'Active issues', value: summary.support.openSupportTickets + summary.support.openReclamations, hint: 'Open tickets and reclamations', tone: 'var(--color-warning)' },
+    { label: 'Visitor inquiries', value: summary.support.newContactRequests ?? 0, hint: 'New visitor inquiries', tone: 'var(--role-customer)' },
   ];
 }
 
@@ -235,12 +315,16 @@ function combineCounts(...groups: BiStatusCounts[]): BiStatusCounts {
   }, {});
 }
 
-export default function BiDashboard({ summary, mode }: BiDashboardProps) {
+export default function BiDashboard({ summary, mode, accessToken, onRefresh }: BiDashboardProps) {
   const { tx } = useI18n();
 
   return (
     <div className="space-y-6">
       <KpiGrid cards={cardsFor(summary, mode, tx)} />
+
+      {mode !== 'TECHNICIEN' && (
+        <ContactRequestsAlert summary={summary} accessToken={accessToken} onRefresh={onRefresh} />
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <Section title={mode === 'TECHNICIEN' ? 'Block Capacity Usage' : 'Warehouse Capacity Usage'}>

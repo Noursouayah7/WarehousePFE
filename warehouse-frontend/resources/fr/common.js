@@ -683,7 +683,17 @@ const common = {
     'Other': 'Autre',
     'Send request': 'Envoyer la demande',
     'Request received': 'Demande recue',
-    'We will contact you soon, thank you for your interest.': 'Nous vous contacterons bientot, merci pour votre interet.'
+    'We will contact you soon, thank you for your interest.': 'Nous vous contacterons bientot, merci pour votre interet.',
+    'Sending request...': 'Envoi de la demande...',
+    'Failed to send request': 'Impossible d envoyer la demande',
+    'Failed to send contact request': 'Impossible d envoyer la demande de contact',
+    'Public contact requests': 'Demandes de contact publiques',
+    'No contact requests yet.': 'Aucune demande de contact pour le moment.',
+    'new visitor inquiries need follow-up.': 'nouvelles demandes visiteur a traiter.',
+    'Mark contacted': 'Marquer contacte',
+    'Failed to update contact request': 'Impossible de mettre a jour la demande de contact',
+    'Visitor inquiries': 'Demandes visiteurs',
+    'New visitor inquiries': 'Nouvelles demandes visiteurs'
   },
 };
 

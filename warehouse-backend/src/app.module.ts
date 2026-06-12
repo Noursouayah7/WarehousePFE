@@ -17,6 +17,7 @@ import { RestockAlertsModule } from './restock-alerts/restock-alerts.module';
 import { ReclamationModule } from './reclamation/reclamation.module';
 import { AiModule } from './ai/ai.module';
 import { BiModule } from './bi/bi.module';
+import { ContactRequestModule } from './contact-request/contact-request.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { BiModule } from './bi/bi.module';
     ReclamationModule,
     AiModule,
     BiModule,
+    ContactRequestModule,
   ],
   controllers: [AppController],
   providers: [AppService],

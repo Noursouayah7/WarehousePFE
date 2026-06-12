@@ -17,6 +17,12 @@ export default function BiDashboardPanel({ role }: BiDashboardPanelProps) {
   const [summary, setSummary] = useState<BiSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  async function loadSummary(activeToken: string) {
+    const data = await getBiSummary(activeToken, role);
+    setError(null);
+    setSummary(data);
+  }
+
   useEffect(() => {
     if (!token) {
       return;
@@ -72,5 +78,5 @@ export default function BiDashboardPanel({ role }: BiDashboardPanelProps) {
     );
   }
 
-  return <BiDashboard summary={summary} mode={role} />;
+  return <BiDashboard summary={summary} mode={role} accessToken={token} onRefresh={() => loadSummary(token)} />;
 }

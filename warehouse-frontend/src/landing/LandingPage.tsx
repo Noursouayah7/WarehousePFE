@@ -6,6 +6,7 @@ import { Archivo_Black } from 'next/font/google';
 import { motion } from 'framer-motion';
 import LanguageSwitcher from '@/src/i18n/LanguageSwitcher';
 import { useI18n } from '@/src/i18n/I18nProvider';
+import { createContactRequest } from '@/src/contactRequests/contactRequests.api';
 
 const archivoBlack = Archivo_Black({
   subsets: ['latin'],
@@ -97,6 +98,8 @@ export function LandingPage() {
     reason: 'General inquiry',
   });
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!showSuccessToast) return;
@@ -110,15 +113,30 @@ export function LandingPage() {
     };
   }, [showSuccessToast]);
 
-  function handleContactSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleContactSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsContactOpen(false);
-    setContactForm({
-      email: '',
-      phone: '',
-      reason: 'General inquiry',
-    });
-    setShowSuccessToast(true);
+    setIsSubmittingContact(true);
+    setContactError(null);
+
+    try {
+      await createContactRequest({
+        email: contactForm.email,
+        phone: contactForm.phone,
+        reason: contactForm.reason,
+      });
+
+      setIsContactOpen(false);
+      setContactForm({
+        email: '',
+        phone: '',
+        reason: 'General inquiry',
+      });
+      setShowSuccessToast(true);
+    } catch (requestError) {
+      setContactError(requestError instanceof Error ? requestError.message : tx('Failed to send request'));
+    } finally {
+      setIsSubmittingContact(false);
+    }
   }
 
   return (
@@ -361,6 +379,12 @@ export function LandingPage() {
             </div>
 
             <form onSubmit={handleContactSubmit} className="mt-6 grid gap-4">
+              {contactError && (
+                <div className="rounded-xl bg-[var(--tint-error)] px-4 py-3 text-sm text-[var(--color-error)]">
+                  {tx(contactError)}
+                </div>
+              )}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="grid gap-2 text-sm font-medium text-[var(--foreground)]">
                   {tx('E-mail')}
@@ -412,9 +436,10 @@ export function LandingPage() {
                 </button>
                 <button
                   type="submit"
+                  disabled={isSubmittingContact}
                   className="rounded-full bg-[var(--role-admin)] px-5 py-3 text-sm font-semibold text-black transition hover:opacity-95"
                 >
-                  {tx('Send request')}
+                  {isSubmittingContact ? tx('Sending request...') : tx('Send request')}
                 </button>
               </div>
             </form>

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ContactRequestStatus,
   InventoryOperationType,
   OrderStatus,
   ReclamationStatus,
@@ -31,6 +32,8 @@ export class BiService {
       totalMovements,
       recentMovements,
       myOpenTickets,
+      newContactRequests,
+      latestContactRequests,
     ] = await Promise.all([
       this.prisma.product.findMany({
         include: {
@@ -81,6 +84,16 @@ export class BiService {
             },
           })
         : Promise.resolve(0),
+      role === 'MANAGER' || role === 'ADMIN'
+        ? this.prisma.contactRequest.count({ where: { status: ContactRequestStatus.NEW } })
+        : Promise.resolve(0),
+      role === 'MANAGER' || role === 'ADMIN'
+        ? this.prisma.contactRequest.findMany({
+            where: { status: ContactRequestStatus.NEW },
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+          })
+        : Promise.resolve([]),
     ]);
 
     const totalStockQuantity = products.reduce((sum, product) => sum + product.quantity, 0);
@@ -190,6 +203,16 @@ export class BiService {
           this.getCount(reclamationCounts, 'status', ReclamationStatus.PENDING) +
           this.getCount(reclamationCounts, 'status', ReclamationStatus.IN_PROGRESS),
         myOpenTickets,
+        newContactRequests,
+        latestContactRequests: latestContactRequests.map((request) => ({
+          id: request.id,
+          email: request.email,
+          phone: request.phone,
+          reason: request.reason,
+          status: request.status,
+          managerNote: request.managerNote,
+          createdAt: request.createdAt,
+        })),
         ticketStatusCounts: this.enumCounts(ticketCounts, 'status'),
         reclamationStatusCounts: this.enumCounts(reclamationCounts, 'status'),
       },

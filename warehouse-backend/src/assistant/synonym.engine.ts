@@ -11,37 +11,37 @@ export class SynonymEngine {
   private readonly productSynonyms: Record<string, string[]> = {
     oil: ['oil', 'olive oil', 'oiling', 'olives'],
     olive: ['olive', 'olives', 'olive oil'],
-    product: ['product', 'item', 'goods', 'merchandise', 'stock', 'commodity', 'article'],
-    stock: ['stock', 'inventory', 'supply', 'quantity', 'units', 'stock level', 'stock available'],
-    quantity: ['quantity', 'amount', 'number', 'count', 'total', 'how many', 'how much'],
-    available: ['available', 'in stock', 'stocked', 'available quantity', 'on hand', 'remaining'],
-    warehouse: ['warehouse', 'depot', 'storage', 'facility', 'warehouse location'],
-    bloc: ['bloc', 'block', 'section', 'area', 'zone', 'location', 'compartment'],
-    low: ['low', 'low stock', 'running low', 'almost out', 'depleted', 'insufficient'],
-    location: ['location', 'where', 'stored', 'placed', 'positioned', 'situated'],
+    product: ['product', 'item', 'goods', 'merchandise', 'commodity', 'article', 'produit', 'produits'],
+    stock: ['stock', 'inventory', 'supply', 'quantity', 'units', 'stock level', 'stock available', 'inventaire', 'niveau de stock'],
+    quantity: ['quantity', 'amount', 'number', 'count', 'total', 'how many', 'how much', 'quantite', 'quantité', 'nombre', 'combien'],
+    available: ['available', 'in stock', 'stocked', 'available quantity', 'on hand', 'remaining', 'disponible', 'disponibles', 'en stock', 'restant'],
+    warehouse: ['warehouse', 'depot', 'storage', 'facility', 'warehouse location', 'entrepot', 'entrepôt', 'depot', 'dépôt'],
+    bloc: ['bloc', 'block', 'section', 'area', 'zone', 'location', 'compartment', 'emplacement', 'zone'],
+    low: ['low', 'low stock', 'running low', 'almost out', 'depleted', 'insufficient', 'stock faible', 'rupture', 'presque en rupture', 'faible'],
+    location: ['location', 'where', 'stored', 'placed', 'positioned', 'situated', 'ou', 'où', 'stocke', 'stocké', 'situe', 'situé', 'emplacement'],
   };
 
   /**
    * Synonym mappings for order/shipment terms
    */
   private readonly orderSynonyms: Record<string, string[]> = {
-    order: ['order', 'purchase order', 'purchase', 'po', 'request'],
-    shipment: ['shipment', 'shipment status', 'delivery', 'shipped', 'delivery status'],
-    status: ['status', 'condition', 'state', 'progress', 'tracking'],
-    track: ['track', 'trace', 'tracking', 'where is', 'locate'],
-    shipped: ['shipped', 'sent', 'dispatched', 'on the way', 'in transit'],
-    delivered: ['delivered', 'received', 'arrived', 'completed'],
-    pending: ['pending', 'awaiting', 'waiting', 'in progress'],
+    order: ['order', 'purchase order', 'purchase', 'po', 'request', 'commande', 'demande'],
+    shipment: ['shipment', 'shipment status', 'delivery', 'shipped', 'delivery status', 'expedition', 'expédition', 'livraison'],
+    status: ['status', 'condition', 'state', 'progress', 'tracking', 'statut', 'etat', 'état', 'suivi'],
+    track: ['track', 'trace', 'tracking', 'where is', 'locate', 'suivre', 'tracer', 'ou est', 'où est', 'localiser'],
+    shipped: ['shipped', 'sent', 'dispatched', 'on the way', 'in transit', 'expedie', 'expédié', 'envoye', 'envoyé', 'en transit'],
+    delivered: ['delivered', 'received', 'arrived', 'completed', 'livre', 'livré', 'recue', 'reçue', 'arrive', 'arrivé', 'termine', 'terminé'],
+    pending: ['pending', 'awaiting', 'waiting', 'in progress', 'en attente', 'attente', 'en cours'],
   };
 
   /**
    * Synonym mappings for action verbs
    */
   private readonly actionSynonyms: Record<string, string[]> = {
-    show: ['show', 'display', 'list', 'show me', 'give me', 'tell me', 'get', 'retrieve'],
-    how_much: ['how much', 'how many', 'what amount', 'what quantity', 'total', 'count'],
-    where: ['where', 'which warehouse', 'in which', 'locate', 'find', 'where is'],
-    what: ['what', 'which', 'what is', 'what are'],
+    show: ['show', 'display', 'list', 'show me', 'give me', 'tell me', 'get', 'retrieve', 'affiche', 'afficher', 'montre', 'montrer', 'liste', 'lister', 'donne'],
+    how_much: ['how much', 'how many', 'what amount', 'what quantity', 'total', 'count', 'combien', 'quelle quantite', 'quelle quantité'],
+    where: ['where', 'which warehouse', 'in which', 'locate', 'find', 'where is', 'ou', 'où', 'dans quel', 'localise', 'trouve'],
+    what: ['what', 'which', 'what is', 'what are', 'quel', 'quelle', 'quels', 'quelles', 'quoi'],
   };
 
   /**

@@ -690,7 +690,17 @@ const common = {
     'Other': 'Other',
     'Send request': 'Send request',
     'Request received': 'Request received',
-    'We will contact you soon, thank you for your interest.': 'We will contact you soon, thank you for your interest.'
+    'We will contact you soon, thank you for your interest.': 'We will contact you soon, thank you for your interest.',
+    'Sending request...': 'Sending request...',
+    'Failed to send request': 'Failed to send request',
+    'Failed to send contact request': 'Failed to send contact request',
+    'Public contact requests': 'Public contact requests',
+    'No contact requests yet.': 'No contact requests yet.',
+    'new visitor inquiries need follow-up.': 'new visitor inquiries need follow-up.',
+    'Mark contacted': 'Mark contacted',
+    'Failed to update contact request': 'Failed to update contact request',
+    'Visitor inquiries': 'Visitor inquiries',
+    'New visitor inquiries': 'New visitor inquiries'
   },
 };
 

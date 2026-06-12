@@ -45,6 +45,16 @@ export type BiRecentMovement = {
   technicianName: string | null;
 };
 
+export type BiContactRequest = {
+  id: number;
+  email: string;
+  phone: string;
+  reason: string;
+  status: 'NEW' | 'CONTACTED' | 'ARCHIVED';
+  managerNote: string | null;
+  createdAt: string;
+};
+
 export type BiSummary = {
   role: BiRole;
   generatedAt: string;
@@ -93,6 +103,8 @@ export type BiSummary = {
     openSupportTickets: number;
     openReclamations: number;
     myOpenTickets: number;
+    newContactRequests: number;
+    latestContactRequests: BiContactRequest[];
     ticketStatusCounts: BiStatusCounts;
     reclamationStatusCounts: BiStatusCounts;
   };
@@ -135,4 +147,23 @@ export async function getBiSummary(accessToken: string, role: BiRole): Promise<B
   }
 
   return data as BiSummary;
+}
+
+export async function markContactRequestContacted(accessToken: string, requestId: number): Promise<BiContactRequest> {
+  const response = await fetch(`${API_URL}/contact-requests/${requestId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ status: 'CONTACTED' }),
+  });
+
+  const data: unknown = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(parseErrorMessage(data, 'Failed to update contact request'));
+  }
+
+  return data as BiContactRequest;
 }
