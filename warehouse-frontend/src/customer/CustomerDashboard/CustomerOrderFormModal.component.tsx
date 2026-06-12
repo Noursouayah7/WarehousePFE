@@ -2,6 +2,7 @@
 
 import { FormEvent } from 'react';
 import { CustomerProductOption } from '../customer.api';
+import { useI18n } from '@/src/i18n/I18nProvider';
 
 export type CustomerOrderForm = {
   items: Array<{ productId: string; quantity: string }>;
@@ -34,6 +35,8 @@ export function CustomerOrderFormModal({
   onSubmit,
   onFormChange,
 }: CustomerOrderFormModalProps) {
+  const { tx } = useI18n();
+
   if (!isOpen) {
     return null;
   }
@@ -42,13 +45,13 @@ export function CustomerOrderFormModal({
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--popover-foreground)]/30 p-4 backdrop-blur-sm">
       <div className="w-full max-w-xl rounded-2xl border border-[var(--border)] bg-white p-6 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
-          <h3 className="text-lg font-semibold tracking-tight">New order</h3>
+          <h3 className="text-lg font-semibold tracking-tight">{tx('New order')}</h3>
           <button
             type="button"
             onClick={onClose}
             className="rounded-lg border border-[var(--input)] bg-white px-3 py-1 text-xs font-medium text-[var(--muted-foreground)]"
           >
-            Close
+            {tx('Close')}
           </button>
         </div>
 
@@ -74,7 +77,7 @@ export function CustomerOrderFormModal({
                   }}
                   className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
                 >
-                  <option value="">Select a product</option>
+                  <option value="">{tx('Select a product')}</option>
                   {products.map((product) => (
                     <option key={product.id} value={String(product.id)}>
                       {product.name} - ${product.price.toFixed(2)}
@@ -92,7 +95,7 @@ export function CustomerOrderFormModal({
                       return { ...current, items: nextItems };
                     });
                   }}
-                  placeholder="Qty"
+                  placeholder={tx('Qty')}
                   type="number"
                   min={1}
                   className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
@@ -109,7 +112,7 @@ export function CustomerOrderFormModal({
                   disabled={form.items.length === 1}
                   className="rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--muted-foreground)] disabled:opacity-40"
                 >
-                  Remove
+                  {tx('Remove')}
                 </button>
               </div>
             ))}
@@ -125,15 +128,15 @@ export function CustomerOrderFormModal({
             }
             className="rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm font-medium text-[var(--foreground)]"
           >
-            Add product
+            {tx('Add product')}
           </button>
 
           <input
             value={form.deliveryDeadline}
             onChange={(event) => onFormChange((current) => ({ ...current, deliveryDeadline: event.target.value }))}
-            placeholder="Delivery date"
+            placeholder={tx('Delivery date')}
             type="datetime-local"
-            aria-label="Delivery date"
+            aria-label={tx('Delivery date')}
             className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
           />
           {deliveryWarning && (
@@ -144,19 +147,19 @@ export function CustomerOrderFormModal({
           <input
             value={form.deliveryAddress}
             onChange={(event) => onFormChange((current) => ({ ...current, deliveryAddress: event.target.value }))}
-            placeholder="Delivery address"
+            placeholder={tx('Delivery address')}
             className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
           />
           <input
             value={form.customerName}
             onChange={(event) => onFormChange((current) => ({ ...current, customerName: event.target.value }))}
-            placeholder="Your name"
+            placeholder={tx('Your name')}
             className="w-full rounded-lg border border-[var(--input)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[var(--color-info)]"
           />
           <input
             value={form.customerPhone}
             onChange={(event) => onFormChange((current) => ({ ...current, customerPhone: event.target.value }))}
-            placeholder="Your phone"
+            placeholder={tx('Your phone')}
             type="tel"
             inputMode="numeric"
             maxLength={8}
@@ -169,9 +172,9 @@ export function CustomerOrderFormModal({
             disabled={isSending || !!deliveryWarning}
             className="mt-2 rounded-lg border border-[var(--color-info)] bg-[var(--tint-info)] px-4 py-2 text-sm font-medium text-[var(--color-info)] transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {isSending ? 'Sending order...' : deliveryWarning ? 'Fix delivery date first' : 'Send order'}
+            {isSending ? tx('Sending order...') : deliveryWarning ? tx('Fix delivery date first') : tx('Send order')}
           </button>
-          <p className="text-xs text-[var(--muted-foreground)]">Availability is confirmed internally after submission.</p>
+          <p className="text-xs text-[var(--muted-foreground)]">{tx('Availability is confirmed internally after submission.')}</p>
         </form>
       </div>
     </div>

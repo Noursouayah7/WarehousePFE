@@ -10,6 +10,7 @@ import {
   getCustomerProductOptions,
 } from '../customer.api';
 import { ProfileService, UserProfile } from '@/src/services/profileService';
+import { useI18n } from '@/src/i18n/I18nProvider';
 import { CustomerProduct } from './CustomerProduct.component';
 import { CustomerMyOrder } from './CustomerMyOrder.component';
 import { CustomerOrderForm, CustomerOrderFormModal } from './CustomerOrderFormModal.component';
@@ -24,26 +25,26 @@ const emptyForm: CustomerOrderForm = {
 
 const minimumDeliveryDelayMs = 10 * 24 * 60 * 60 * 1000;
 
-function getDeliveryWarning(deliveryDeadline: string): string | null {
+function getDeliveryWarning(deliveryDeadline: string, tx: (text: string) => string): string | null {
   if (!deliveryDeadline) {
     return null;
   }
 
   const selectedDate = new Date(deliveryDeadline);
   if (Number.isNaN(selectedDate.getTime())) {
-    return 'Choose a valid delivery date.';
+    return tx('Choose a valid delivery date.');
   }
 
   const delta = selectedDate.getTime() - Date.now();
   if (delta < minimumDeliveryDelayMs) {
-    return 'Delivery must be scheduled at least 10 days in advance.';
+    return tx('Delivery must be scheduled at least 10 days in advance.');
   }
 
   return null;
 }
 
-function getCustomerOrderErrorMessage(error: unknown): string {
-  const fallback = 'We could not create your order. Please review your request and try again.';
+function getCustomerOrderErrorMessage(error: unknown, tx: (text: string) => string): string {
+  const fallback = tx('We could not create your order. Please review your request and try again.');
 
   if (!(error instanceof Error)) {
     return fallback;
@@ -51,7 +52,7 @@ function getCustomerOrderErrorMessage(error: unknown): string {
 
   const lowerMessage = error.message.toLowerCase();
   if (lowerMessage.includes('stock') || lowerMessage.includes('available') || lowerMessage.includes('inventory')) {
-    return 'One or more selected products cannot be fulfilled right now. Please refresh the product list and try again.';
+    return tx('One or more selected products cannot be fulfilled right now. Please refresh the product list and try again.');
   }
 
   return error.message || fallback;
@@ -59,6 +60,7 @@ function getCustomerOrderErrorMessage(error: unknown): string {
 
 export default function CustomerPage() {
   const { token } = useAuth();
+  const { tx } = useI18n();
 
   const [products, setProducts] = useState<CustomerProductOption[]>([]);
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
@@ -80,7 +82,7 @@ export default function CustomerPage() {
   const [form, setForm] = useState<CustomerOrderForm>(emptyForm);
   const [deliveryNotice, setDeliveryNotice] = useState<string | null>(null);
   const [lastDeliveredOrderId, setLastDeliveredOrderId] = useState<number | null>(null);
-  const deliveryWarning = useMemo(() => getDeliveryWarning(form.deliveryDeadline), [form.deliveryDeadline]);
+  const deliveryWarning = useMemo(() => getDeliveryWarning(form.deliveryDeadline, tx), [form.deliveryDeadline, tx]);
 
   async function loadData(activeToken: string) {
     const [productData, orderData] = await Promise.all([
@@ -93,7 +95,7 @@ export default function CustomerPage() {
 
     const delivered = orderData.find((order) => order.deliveryStatus === 'DELIVERED' && order.id !== lastDeliveredOrderId);
     if (delivered) {
-      setDeliveryNotice(`Order #${delivered.id} has been delivered.`);
+      setDeliveryNotice(`${tx('Order')} #${delivered.id} ${tx('has been delivered.')}`);
       setLastDeliveredOrderId(delivered.id);
     }
 
@@ -109,7 +111,7 @@ export default function CustomerPage() {
 
   useEffect(() => {
     if (!token) {
-      setError('Missing auth token. Please login again.');
+      setError(tx('Missing auth token. Please login again.'));
       setIsLoading(false);
       return;
     }
@@ -121,7 +123,7 @@ export default function CustomerPage() {
     void loadData(token)
       .catch((err: unknown) => {
         if (!mounted) return;
-        setError(err instanceof Error ? err.message : 'Failed to load customer dashboard');
+        setError(err instanceof Error ? err.message : tx('Failed to load customer dashboard'));
       })
       .finally(() => {
         if (!mounted) return;
@@ -170,7 +172,7 @@ export default function CustomerPage() {
     event.preventDefault();
 
     if (!token) {
-      setError('Missing auth token. Please login again.');
+      setError(tx('Missing auth token. Please login again.'));
       return;
     }
 
@@ -179,12 +181,12 @@ export default function CustomerPage() {
       .filter((item) => Number.isFinite(item.productId) && item.productId > 0 && Number.isFinite(item.quantity) && item.quantity > 0);
 
     if (normalizedItems.length === 0) {
-      setFormError('Add at least one valid product.');
+      setFormError(tx('Add at least one valid product.'));
       return;
     }
 
     if (!/^\d{8}$/.test(form.customerPhone.trim())) {
-      setFormError('Phone number must contain exactly 8 digits.');
+      setFormError(tx('Phone number must contain exactly 8 digits.'));
       return;
     }
 
@@ -215,7 +217,7 @@ export default function CustomerPage() {
         deliveryAddress: current.deliveryAddress || profile?.address || '',
       }));
     } catch (err) {
-      setFormError(getCustomerOrderErrorMessage(err));
+      setFormError(getCustomerOrderErrorMessage(err, tx));
     } finally {
       setIsSending(false);
     }
@@ -229,7 +231,7 @@ export default function CustomerPage() {
           onClick={() => setView('products')}
           className="text-left rounded-xl bg-[var(--card)] p-5 shadow-sm"
         >
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Products</p>
+          <p className="text-sm font-medium text-[var(--muted-foreground)]">{tx('Products')}</p>
           <p className="mt-2 text-3xl font-semibold">{products.length}</p>
         </button>
         <button
@@ -237,7 +239,7 @@ export default function CustomerPage() {
           onClick={() => setView('orders')}
           className="text-left rounded-xl bg-[var(--card)] p-5 shadow-sm"
         >
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Orders</p>
+          <p className="text-sm font-medium text-[var(--muted-foreground)]">{tx('Orders')}</p>
           <p className="mt-2 text-3xl font-semibold">{orders.length}</p>
         </button>
         <button
@@ -245,7 +247,7 @@ export default function CustomerPage() {
           onClick={() => setView('orders')}
           className="text-left rounded-xl bg-[var(--card)] p-5 shadow-sm"
         >
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Pending review</p>
+          <p className="text-sm font-medium text-[var(--muted-foreground)]">{tx('Pending review')}</p>
           <p className="mt-2 text-3xl font-semibold">{pendingOrdersCount}</p>
         </button>
       </section>
@@ -268,7 +270,7 @@ export default function CustomerPage() {
                   : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]',
               ].join(' ')}
             >
-              {tab.label}
+              {tx(tab.label)}
             </button>
           ))}
         </div>
@@ -279,18 +281,18 @@ export default function CustomerPage() {
             onClick={() => openOrderForm()}
             className="rounded-md bg-[var(--secondary)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--secondary)]"
           >
-            New order
+            {tx('New order')}
           </button>
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value as 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED')}
             className="rounded-md border border-[var(--input)] bg-white px-3 py-2 text-sm outline-none"
           >
-            <option value="ALL">Filter: All statuses</option>
-            <option value="PENDING">Filter: Pending</option>
-            <option value="APPROVED">Filter: Approved</option>
-            <option value="REJECTED">Filter: Rejected</option>
-            <option value="COMPLETED">Filter: Completed</option>
+            <option value="ALL">{tx('Filter: All statuses')}</option>
+            <option value="PENDING">{tx('Filter: Pending')}</option>
+            <option value="APPROVED">{tx('Filter: Approved')}</option>
+            <option value="REJECTED">{tx('Filter: Rejected')}</option>
+            <option value="COMPLETED">{tx('Filter: Completed')}</option>
           </select>
         </div>
       </section>
@@ -307,7 +309,7 @@ export default function CustomerPage() {
           <div className="mb-4 flex items-start justify-between gap-3 rounded-md bg-[var(--tint-success)] px-3 py-2 text-sm text-[var(--color-success)]">
             <p>{deliveryNotice}</p>
             <button type="button" onClick={() => setDeliveryNotice(null)} className="text-xs font-medium text-[var(--color-success)]">
-              Dismiss
+              {tx('Dismiss')}
             </button>
           </div>
         )}

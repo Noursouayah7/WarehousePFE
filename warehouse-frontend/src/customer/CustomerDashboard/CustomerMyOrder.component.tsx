@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { CustomerOrder, CustomerOrderStatus, CustomerShipmentStatus } from '../customer.api';
 import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
+import { useI18n } from '@/src/i18n/I18nProvider';
 
 interface CustomerMyOrderProps {
 	orders: CustomerOrder[];
@@ -44,14 +45,31 @@ function shipmentStatusClasses(status: CustomerShipmentStatus): string {
 	return 'bg-[var(--tint-warning)] text-[var(--color-warning)]';
 }
 
-function formatShipmentStatus(status: CustomerShipmentStatus): string {
-	if (status === 'IN_TRANSIT') return 'In transit';
-	if (status === 'RECEIVED') return 'Delivered';
-	return 'Requested';
+function formatOrderStatus(status: CustomerOrderStatus, tx: (text: string) => string): string {
+	const labels: Record<CustomerOrderStatus, string> = {
+		PENDING: 'Pending',
+		APPROVED: 'Approved',
+		REJECTED: 'Rejected',
+		RESTOCK_REQUESTED: 'Restock requested',
+		COMPLETED: 'Completed',
+	};
+
+	return tx(labels[status] ?? status);
+}
+
+function formatDeliveryStatus(status: string, tx: (text: string) => string): string {
+	return tx(status.replaceAll('_', ' ').toLowerCase().replace(/^\w/, (letter) => letter.toUpperCase()));
+}
+
+function formatShipmentStatus(status: CustomerShipmentStatus, tx: (text: string) => string): string {
+	if (status === 'IN_TRANSIT') return tx('In transit');
+	if (status === 'RECEIVED') return tx('Delivered');
+	return tx('Requested');
 }
 
 export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 	const { query } = useWorkspaceSearch();
+	const { tx } = useI18n();
 	const visibleOrders = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 		if (!normalizedQuery) return orders;
@@ -70,23 +88,23 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 
 	return (
 		<section id="orders-section" className="mt-6 rounded-2xl bg-transparent">
-			<h2 className="text-xl font-semibold tracking-tight">My orders</h2>
-			<p className="mt-1 text-sm text-[var(--muted-foreground)]">Track your order status in real time</p>
+			<h2 className="text-xl font-semibold tracking-tight">{tx('My orders')}</h2>
+			<p className="mt-1 text-sm text-[var(--muted-foreground)]">{tx('Track your order status in real time')}</p>
 
 			{isLoading ? (
-				<div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading orders...</div>
+				<div className="py-10 text-center text-sm text-[var(--muted-foreground)]">{tx('Loading orders...')}</div>
 			) : (
 				<div className="mt-5 overflow-x-auto">
 					<table className="min-w-full border-separate border-spacing-y-2 text-sm">
 						<thead>
 							<tr className="text-left text-xs font-medium text-[var(--muted-foreground)]">
 								<th className="px-3 py-2">ID</th>
-								<th className="px-3 py-2">PRODUCT</th>
-								<th className="px-3 py-2">QTY</th>
-								<th className="px-3 py-2">DELIVERY DATE</th>
-								<th className="px-3 py-2">STATUS</th>
-								<th className="px-3 py-2">SHIPMENT</th>
-								<th className="px-3 py-2">NOTE</th>
+								<th className="px-3 py-2">{tx('PRODUCT')}</th>
+								<th className="px-3 py-2">{tx('QTY')}</th>
+								<th className="px-3 py-2">{tx('DELIVERY DATE')}</th>
+								<th className="px-3 py-2">{tx('STATUS')}</th>
+								<th className="px-3 py-2">{tx('SHIPMENT')}</th>
+								<th className="px-3 py-2">{tx('NOTE')}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -101,9 +119,9 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 									<td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">{formatDate(order.deliveryDeadline)}</td>
 									<td className="bg-[var(--card)] px-3 py-3">
 										<span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusClasses(order.status)}`}>
-											{order.status}
+											{formatOrderStatus(order.status, tx)}
 										</span>
-										<p className="mt-2 text-xs text-[var(--muted-foreground)]">{order.deliveryStatus}</p>
+										<p className="mt-2 text-xs text-[var(--muted-foreground)]">{formatDeliveryStatus(order.deliveryStatus, tx)}</p>
 									</td>
 									<td className="bg-[var(--card)] px-3 py-3 text-xs text-[var(--muted-foreground)]">
 										{order.shipments.length > 0 ? (
@@ -111,7 +129,7 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 												{order.shipments.map((shipment) => (
 													<div key={shipment.id}>
 														<span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${shipmentStatusClasses(shipment.status)}`}>
-															{formatShipmentStatus(shipment.status)}
+															{formatShipmentStatus(shipment.status, tx)}
 														</span>
 														<p className="mt-1">
 															#{shipment.id} · {shipment.productName} x{shipment.quantity}
@@ -142,7 +160,7 @@ export function CustomerMyOrder({ orders, isLoading }: CustomerMyOrderProps) {
 							{visibleOrders.length === 0 && (
 								<tr>
 									<td colSpan={7} className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]">
-										{query.trim() ? 'No orders match your search' : 'No orders yet'}
+										{query.trim() ? tx('No orders match your search') : tx('No orders yet')}
 									</td>
 								</tr>
 							)}

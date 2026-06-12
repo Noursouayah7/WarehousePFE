@@ -1,5 +1,7 @@
 'use client';
 
+import { useI18n } from '@/src/i18n/I18nProvider';
+
 type ActiveSection = 'products' | 'orders' | null;
 
 interface CustomerPanelProps {
@@ -23,6 +25,8 @@ export function CustomerPanel({
 	onClearSection,
 	onLogout,
 }: CustomerPanelProps) {
+	const { tx } = useI18n();
+
 	return (
 		<>
 			<div className="flex items-center justify-between border-b border-[var(--border)] px-6 py-4 md:px-10">
@@ -35,22 +39,22 @@ export function CustomerPanel({
 				</div>
 				<div className="flex items-center gap-6">
 					<span className="rounded-full bg-[var(--role-customer)] px-3 py-1 text-[11px] font-semibold tracking-[0.04em] text-black">
-						Customer
+						{tx('Customer')}
 					</span>
 					<button
 						onClick={onLogout}
 						className="cursor-pointer rounded-lg border border-[var(--border)] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
 					>
-						Logout
+						{tx('Logout')}
 					</button>
 				</div>
 			</div>
 
 			<div className="mx-auto max-w-7xl px-6 py-12 md:px-10 md:py-14">
-				<p className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">Dashboard</p>
-				<h1 className="mb-2 text-4xl font-semibold tracking-tight">Customer panel</h1>
+				<p className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">{tx('Dashboard')}</p>
+				<h1 className="mb-2 text-4xl font-semibold tracking-tight">{tx('Customer panel')}</h1>
 				<p className="text-sm text-[var(--muted-foreground)]">
-					Choose a product, submit an order request, and track its status
+					{tx('Choose a product, submit an order request, and track its status')}
 				</p>
 
 				<div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -64,7 +68,7 @@ export function CustomerPanel({
 						}`}
 					>
 						<div className="mb-4 h-6 w-[3px] bg-[var(--role-customer)]" />
-						<p className="mb-2 text-base font-semibold text-[var(--role-customer)]">Available products</p>
+						<p className="mb-2 text-base font-semibold text-[var(--role-customer)]">{tx('Available products')}</p>
 						<p className="text-[28px] font-bold">{productsCount}</p>
 					</button>
 
@@ -78,7 +82,7 @@ export function CustomerPanel({
 						}`}
 					>
 						<div className="mb-4 h-6 w-[3px] bg-[var(--role-admin)]" />
-						<p className="mb-2 text-base font-semibold text-[var(--role-admin)]">My orders</p>
+						<p className="mb-2 text-base font-semibold text-[var(--role-admin)]">{tx('My orders')}</p>
 						<p className="text-[28px] font-bold">{ordersCount}</p>
 					</button>
 
@@ -92,7 +96,7 @@ export function CustomerPanel({
 						}`}
 					>
 						<div className="mb-4 h-6 w-[3px] bg-[var(--tint-error)]" />
-						<p className="mb-2 text-base font-semibold text-[var(--color-error)]">Pending review</p>
+						<p className="mb-2 text-base font-semibold text-[var(--color-error)]">{tx('Pending review')}</p>
 						<p className="text-[28px] font-bold">{pendingOrdersCount}</p>
 					</button>
 				</div>
@@ -103,7 +107,7 @@ export function CustomerPanel({
 							onClick={onClearSection}
 							className="rounded-lg border border-[var(--border)] bg-transparent px-4 py-2 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:border-[var(--border)] hover:text-[var(--foreground)]"
 						>
-							View all
+							{tx('View all')}
 						</button>
 					</div>
 				)}

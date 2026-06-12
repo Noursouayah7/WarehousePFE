@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { CustomerProductOption } from '../customer.api';
 import { useWorkspaceSearch } from '@/src/common/WorkspaceShell';
+import { useI18n } from '@/src/i18n/I18nProvider';
 
 interface CustomerProductProps {
 	products: CustomerProductOption[];
@@ -12,6 +13,7 @@ interface CustomerProductProps {
 
 export function CustomerProduct({ products, isLoading, onSelectProduct }: CustomerProductProps) {
 	const { query } = useWorkspaceSearch();
+	const { tx } = useI18n();
 	const visibleProducts = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 		if (!normalizedQuery) return products;
@@ -24,11 +26,11 @@ export function CustomerProduct({ products, isLoading, onSelectProduct }: Custom
 
 	return (
 		<section id="products-section" className="mt-6 rounded-2xl bg-transparent">
-			<h2 className="text-xl font-semibold tracking-tight">Products</h2>
-			<p className="mt-1 text-sm text-[var(--muted-foreground)]">Click on a product to place an order</p>
+			<h2 className="text-xl font-semibold tracking-tight">{tx('Products')}</h2>
+			<p className="mt-1 text-sm text-[var(--muted-foreground)]">{tx('Click on a product to place an order')}</p>
 
 			{isLoading ? (
-				<div className="py-10 text-center text-sm text-[var(--muted-foreground)]">Loading products...</div>
+				<div className="py-10 text-center text-sm text-[var(--muted-foreground)]">{tx('Loading products...')}</div>
 			) : (
 				<div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 					{visibleProducts.map((product) => (
@@ -42,14 +44,14 @@ export function CustomerProduct({ products, isLoading, onSelectProduct }: Custom
 							{product.description && (
 								<p className="mt-2 text-xs text-[var(--muted-foreground)]">{product.description}</p>
 							)}
-							<p className="mt-1 text-xs text-[var(--muted-foreground)]">Price: ${product.price.toFixed(2)}</p>
-							<p className="mt-3 text-xs text-[var(--muted-foreground)]">Click to order</p>
+							<p className="mt-1 text-xs text-[var(--muted-foreground)]">{tx('Price')}: ${product.price.toFixed(2)}</p>
+							<p className="mt-3 text-xs text-[var(--muted-foreground)]">{tx('Click to order')}</p>
 						</button>
 					))}
 
 					{visibleProducts.length === 0 && (
 						<div className="col-span-full rounded-lg bg-[var(--secondary)] p-8 text-center text-sm text-[var(--muted-foreground)]">
-							{query.trim() ? 'No products match your search' : 'No products available right now'}
+							{query.trim() ? tx('No products match your search') : tx('No products available right now')}
 						</div>
 					)}
 				</div>
