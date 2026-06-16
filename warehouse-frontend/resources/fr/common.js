@@ -612,6 +612,8 @@ const common = {
     'Prediction failed.': 'La prediction a echoue.',
     'Not available': 'Non disponible',
     'Not refreshed yet': 'Pas encore actualise',
+    'Scenario result': 'Resultat du scenario',
+    'Compared with current reference': 'Compare a la reference actuelle',
     'vs previous': 'vs precedent',
     'up': 'hausse',
     'down': 'baisse',

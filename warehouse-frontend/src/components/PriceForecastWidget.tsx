@@ -122,6 +122,7 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
   const [data, setData] = useState<ForecastPayload | null>(null);
   const [latestBottlePrice, setLatestBottlePrice] = useState<number | null>(null);
   const [form, setForm] = useState<ScenarioForm>(defaultScenario);
+  const [scenarioResult, setScenarioResult] = useState<ForecastPayload | null>(null);
 
   useEffect(() => {
     if (token) {
@@ -181,6 +182,7 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
     setPredicting(true);
     setError(null);
     try {
+      const baselinePrice = referenceBottlePrice;
       const payload: ScenarioForm = {
         ...form,
         cost: costEstimate,
@@ -202,7 +204,19 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
       }
 
       const json = (await res.json()) as ForecastPayload;
-      setData(json);
+      const predictedPrice = json.predictedPrice ?? null;
+      const scenarioDelta = predictedPrice !== null ? predictedPrice - baselinePrice : null;
+      const scenarioDeltaPercent = scenarioDelta !== null && baselinePrice > 0 ? (scenarioDelta / baselinePrice) * 100 : null;
+      const enrichedResult: ForecastPayload = {
+        ...json,
+        previousPrice: baselinePrice,
+        delta: scenarioDelta,
+        deltaPercent: scenarioDeltaPercent,
+        trend: scenarioDelta === null ? 'flat' : scenarioDelta > 0 ? 'up' : scenarioDelta < 0 ? 'down' : 'flat',
+      };
+
+      setData(enrichedResult);
+      setScenarioResult(enrichedResult);
       if (typeof json.previousPrice === 'number' && Number.isFinite(json.previousPrice)) {
         setLatestBottlePrice(json.previousPrice);
       }
@@ -320,13 +334,24 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
 
           <div className="mt-5 rounded-xl bg-[var(--tint-info)] p-4 text-sm leading-6 text-slate-700">
             {tx('Unit standard: one sales unit equals one 1-liter olive oil bottle. Model v1 still expects cost and revenue, so both are estimated internally instead of being entered as scenario inputs.')}
-            <span className="mt-2 block font-medium text-slate-900">
-              {tx('Estimated cost sent to model')}: {costEstimate.toFixed(2)} TND / 1L bottle
-            </span>
-            <span className="mt-2 block font-medium text-slate-900">
-              {tx('Estimated revenue sent to model')}: {revenueEstimate.toFixed(2)} TND
-            </span>
           </div>
+
+          {scenarioResult && (
+            <div className="mt-5 rounded-xl border border-[var(--border)] bg-white p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+                {tx('Scenario result')}
+              </p>
+              <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                {tx(formatCurrency(scenarioResult.predictedPrice))}
+              </p>
+              <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                {tx('Compared with current reference')}: {tx(formatSignedCurrency(scenarioResult.delta))} ({tx(formatPercent(scenarioResult.deltaPercent))})
+              </p>
+              <p className="mt-3 text-xs text-[var(--muted-foreground)]">
+                {tx('Updated at')} {formatDate(scenarioResult.predictedAt)}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </section>

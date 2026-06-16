@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ContactRequestStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateContactRequestDto } from './dto/create-contact-request.dto';
-import { UpdateContactRequestDto } from './dto/update-contact-request.dto';
+import { ContactRequestStatusValue, UpdateContactRequestDto } from './dto/update-contact-request.dto';
 
 @Injectable()
 export class ContactRequestService {
@@ -18,7 +17,7 @@ export class ContactRequestService {
     });
   }
 
-  findAll(status?: ContactRequestStatus) {
+  findAll(status?: ContactRequestStatusValue) {
     return this.prisma.contactRequest.findMany({
       where: status ? { status } : undefined,
       orderBy: { createdAt: 'desc' },
