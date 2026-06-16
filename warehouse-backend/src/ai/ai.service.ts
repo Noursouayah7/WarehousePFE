@@ -1,14 +1,17 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import axios from 'axios';
-import { lastValueFrom } from 'rxjs';
 import { PredictPriceDto } from './dto/predict-price.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { MarketPriceService } from './market-price.service';
 
 @Injectable()
 export class AiService {
   private inferenceUrl = process.env.AI_INFERENCE_URL || 'http://localhost:8000';
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly marketPrice: MarketPriceService,
+  ) {}
 
   async predict(dto: PredictPriceDto, user?: { id?: number; roles?: any }) {
     const timeout = parseInt(process.env.AI_INFERENCE_TIMEOUT_MS || '1500', 10);
@@ -49,13 +52,28 @@ export class AiService {
   }
 
   async widget(user?: { id?: number; roles?: any }) {
-    // attempt to build features from DB: use latest product price as previousPrice
     let previousPrice: number | null = null;
-    try {
-      const prod = await this.prisma.product.findFirst({ orderBy: { updatedAt: 'desc' } });
-      if (prod) previousPrice = prod.price;
-    } catch (err) {
-      // ignore
+    let previousPriceSource: 'online' | 'env' | 'database' | 'fallback' = 'fallback';
+    let previousPriceLabel: string | null = null;
+    let previousPriceFetchedAt: string | null = null;
+
+    const marketReference = await this.marketPrice.getOliveOilReferenceTndPerLiter();
+    if (marketReference) {
+      previousPrice = marketReference.priceTndPerLiter;
+      previousPriceSource = marketReference.source;
+      previousPriceLabel = marketReference.sourceLabel;
+      previousPriceFetchedAt = marketReference.fetchedAt;
+    } else {
+      try {
+        const prod = await this.prisma.product.findFirst({ orderBy: { updatedAt: 'desc' } });
+        if (prod) {
+          previousPrice = prod.price;
+          previousPriceSource = 'database';
+          previousPriceLabel = 'Latest product price fallback';
+        }
+      } catch (err) {
+        // keep previousPrice null if both market and database references are unavailable
+      }
     }
 
     const dto: PredictPriceDto = {
@@ -78,6 +96,9 @@ export class AiService {
       title: 'Next Price Forecast',
       predictedPrice,
       previousPrice,
+      previousPriceSource,
+      previousPriceLabel,
+      previousPriceFetchedAt,
       delta,
       deltaPercent,
       trend,

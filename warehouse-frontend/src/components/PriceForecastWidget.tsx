@@ -9,6 +9,9 @@ type Props = { apiBase?: string };
 type ForecastPayload = {
   predictedPrice: number | null;
   previousPrice?: number | null;
+  previousPriceSource?: 'online' | 'env' | 'database' | 'fallback' | string | null;
+  previousPriceLabel?: string | null;
+  previousPriceFetchedAt?: string | null;
   delta?: number | null;
   deltaPercent?: number | null;
   trend?: 'up' | 'down' | 'flat';
@@ -77,6 +80,27 @@ function formatDate(value: string | undefined): string {
   return date.toLocaleString();
 }
 
+function getReferenceCopy(payload: ForecastPayload | null, tx: (text: string) => string): {
+  helper: string;
+  source: string | null;
+} {
+  if (!payload?.previousPrice) {
+    return { helper: tx('Market reference unavailable'), source: null };
+  }
+
+  if (payload.previousPriceSource === 'online' || payload.previousPriceSource === 'env') {
+    return {
+      helper: tx('Market reference 1L price'),
+      source: payload.previousPriceLabel ? tx(payload.previousPriceLabel) : tx('Online olive oil market reference'),
+    };
+  }
+
+  return {
+    helper: tx('Latest 1L bottle price'),
+    source: payload.previousPriceLabel ? tx(payload.previousPriceLabel) : null,
+  };
+}
+
 function getTrendCopy(payload: ForecastPayload | null, tx: (text: string) => string): {
   label: string;
   tone: string;
@@ -132,6 +156,7 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
   }, [token]);
 
   const trend = useMemo(() => getTrendCopy(data, tx), [data, tx]);
+  const referenceCopy = useMemo(() => getReferenceCopy(data, tx), [data, tx]);
   const modelVersion = data?.model?.version ?? data?.modelVersion ?? 'v1';
   const forecastPrice = data?.predictedPrice ?? null;
   const delta = data?.delta ?? null;
@@ -210,6 +235,9 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
       const enrichedResult: ForecastPayload = {
         ...json,
         previousPrice: baselinePrice,
+        previousPriceSource: data?.previousPriceSource ?? 'fallback',
+        previousPriceLabel: data?.previousPriceLabel ?? null,
+        previousPriceFetchedAt: data?.previousPriceFetchedAt ?? null,
         delta: scenarioDelta,
         deltaPercent: scenarioDeltaPercent,
         trend: scenarioDelta === null ? 'flat' : scenarioDelta > 0 ? 'up' : scenarioDelta < 0 ? 'down' : 'flat',
@@ -266,7 +294,17 @@ export default function PriceForecastWidget({ apiBase = 'http://localhost:3001' 
             <div className="rounded-xl border border-[var(--border)] bg-white px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--muted-foreground)]">{tx('Previous')}</p>
               <p className="mt-2 text-lg font-semibold text-slate-950">{tx(formatCurrency(data?.previousPrice))}</p>
-              <p className="mt-1 text-sm text-[var(--muted-foreground)]">{tx('Latest 1L bottle price')}</p>
+              <p className="mt-1 text-sm text-[var(--muted-foreground)]">{referenceCopy.helper}</p>
+              {referenceCopy.source && (
+                <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+                  {tx('Reference source')}: {referenceCopy.source}
+                </p>
+              )}
+              {data?.previousPriceFetchedAt && (
+                <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+                  {tx('Updated at')} {formatDate(data.previousPriceFetchedAt)}
+                </p>
+              )}
             </div>
             <div className="rounded-xl border border-[var(--border)] bg-white px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--muted-foreground)]">{tx('Model')}</p>
