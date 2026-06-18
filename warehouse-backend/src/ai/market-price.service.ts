@@ -18,7 +18,7 @@ export type MarketReferencePrice = {
 @Injectable()
 export class MarketPriceService {
   private readonly logger = new Logger(MarketPriceService.name);
-  private readonly defaultMarketUrl = 'https://data.nasdaq.com/api/v3/datasets/ODA/POLVOIL_USD.json?rows=1';
+  private readonly nasdaqMarketUrl = 'https://data.nasdaq.com/api/v3/datasets/ODA/POLVOIL_USD.json?rows=1';
   private readonly cacheMs = this.parsePositiveInt(process.env.OLIVE_OIL_MARKET_CACHE_MS, 6 * 60 * 60 * 1000);
   private readonly timeoutMs = this.parsePositiveInt(process.env.OLIVE_OIL_MARKET_TIMEOUT_MS, 2500);
   private readonly kgPerLiter = this.parsePositiveNumber(process.env.OLIVE_OIL_KG_PER_LITER, 0.91);
@@ -63,9 +63,25 @@ export class MarketPriceService {
   }
 
   private async fetchMarketPrice(): Promise<ParsedMarketPrice> {
-    const url = process.env.OLIVE_OIL_MARKET_PRICE_URL || this.defaultMarketUrl;
+    const url = this.getMarketPriceUrl();
+    if (!url) {
+      throw new Error('No online olive oil market source configured');
+    }
+
     const response = await axios.get(url, { timeout: this.timeoutMs });
     return this.parseMarketPayload(response.data);
+  }
+
+  private getMarketPriceUrl(): string | null {
+    if (process.env.OLIVE_OIL_MARKET_PRICE_URL) {
+      return process.env.OLIVE_OIL_MARKET_PRICE_URL;
+    }
+
+    if (process.env.NASDAQ_DATA_LINK_API_KEY) {
+      return `${this.nasdaqMarketUrl}&api_key=${encodeURIComponent(process.env.NASDAQ_DATA_LINK_API_KEY)}`;
+    }
+
+    return null;
   }
 
   private parseMarketPayload(payload: any): ParsedMarketPrice {
